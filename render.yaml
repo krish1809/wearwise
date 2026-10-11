@@ -1,0 +1,28 @@
+# Render Blueprint for the WearWise API. Set up once in the Render dashboard: New > Blueprint,
+# then pick this repository. Steps in docs/DEPLOYMENT.md.
+services:
+  - type: web
+    name: wearwise-api
+    runtime: python
+    plan: free
+    # Same region as the Neon database, so each query stays inside Singapore.
+    region: singapore
+    rootDir: backend
+    buildCommand: uv sync --locked --no-dev
+    # Free instances can't run a pre-deploy command, so migrations run just before the server starts.
+    startCommand: uv run --no-sync alembic upgrade head && uv run --no-sync uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    # Deploy a commit on main only after its CI checks pass.
+    autoDeployTrigger: checksPass
+    # No healthCheckPath on purpose: the health route queries the database, and frequent checks
+    # would keep Neon awake and use up its free compute hours.
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.14.8
+      - key: UV_VERSION
+        value: 0.12.23
+      # Neon's pooled connection string (the host contains -pooler).
+      - key: DATABASE_URL
+        sync: false
+      # Neon's direct connection string, used only by migrations.
+      - key: MIGRATION_DATABASE_URL
+        sync: false
