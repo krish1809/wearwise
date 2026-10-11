@@ -1,0 +1,24 @@
+# Local Postgres for development and tests. Production uses Neon.
+name: wearwise
+
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: wearwise
+      POSTGRES_PASSWORD: wearwise
+      POSTGRES_DB: wearwise
+    ports:
+      # Host port 5433, so it doesn't clash with a Postgres already installed on the machine.
+      # Bound to localhost so nothing else on the network can reach it.
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - db-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wearwise -d wearwise"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+volumes:
+  db-data:
