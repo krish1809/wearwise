@@ -8,7 +8,7 @@ It is not a store. There is no checkout. When WearWise points to a product, you 
 
 ## Status
 
-Milestone M0 (foundations): a web app, an API, and a database that talk to each other, with tests and CI. The first deploy comes next. See [`docs/PROGRESS.md`](docs/PROGRESS.md).
+Milestone M0 (foundations) is live at https://wearwise-rouge.vercel.app: the web app, the API, and the database talk to each other in production, and every merge to `main` deploys once CI passes. There are no user features yet; M1 adds the design system and accounts. See [`docs/PROGRESS.md`](docs/PROGRESS.md).
 
 <!-- At each release, replace this section with the live URL, a screenshot, and what works. -->
 

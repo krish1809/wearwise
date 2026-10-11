@@ -4,23 +4,19 @@ The running state of the project, updated at the end of every slice. Keep it sho
 
 ## Now
 
-- **Last updated:** 2026-10-11
-- **Current milestone:** M0 Foundations
-- **Current slice:** 6 of 7, the first deploy. Slices 1 to 5 and 7 are built and pass every check locally.
-- **Next action (owner):** commit the slices on a branch, open a pull request, and wait for CI to pass. Then merge and follow "First deploy, step by step" in `docs/DEPLOYMENT.md` (Neon, Render, Vercel). M0 is done when the live URL says "API ok, database ok".
-- **Overall:** 0 of 12 milestones done; M0 is close. v1.0 is M0 to M5.
+- **Last updated:** 2026-10-12
+- **Current milestone:** M1 Design system, app shell, auth
+- **Current slice:** not started.
+- **Next action:** plan M1 against the M1 section of `docs/ROADMAP.md`. It starts with design tokens and components, which the owner approves from screenshots before auth is built.
+- **Overall:** 1 of 12 milestones done. v1.0 is M0 to M5.
 
-M0 slices:
+Live:
 
-| # | Slice | State |
-|---|---|---|
-| 1 | Backend skeleton: FastAPI, settings that stop startup when a variable is missing, `GET /api/v1/health` | done |
-| 2 | Local database: `docker-compose.yml` (Postgres 18 on port 5433), first migration (`app_meta`), health reads its row | done |
-| 3 | Frontend skeleton: Next.js, `/api/*` rewrite to the backend, home page showing the health result | done |
-| 4 | Typed API client generated from the backend's OpenAPI schema (`make api-types`) | done |
-| 5 | CI: backend, frontend, and stale-API-types jobs in `.github/workflows/ci.yml` | written; first run happens on the pull request |
-| 6 | Deploy: `render.yaml`, dashboard steps in `docs/DEPLOYMENT.md` | waiting for the owner |
-| 7 | Docs: README quick start and commands, decisions D11 to D17 | done |
+| What | Where |
+|---|---|
+| Web app (Vercel) | https://wearwise-rouge.vercel.app |
+| API (Render, Singapore) | https://wearwise-api-kzj4.onrender.com (the app reaches it through `/api/*`; `/docs` shows the API) |
+| Database (Neon, Singapore) | Postgres 18; connection strings live only in Render's environment settings |
 
 ## Starting a new session
 
@@ -55,11 +51,11 @@ Planning and reference material, committed and pushed to `github.com/krish1809/w
 | AI | Auto-tagging, Stylist tools, grounding check, evaluation set, cost controls | `docs/AI.md` |
 | Design | Colour and type tokens, spacing, the outfit board, component list, navigation, writing rules | `docs/DESIGN_SYSTEM.md` |
 | Hosting | Vercel, Render, Neon, R2; environments; migrations; release checklist | `docs/DEPLOYMENT.md` |
-| Decisions | D1 to D10 | `docs/DECISIONS.md` |
+| Decisions | D1 to D17 | `docs/DECISIONS.md` |
 | Seed data | 16 slots, 89 categories, 3 outfit templates; 28 colour families; 12 occasions; 12 style profiles; 66 archetypes. Not loaded anywhere yet: the seed script is written in M2 and M3. | `seed/` |
 | Config | Every environment variable up to M10, `.gitignore`, pull request template | `.env.example`, `.github/` |
 
-M0 code, not yet committed (see the slice table above):
+M0 code, merged in pull request #1 and deployed:
 
 | Area | What exists | Where |
 |---|---|---|
@@ -79,7 +75,7 @@ M0 code, not yet committed (see the slice table above):
 
 | # | Milestone | You can now... | Status | Released | Notes |
 |---|---|---|---|---|---|
-| M0 | Foundations | open a live URL that talks to the API and database | in progress: built locally, deploy pending | | |
+| M0 | Foundations | open a live URL that talks to the API and database | done | 2026-10-12 | https://wearwise-rouge.vercel.app |
 | M1 | Design system, shell, auth | register, log in, and move around a styled, empty app | not started | | |
 | M2 | Onboarding and profile | set (or skip) sizes, style, budget; edit them later | not started | | |
 | M3 | Wardrobe | add, find, edit everything you own, with photos | not started | | |
@@ -96,14 +92,22 @@ M0 code, not yet committed (see the slice table above):
 
 - [x] GitHub repo created and the docs pushed (checked 2026-10-11: local `main` matches `origin/main`)
 - [ ] 25 to 30 photos of your own items taken (needed by M3)
-- [ ] Accounts: Vercel, Render, Neon (needed by M0's deploy slice); Cloudflare (needed by M3 for R2)
+- [x] Accounts: Vercel, Render, Neon (set up 2026-10-12)
+- [ ] Cloudflare account (needed by M3 for R2 photo storage)
 - [ ] Optional: applied for an affiliate or product API (only matters in M9)
 
-**Local tools (checked 2026-10-11):** Python 3.12.3, uv 0.12.23, Node 22.23.0, npm 10.9.8, Docker 29.8.0 with Compose v5.5.1, make 4.3, gh 2.45.0. pnpm isn't installed yet, but corepack 0.34.6 is available to provide it. M0's frontend slice needs pnpm.
+**Local tools (checked 2026-10-11):** uv 0.12.23 (it installs Python 3.14 for the backend), Node 22.23.0, pnpm 10.34.6, Docker 29.8.0 with Compose v5.5.1, make 4.3, gh 2.45.0.
 
 ## Log
 
 Add an entry per slice, newest first.
+
+### 2026-10-12, M0 slice 6: first deploy (M0 done)
+
+- Built: Neon project (Postgres 18, Singapore), Render web service from `render.yaml` (free, Singapore), Vercel project with root directory `frontend` and `BACKEND_URL` set.
+- Checked: CI green on pull request #1 (backend 25 s, frontend 36 s, API types 22 s) and again on `main` after the merge. Render ran the migration on Neon, and `/api/v1/health` answers `database: ok`: 2.3 s on the first request, 0.25 s after. The same request through the Vercel URL returns ok, and its headers show Vercel's Mumbai edge forwarding to Render's uvicorn. The browser's JavaScript contains no Render address. Screenshots of the live site at 375 px and 1440 px show "API ok, database ok".
+- Left: nothing for M0.
+- Decided: nothing new.
 
 ### 2026-10-11, M0 slices 1 to 5 and 7: walking skeleton, local
 
@@ -130,6 +134,12 @@ Add an entry per slice, newest first.
 ## Milestone notes
 
 After each milestone, three lines: the hardest problem, the decision you made and why, one number.
+
+### M0
+
+- Hardest: picking versions that work together on every host. The newest TypeScript broke the lint and type-generation tools, and the newest pnpm isn't supported by Vercel's builds, so both were held back (D11).
+- Decision: deploy in the first milestone, with the browser talking only to Vercel, which forwards `/api/*` to Render. Hosting problems surfaced while the app was one endpoint, and the login cookie in M1 will be first-party.
+- Number: the live health check takes 0.25 s warm and 2.3 s after the database wakes; 19 automated tests and 3 CI jobs gate every merge.
 
 <!--
 ### M5
