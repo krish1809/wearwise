@@ -8,7 +8,7 @@ It is not a store. There is no checkout. When WearWise points to a product, you 
 
 ## Status
 
-Planning complete. Building starts at milestone M0. See [`docs/PROGRESS.md`](docs/PROGRESS.md).
+Milestone M0 (foundations): a web app, an API, and a database that talk to each other, with tests and CI. The first deploy comes next. See [`docs/PROGRESS.md`](docs/PROGRESS.md).
 
 <!-- At each release, replace this section with the live URL, a screenshot, and what works. -->
 
@@ -35,8 +35,47 @@ Why: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/DECISIONS.md`](docs/
 
 ## Quick start
 
-<!-- Written in M0. Must work from a fresh clone. -->
-Not available yet.
+You need [Docker](https://docs.docker.com/get-docker/), [uv](https://docs.astral.sh/uv/getting-started/installation/), Node.js 22, and pnpm 10 (`npm install -g pnpm@10`).
+
+```bash
+git clone https://github.com/krish1809/wearwise.git
+cd wearwise
+make setup   # install dependencies; create .env from .env.example
+make dev     # start Postgres, apply migrations, run the API on :8000 and the web app on :3000
+```
+
+Open http://localhost:3000. It should say "API ok, database ok". The API's interactive docs are at http://localhost:8000/docs.
+
+The local database runs in Docker on port 5433, so it doesn't clash with a Postgres already installed on your machine.
+
+## Commands
+
+Run `make` to list them all.
+
+| Command | What it does |
+|---|---|
+| `make dev` | Start Postgres, apply migrations, run the API and the web app; Ctrl+C stops both |
+| `make test` | Backend tests (against a throwaway `wearwise_test` database) and frontend tests |
+| `make lint` | Lint and formatting checks |
+| `make format` | Fix formatting and auto-fixable lint |
+| `make typecheck` | mypy for the backend, TypeScript for the frontend |
+| `make migration m="add users"` | Create a migration from changed models |
+| `make migrate` | Apply migrations |
+| `make api-types` | Regenerate the frontend's API types after changing a route |
+| `make check` | Everything CI runs |
+
+## Making a change
+
+Most features follow the same path through the code:
+
+1. **Model** in `backend/app/models/`, then `make migration m="..."` and read the generated file before applying it.
+2. **Service** in `backend/app/services/`: the use case, with every query filtered by the current user.
+3. **Logic with rules in it** (scoring, planning, analysis) goes in `backend/app/engine/` as plain functions with unit tests. The engine imports nothing from the rest of the app, and a test enforces that.
+4. **Route** in `backend/app/api/`, with request and response schemas. Tests in `backend/tests/`, including one where a second user gets 404.
+5. `make api-types`, then the **page** in `frontend/app/` using the typed client in `frontend/lib/api/`.
+6. `make check` before opening a pull request. CI runs the same checks, and `main` deploys once they pass.
+
+How to host it: [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
 
 ## Documentation
 

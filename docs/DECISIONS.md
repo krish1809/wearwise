@@ -64,3 +64,55 @@ Format: what was decided, why, what was rejected, and when to revisit.
 ---
 
 <!-- Add new decisions below. Record the versions chosen in M0 here too. -->
+
+## D11. Versions chosen in M0 (October 2026)
+
+| Area | Versions |
+|---|---|
+| Backend | Python 3.14 (3.14.8), uv 0.12.23, FastAPI 0.143, Starlette 1.7, Uvicorn 0.54, SQLAlchemy 2.1.4, Alembic 1.20, Pydantic 2.14, pydantic-settings 2.15, psycopg 3.3.6 |
+| Backend tools | ruff 0.17, mypy 2.4 (strict), pytest 9.1, httpx2 2.13 (the test client Starlette now asks for) |
+| Frontend | Node 22, pnpm 10.34.6, Next.js 16.4, React 19.3, TypeScript 5.9.3, Tailwind CSS 4.3 |
+| Frontend tools | ESLint 9.39, Prettier 3.9, Vitest 5.0, Vite 8.3, openapi-typescript 7.13, openapi-fetch 0.17 |
+| Database | PostgreSQL 18 (18.6 locally, in CI, and on Neon) |
+
+Held back on purpose:
+- **Python 3.15:** only release candidates were available, so 3.14.
+- **TypeScript 7.0:** typescript-eslint (used by Next's lint config) supports below 6.1, and openapi-typescript supports 5.x, so 5.9.
+- **pnpm 11 and 12:** Vercel builds with pnpm 10 out of the box; later versions need an experimental Corepack setting, and builds were reported failing. So 10.
+- **ESLint 10:** create-next-app 16.4 installs 9, the version Next's lint config is tested with.
+
+Next.js runs with `cacheComponents` and `partialPrefetching` on, as create-next-app 16.4 sets them; Next's docs say the next major turns both on everywhere.
+
+**Revisit:** at the start of a milestone, when something holding a tool back has caught up.
+
+## D12. Synchronous SQLAlchemy with psycopg 3
+
+**Why:** simpler to learn and debug than async. FastAPI runs synchronous routes in a thread pool, which is plenty at this scale.
+**Rejected:** async SQLAlchemy (more concepts for little gain here).
+**Revisit if:** concurrency becomes a measured bottleneck.
+
+## D13. The app uses Neon's pooled connection; migrations use the direct one
+
+**Why:** Neon's pooler runs PgBouncer in transaction mode, and Neon recommends direct connections for schema migrations. `MIGRATION_DATABASE_URL` is optional and falls back to `DATABASE_URL`. The backend also accepts plain `postgresql://` URLs and adds the driver name, so connection strings are pasted unchanged.
+**Rejected:** one URL for both (works until a migration needs a session-level feature the pooler drops).
+
+## D14. UUIDv7 primary keys
+
+**Why:** `uuid.uuid7()` (new in Python 3.14) starts with a timestamp, so new rows land at the end of the index and IDs sort by creation, which helps cursor pagination in M3. IDs are made in Python, so they're known before the insert.
+**Rejected:** UUIDv4 (random order scatters index writes); integer sequences (guessable, and they leak counts).
+
+## D15. Typed API client from the OpenAPI schema
+
+**Why:** openapi-typescript turns FastAPI's schema into types, and openapi-fetch checks every path, parameter, and body against them at compile time. CI regenerates the types and fails if the committed ones are out of date, so the frontend and backend can't drift apart.
+**Rejected:** hand-written fetch wrappers (drift unnoticed); a generated SDK (more code to review).
+
+## D16. mypy in strict mode for the backend
+
+**Why:** runs inside the uv environment with the rest of the Python tools; works with Pydantic's plugin and SQLAlchemy 2's typed models without extra stubs.
+**Rejected:** pyright (good, but runs on Node, adding a second toolchain to backend checks).
+
+## D17. Hosting settings live in the repository
+
+**Why:** `render.yaml` holds the backend's build and start commands, region, and variables, so changes are reviewed like code. Render deploys a commit only after CI passes on it. Migrations run in the start command because free instances can't run a pre-deploy command. There is no Render health check: the health route queries the database, and frequent checks would keep Neon awake and use up its free compute hours. Third-party GitHub Actions are pinned to a commit, because a tag can be moved.
+**Rejected:** configuring everything by hand in dashboards.
+**Revisit if:** the backend moves to a paid instance (then use a pre-deploy command for migrations, and a health route that doesn't touch the database).

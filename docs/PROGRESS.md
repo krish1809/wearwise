@@ -6,9 +6,21 @@ The running state of the project, updated at the end of every slice. Keep it sho
 
 - **Last updated:** 2026-10-11
 - **Current milestone:** M0 Foundations
-- **Current slice:** not started. The M0 plan hasn't been written yet. Once it's approved, its slices go here.
-- **Next action:** plan M0 against the M0 section of `docs/ROADMAP.md`, then build slice 1 (backend skeleton).
-- **Overall:** planning is complete. No application code exists yet. 0 of 12 milestones are done, and v1.0 is M0 to M5.
+- **Current slice:** 6 of 7, the first deploy. Slices 1 to 5 and 7 are built and pass every check locally.
+- **Next action (owner):** commit the slices on a branch, open a pull request, and wait for CI to pass. Then merge and follow "First deploy, step by step" in `docs/DEPLOYMENT.md` (Neon, Render, Vercel). M0 is done when the live URL says "API ok, database ok".
+- **Overall:** 0 of 12 milestones done; M0 is close. v1.0 is M0 to M5.
+
+M0 slices:
+
+| # | Slice | State |
+|---|---|---|
+| 1 | Backend skeleton: FastAPI, settings that stop startup when a variable is missing, `GET /api/v1/health` | done |
+| 2 | Local database: `docker-compose.yml` (Postgres 18 on port 5433), first migration (`app_meta`), health reads its row | done |
+| 3 | Frontend skeleton: Next.js, `/api/*` rewrite to the backend, home page showing the health result | done |
+| 4 | Typed API client generated from the backend's OpenAPI schema (`make api-types`) | done |
+| 5 | CI: backend, frontend, and stale-API-types jobs in `.github/workflows/ci.yml` | written; first run happens on the pull request |
+| 6 | Deploy: `render.yaml`, dashboard steps in `docs/DEPLOYMENT.md` | waiting for the owner |
+| 7 | Docs: README quick start and commands, decisions D11 to D17 | done |
 
 ## Starting a new session
 
@@ -47,19 +59,27 @@ Planning and reference material, committed and pushed to `github.com/krish1809/w
 | Seed data | 16 slots, 89 categories, 3 outfit templates; 28 colour families; 12 occasions; 12 style profiles; 66 archetypes. Not loaded anywhere yet: the seed script is written in M2 and M3. | `seed/` |
 | Config | Every environment variable up to M10, `.gitignore`, pull request template | `.env.example`, `.github/` |
 
-**Not started:** everything in the table below. `frontend/`, `backend/`, and `docker-compose.yml` don't exist yet. There are no dev, test, lint, type check, or migrate commands yet; M0 adds them, plus the README quick start.
+M0 code, not yet committed (see the slice table above):
 
-**Carry into M0:**
+| Area | What exists | Where |
+|---|---|---|
+| Backend | FastAPI app in the architecture's module layout; settings; one session per request; health route and service; `app_meta` table and its migration | `backend/app/`, `backend/alembic/` |
+| Backend tests | Health ok and database down, missing variable, URL handling, and the rule that the engine imports nothing from the other layers | `backend/tests/` |
+| Frontend | Next.js app whose home page checks the API through the `/api/*` proxy, waits up to 90 seconds for a sleeping backend, and offers "Try again" | `frontend/` |
+| Frontend tests | Health mapping, retry while the server wakes, and the three messages the page can show | `frontend/lib/`, `frontend/components/` |
+| Tooling | One `make` command per task, local Postgres, CI workflow, Render Blueprint | `Makefile`, `docker-compose.yml`, `.github/workflows/ci.yml`, `render.yaml` |
 
-- Record the version of each tool chosen in `docs/DECISIONS.md`.
-- Record synchronous SQLAlchemy with psycopg as a decision.
-- Set up the `/api/*` rewrite from Next.js to the backend before auth exists. M1's cookies depend on it.
+**Carry into M1:**
+
+- The error response shape from `docs/ARCHITECTURE.md` (`{"error": {...}}`) isn't wired up yet; add it with the first route that validates input.
+- Tests only read so far. When M1's tests start writing, wrap each test in a transaction that rolls back.
+- When rate limiting needs the client's IP, run uvicorn with proxy headers on Render.
 
 ## Milestones
 
 | # | Milestone | You can now... | Status | Released | Notes |
 |---|---|---|---|---|---|
-| M0 | Foundations | open a live URL that talks to the API and database | not started | | |
+| M0 | Foundations | open a live URL that talks to the API and database | in progress: built locally, deploy pending | | |
 | M1 | Design system, shell, auth | register, log in, and move around a styled, empty app | not started | | |
 | M2 | Onboarding and profile | set (or skip) sizes, style, budget; edit them later | not started | | |
 | M3 | Wardrobe | add, find, edit everything you own, with photos | not started | | |
@@ -84,6 +104,13 @@ Planning and reference material, committed and pushed to `github.com/krish1809/w
 ## Log
 
 Add an entry per slice, newest first.
+
+### 2026-10-11, M0 slices 1 to 5 and 7: walking skeleton, local
+
+- Built: backend skeleton with health check, local Postgres and first migration, Next.js frontend behind the `/api/*` proxy, typed API client, CI workflow, `make` commands, README quick start, Render Blueprint and deploy steps.
+- Checked: `make check` passes (ruff clean, mypy strict with no issues in 22 files, 10 backend tests, 9 frontend tests, production build). The migration applies, rolls back, and reapplies. On the running app: health answers 200 with the database up and 503 with it stopped, and recovers when it restarts. A browser request through the Next.js proxy reaches FastAPI and Postgres. Screenshots at 375 px and 1440 px show "API ok, database ok", and the page shows "Can't reach the API" with "Try again" when the backend is down. A missing `DATABASE_URL` stops startup and names the variable. `make dev` starts both servers, and one Ctrl+C stops both.
+- Left: first CI run on a pull request; first deploy; walking through the M0 "Done when" list on the live URL.
+- Decided: D11 to D17 in `docs/DECISIONS.md` (versions, sync SQLAlchemy, direct connection for migrations, UUIDv7, typed client, mypy, hosting settings in the repo).
 
 ### 2026-10-11, before M0: project review
 
@@ -115,4 +142,5 @@ After each milestone, three lines: the hardest problem, the decision you made an
 
 Things that are deliberately not handled yet. Move them into the README at M11.
 
-- None yet.
+- On Render's free plan, the first request after 15 idle minutes takes about a minute while the backend wakes. The home page says so and keeps checking.
+- The `make` commands assume Linux or macOS. On Windows, use WSL.

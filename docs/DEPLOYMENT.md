@@ -16,6 +16,40 @@ Do not use Render's free Postgres: it expires 30 days after creation.
 
 Limits and prices change. Check each provider's page before relying on a number here.
 
+## First deploy, step by step
+
+Do this once, after the M0 code is merged into `main`. Render and Vercel build from GitHub, so the code has to be there first. Use the same region for the database and the backend, so every query stays in one data centre.
+
+**1. Neon (database)**
+
+1. Create a project: name `wearwise`, Postgres 18, region AWS Asia Pacific (Singapore).
+2. Open **Connect**. With **Connection pooling** on, copy the connection string; its host contains `-pooler`. This is `DATABASE_URL`.
+3. Turn **Connection pooling** off and copy the string again. This is `MIGRATION_DATABASE_URL`.
+
+Paste both exactly as Neon gives them (`postgresql://...`); the backend adds the driver name itself. Each contains the database password, so keep them out of the repo and out of chat messages.
+
+**2. Render (backend)**
+
+1. Sign in with GitHub and give Render access to the `wearwise` repository.
+2. **New > Blueprint**, then pick the repository. Render reads `render.yaml` and proposes a free web service called `wearwise-api` in Singapore.
+3. When asked, paste `DATABASE_URL` and `MIGRATION_DATABASE_URL` from step 1, then apply.
+4. Wait for the first deploy. The log should show `Running upgrade -> ..., create app_meta` and then `Application startup complete`.
+5. Copy the service URL Render shows, such as `https://wearwise-api.onrender.com`. Opening `<that URL>/api/v1/health` should show `"database":"ok"`. This is the one time to call the backend directly; the app itself always goes through Vercel.
+
+**3. Vercel (frontend)**
+
+1. Sign in with GitHub. **Add New > Project**, then import `wearwise`.
+2. Set **Root Directory** to `frontend`. Vercel detects Next.js and pnpm.
+3. Under **Environment Variables**, add `BACKEND_URL` with the Render URL from step 2 (no trailing slash), for Production and Preview.
+4. Deploy. If `BACKEND_URL` is missing, the build stops with a message naming it.
+5. Open the Vercel URL. Within a minute, while the backend wakes up, it should say **API ok, database ok**.
+
+**From then on**
+
+- Every merge to `main` deploys both: Vercel straight away, Render once CI has passed on that commit.
+- `render.yaml` is the source of truth for the backend's settings. Change it in a pull request, not in the dashboard. Secrets (`sync: false`) are the exception and live only in the dashboard.
+- A new environment variable goes in `.env.example` and on the host (in `render.yaml` if it isn't secret).
+
 ## Environments
 
 | | Local | Production |
