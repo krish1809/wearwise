@@ -1,0 +1,174 @@
+{
+  "version": 1,
+  "notes": "Colour families for filtering and as a fallback when an item has no measured hex. neutrality: 1 = pairs with anything, 0 = a colour. Hex values are representative, not exact.",
+  "families": [
+    {
+      "id": "black",
+      "name": "Black",
+      "hex": "#111111",
+      "neutrality": 1.0
+    },
+    {
+      "id": "white",
+      "name": "White",
+      "hex": "#FFFFFF",
+      "neutrality": 1.0
+    },
+    {
+      "id": "cream",
+      "name": "Cream / off-white",
+      "hex": "#F2EDE0",
+      "neutrality": 1.0
+    },
+    {
+      "id": "grey",
+      "name": "Grey",
+      "hex": "#8A8D91",
+      "neutrality": 1.0
+    },
+    {
+      "id": "charcoal",
+      "name": "Charcoal",
+      "hex": "#3A3D42",
+      "neutrality": 1.0
+    },
+    {
+      "id": "navy",
+      "name": "Navy",
+      "hex": "#1F2A44",
+      "neutrality": 0.9
+    },
+    {
+      "id": "beige",
+      "name": "Beige / khaki",
+      "hex": "#C8B28E",
+      "neutrality": 0.9
+    },
+    {
+      "id": "tan",
+      "name": "Tan / camel",
+      "hex": "#B08A5B",
+      "neutrality": 0.9
+    },
+    {
+      "id": "brown",
+      "name": "Brown",
+      "hex": "#6B4A32",
+      "neutrality": 0.9
+    },
+    {
+      "id": "denim_blue",
+      "name": "Denim blue",
+      "hex": "#4F6D8F",
+      "neutrality": 0.8
+    },
+    {
+      "id": "olive",
+      "name": "Olive",
+      "hex": "#6B6F3A",
+      "neutrality": 0.6
+    },
+    {
+      "id": "light_blue",
+      "name": "Light blue",
+      "hex": "#A9C7E8",
+      "neutrality": 0.0
+    },
+    {
+      "id": "blue",
+      "name": "Blue",
+      "hex": "#2F5FB3",
+      "neutrality": 0.0
+    },
+    {
+      "id": "teal",
+      "name": "Teal",
+      "hex": "#1F7A7A",
+      "neutrality": 0.0
+    },
+    {
+      "id": "green",
+      "name": "Green",
+      "hex": "#2E7D4F",
+      "neutrality": 0.0
+    },
+    {
+      "id": "sage",
+      "name": "Sage / mint",
+      "hex": "#A8C3A0",
+      "neutrality": 0.0
+    },
+    {
+      "id": "yellow",
+      "name": "Yellow",
+      "hex": "#E8C83A",
+      "neutrality": 0.0
+    },
+    {
+      "id": "mustard",
+      "name": "Mustard",
+      "hex": "#C9971C",
+      "neutrality": 0.0
+    },
+    {
+      "id": "orange",
+      "name": "Orange",
+      "hex": "#E07B2A",
+      "neutrality": 0.0
+    },
+    {
+      "id": "rust",
+      "name": "Rust",
+      "hex": "#B5532A",
+      "neutrality": 0.0
+    },
+    {
+      "id": "red",
+      "name": "Red",
+      "hex": "#C0282D",
+      "neutrality": 0.0
+    },
+    {
+      "id": "maroon",
+      "name": "Maroon / burgundy",
+      "hex": "#6E1F2B",
+      "neutrality": 0.0
+    },
+    {
+      "id": "pink",
+      "name": "Pink",
+      "hex": "#E79BB3",
+      "neutrality": 0.0
+    },
+    {
+      "id": "purple",
+      "name": "Purple",
+      "hex": "#6B4A9E",
+      "neutrality": 0.0
+    },
+    {
+      "id": "lavender",
+      "name": "Lavender",
+      "hex": "#BBA7DC",
+      "neutrality": 0.0
+    },
+    {
+      "id": "gold",
+      "name": "Gold (metal)",
+      "hex": "#C9A227",
+      "neutrality": 0.0
+    },
+    {
+      "id": "silver",
+      "name": "Silver (metal)",
+      "hex": "#BFC3C7",
+      "neutrality": 0.8
+    },
+    {
+      "id": "multi",
+      "name": "Multicolour",
+      "hex": null,
+      "neutrality": 0.0
+    }
+  ]
+}

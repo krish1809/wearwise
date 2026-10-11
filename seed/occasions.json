@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "notes": "formality_min and formality_max use the 1 to 5 scale from taxonomy.json. prefers_groups lists taxonomy groups that get a small bonus. Users can add their own.",
+  "occasions": [
+    {
+      "id": "home",
+      "name": "At home",
+      "formality_min": 1,
+      "formality_max": 2,
+      "prefers_groups": [],
+      "hint": "Comfort first."
+    },
+    {
+      "id": "gym",
+      "name": "Gym / sport",
+      "formality_min": 1,
+      "formality_max": 1,
+      "prefers_groups": [],
+      "hint": "Activewear."
+    },
+    {
+      "id": "college",
+      "name": "College / everyday",
+      "formality_min": 2,
+      "formality_max": 3,
+      "prefers_groups": [],
+      "hint": "Comfortable, put-together, repeatable."
+    },
+    {
+      "id": "casual_outing",
+      "name": "Casual outing",
+      "formality_min": 2,
+      "formality_max": 3,
+      "prefers_groups": [],
+      "hint": "Friends, cafe, mall."
+    },
+    {
+      "id": "work",
+      "name": "Work / office",
+      "formality_min": 3,
+      "formality_max": 4,
+      "prefers_groups": [],
+      "hint": "Business casual unless your workplace says otherwise."
+    },
+    {
+      "id": "interview",
+      "name": "Interview / presentation",
+      "formality_min": 4,
+      "formality_max": 5,
+      "prefers_groups": [],
+      "hint": "Sharp and quiet."
+    },
+    {
+      "id": "date",
+      "name": "Date / dinner",
+      "formality_min": 3,
+      "formality_max": 4,
+      "prefers_groups": [],
+      "hint": "A step above everyday."
+    },
+    {
+      "id": "party",
+      "name": "Party / night out",
+      "formality_min": 3,
+      "formality_max": 4,
+      "prefers_groups": [],
+      "hint": "Room for a statement piece."
+    },
+    {
+      "id": "festive",
+      "name": "Festival / wedding guest",
+      "formality_min": 4,
+      "formality_max": 5,
+      "prefers_groups": [
+        "ethnic"
+      ],
+      "hint": "Ethnic or dressy; colour welcome."
+    },
+    {
+      "id": "traditional",
+      "name": "Puja / family function",
+      "formality_min": 3,
+      "formality_max": 5,
+      "prefers_groups": [
+        "ethnic"
+      ],
+      "hint": "Traditional and comfortable."
+    },
+    {
+      "id": "formal_event",
+      "name": "Formal event",
+      "formality_min": 5,
+      "formality_max": 5,
+      "prefers_groups": [],
+      "hint": "Suit, saree, or equivalent."
+    },
+    {
+      "id": "travel",
+      "name": "Travel",
+      "formality_min": 1,
+      "formality_max": 3,
+      "prefers_groups": [],
+      "hint": "Layers and comfortable shoes."
+    }
+  ]
+}

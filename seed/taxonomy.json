@@ -1,0 +1,1586 @@
+{
+  "version": 1,
+  "notes": "Starting taxonomy. 'sections' controls which categories are shown by default for menswear / womenswear shoppers; every category stays available through 'show all'. formality: 1 lounge or sport, 2 casual, 3 smart casual, 4 business, 5 formal or ceremonial. warmth: 0 none to 5 heavy. wears_before_wash: null means not washed on a schedule. All values are editable defaults, not rules.",
+  "formality_scale": {
+    "1": "Lounge / sport",
+    "2": "Casual",
+    "3": "Smart casual",
+    "4": "Business",
+    "5": "Formal / ceremonial"
+  },
+  "sections": [
+    "menswear",
+    "womenswear"
+  ],
+  "patterns": [
+    "solid",
+    "stripe",
+    "check",
+    "print",
+    "graphic",
+    "texture"
+  ],
+  "fabrics": [
+    "cotton",
+    "linen",
+    "denim",
+    "wool",
+    "knit",
+    "polyester",
+    "viscose",
+    "silk",
+    "satin",
+    "leather",
+    "suede",
+    "canvas",
+    "technical",
+    "blend",
+    "other"
+  ],
+  "fits": [
+    "slim",
+    "regular",
+    "relaxed",
+    "oversized"
+  ],
+  "seasons": [
+    "summer",
+    "monsoon",
+    "winter",
+    "mild"
+  ],
+  "statuses": [
+    "available",
+    "laundry",
+    "repair",
+    "packed",
+    "lent",
+    "retired"
+  ],
+  "slots": [
+    {
+      "id": "top",
+      "name": "Top",
+      "kind": "core"
+    },
+    {
+      "id": "bottom",
+      "name": "Bottom",
+      "kind": "core"
+    },
+    {
+      "id": "one_piece",
+      "name": "One-piece",
+      "kind": "core"
+    },
+    {
+      "id": "layer",
+      "name": "Layer",
+      "kind": "core"
+    },
+    {
+      "id": "footwear",
+      "name": "Footwear",
+      "kind": "core"
+    },
+    {
+      "id": "bag",
+      "name": "Bag",
+      "kind": "accessory"
+    },
+    {
+      "id": "belt",
+      "name": "Belt",
+      "kind": "accessory"
+    },
+    {
+      "id": "watch",
+      "name": "Watch",
+      "kind": "accessory"
+    },
+    {
+      "id": "eyewear",
+      "name": "Eyewear",
+      "kind": "accessory"
+    },
+    {
+      "id": "headwear",
+      "name": "Headwear",
+      "kind": "accessory"
+    },
+    {
+      "id": "neckwear",
+      "name": "Scarf, tie, dupatta",
+      "kind": "accessory"
+    },
+    {
+      "id": "jewellery",
+      "name": "Jewellery",
+      "kind": "accessory"
+    },
+    {
+      "id": "socks",
+      "name": "Socks",
+      "kind": "accessory"
+    },
+    {
+      "id": "other_accessory",
+      "name": "Other accessory",
+      "kind": "accessory"
+    },
+    {
+      "id": "fragrance",
+      "name": "Fragrance",
+      "kind": "finishing"
+    },
+    {
+      "id": "grooming",
+      "name": "Grooming",
+      "kind": "finishing"
+    }
+  ],
+  "groups": [
+    {
+      "id": "tops",
+      "name": "Tops"
+    },
+    {
+      "id": "bottoms",
+      "name": "Bottoms"
+    },
+    {
+      "id": "one_piece",
+      "name": "Dresses and one-pieces"
+    },
+    {
+      "id": "layers",
+      "name": "Jackets and layers"
+    },
+    {
+      "id": "ethnic",
+      "name": "Ethnic and traditional"
+    },
+    {
+      "id": "footwear",
+      "name": "Footwear"
+    },
+    {
+      "id": "bags",
+      "name": "Bags"
+    },
+    {
+      "id": "accessories",
+      "name": "Accessories"
+    },
+    {
+      "id": "finishing",
+      "name": "Fragrance and grooming"
+    }
+  ],
+  "categories": [
+    {
+      "id": "tshirt",
+      "name": "T-shirt",
+      "group": "tops",
+      "slot": "top",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 2,
+      "formality_min": 1,
+      "formality_max": 3,
+      "warmth": 1,
+      "wears_before_wash": 1
+    },
+    {
+      "id": "polo",
+      "name": "Polo shirt",
+      "group": "tops",
+      "slot": "top",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 3,
+      "formality_min": 2,
+      "formality_max": 3,
+      "warmth": 1,
+      "wears_before_wash": 1
+    },
+    {
+      "id": "casual_shirt",
+      "name": "Casual shirt",
+      "group": "tops",
+      "slot": "top",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 3,
+      "formality_min": 2,
+      "formality_max": 4,
+      "warmth": 1,
+      "wears_before_wash": 1
+    },
+    {
+      "id": "formal_shirt",
+      "name": "Formal shirt",
+      "group": "tops",
+      "slot": "top",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 4,
+      "formality_min": 3,
+      "formality_max": 5,
+      "warmth": 1,
+      "wears_before_wash": 1
+    },
+    {
+      "id": "henley",
+      "name": "Henley",
+      "group": "tops",
+      "slot": "top",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 2,
+      "formality_min": 1,
+      "formality_max": 3,
+      "warmth": 2,
+      "wears_before_wash": 1
+    },
+    {
+      "id": "blouse",
+      "name": "Blouse",
+      "group": "tops",
+      "slot": "top",
+      "sections": [
+        "womenswear"
+      ],
+      "formality_default": 3,
+      "formality_min": 2,
+      "formality_max": 5,
+      "warmth": 1,
+      "wears_before_wash": 1
+    },
+    {
+      "id": "crop_top",
+      "name": "Crop top",
+      "group": "tops",
+      "slot": "top",
+      "sections": [
+        "womenswear"
+      ],
+      "formality_default": 2,
+      "formality_min": 1,
+      "formality_max": 3,
+      "warmth": 1,
+      "wears_before_wash": 1
+    },
+    {
+      "id": "tank_top",
+      "name": "Tank top / vest",
+      "group": "tops",
+      "slot": "top",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 1,
+      "formality_min": 1,
+      "formality_max": 2,
+      "warmth": 1,
+      "wears_before_wash": 1
+    },
+    {
+      "id": "camisole",
+      "name": "Camisole",
+      "group": "tops",
+      "slot": "top",
+      "sections": [
+        "womenswear"
+      ],
+      "formality_default": 2,
+      "formality_min": 1,
+      "formality_max": 3,
+      "warmth": 1,
+      "wears_before_wash": 1
+    },
+    {
+      "id": "tunic",
+      "name": "Tunic",
+      "group": "tops",
+      "slot": "top",
+      "sections": [
+        "womenswear"
+      ],
+      "formality_default": 3,
+      "formality_min": 2,
+      "formality_max": 4,
+      "warmth": 1,
+      "wears_before_wash": 1
+    },
+    {
+      "id": "turtleneck",
+      "name": "Turtleneck",
+      "group": "tops",
+      "slot": "top",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 3,
+      "formality_min": 2,
+      "formality_max": 4,
+      "warmth": 3,
+      "wears_before_wash": 2
+    },
+    {
+      "id": "sweater",
+      "name": "Sweater / pullover",
+      "group": "tops",
+      "slot": "top",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 3,
+      "formality_min": 2,
+      "formality_max": 4,
+      "warmth": 4,
+      "wears_before_wash": 4
+    },
+    {
+      "id": "sweatshirt",
+      "name": "Sweatshirt",
+      "group": "tops",
+      "slot": "top",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 2,
+      "formality_min": 1,
+      "formality_max": 2,
+      "warmth": 3,
+      "wears_before_wash": 3
+    },
+    {
+      "id": "hoodie",
+      "name": "Hoodie",
+      "group": "tops",
+      "slot": "top",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 2,
+      "formality_min": 1,
+      "formality_max": 2,
+      "warmth": 4,
+      "wears_before_wash": 3
+    },
+    {
+      "id": "activewear_top",
+      "name": "Activewear top / jersey",
+      "group": "tops",
+      "slot": "top",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 1,
+      "formality_min": 1,
+      "formality_max": 1,
+      "warmth": 1,
+      "wears_before_wash": 1
+    },
+    {
+      "id": "jeans",
+      "name": "Jeans",
+      "group": "bottoms",
+      "slot": "bottom",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 2,
+      "formality_min": 2,
+      "formality_max": 3,
+      "warmth": 3,
+      "wears_before_wash": 5
+    },
+    {
+      "id": "chinos",
+      "name": "Chinos",
+      "group": "bottoms",
+      "slot": "bottom",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 3,
+      "formality_min": 2,
+      "formality_max": 4,
+      "warmth": 2,
+      "wears_before_wash": 3
+    },
+    {
+      "id": "formal_trousers",
+      "name": "Formal trousers",
+      "group": "bottoms",
+      "slot": "bottom",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 4,
+      "formality_min": 3,
+      "formality_max": 5,
+      "warmth": 2,
+      "wears_before_wash": 3
+    },
+    {
+      "id": "casual_trousers",
+      "name": "Casual trousers",
+      "group": "bottoms",
+      "slot": "bottom",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 2,
+      "formality_min": 2,
+      "formality_max": 3,
+      "warmth": 2,
+      "wears_before_wash": 3
+    },
+    {
+      "id": "cargo_pants",
+      "name": "Cargo pants",
+      "group": "bottoms",
+      "slot": "bottom",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 2,
+      "formality_min": 1,
+      "formality_max": 2,
+      "warmth": 2,
+      "wears_before_wash": 3
+    },
+    {
+      "id": "wide_leg_pants",
+      "name": "Wide-leg trousers",
+      "group": "bottoms",
+      "slot": "bottom",
+      "sections": [
+        "womenswear"
+      ],
+      "formality_default": 3,
+      "formality_min": 2,
+      "formality_max": 4,
+      "warmth": 2,
+      "wears_before_wash": 3
+    },
+    {
+      "id": "joggers",
+      "name": "Joggers",
+      "group": "bottoms",
+      "slot": "bottom",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 1,
+      "formality_min": 1,
+      "formality_max": 2,
+      "warmth": 3,
+      "wears_before_wash": 3
+    },
+    {
+      "id": "track_pants",
+      "name": "Track pants",
+      "group": "bottoms",
+      "slot": "bottom",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 1,
+      "formality_min": 1,
+      "formality_max": 1,
+      "warmth": 2,
+      "wears_before_wash": 2
+    },
+    {
+      "id": "shorts",
+      "name": "Shorts",
+      "group": "bottoms",
+      "slot": "bottom",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 1,
+      "formality_min": 1,
+      "formality_max": 2,
+      "warmth": 1,
+      "wears_before_wash": 2
+    },
+    {
+      "id": "leggings",
+      "name": "Leggings",
+      "group": "bottoms",
+      "slot": "bottom",
+      "sections": [
+        "womenswear"
+      ],
+      "formality_default": 1,
+      "formality_min": 1,
+      "formality_max": 2,
+      "warmth": 2,
+      "wears_before_wash": 1
+    },
+    {
+      "id": "skirt",
+      "name": "Skirt",
+      "group": "bottoms",
+      "slot": "bottom",
+      "sections": [
+        "womenswear"
+      ],
+      "formality_default": 3,
+      "formality_min": 2,
+      "formality_max": 4,
+      "warmth": 1,
+      "wears_before_wash": 2
+    },
+    {
+      "id": "palazzo",
+      "name": "Palazzo",
+      "group": "bottoms",
+      "slot": "bottom",
+      "sections": [
+        "womenswear"
+      ],
+      "formality_default": 3,
+      "formality_min": 2,
+      "formality_max": 4,
+      "warmth": 1,
+      "wears_before_wash": 2
+    },
+    {
+      "id": "dress",
+      "name": "Dress",
+      "group": "one_piece",
+      "slot": "one_piece",
+      "sections": [
+        "womenswear"
+      ],
+      "formality_default": 3,
+      "formality_min": 2,
+      "formality_max": 5,
+      "warmth": 1,
+      "wears_before_wash": 1
+    },
+    {
+      "id": "jumpsuit",
+      "name": "Jumpsuit",
+      "group": "one_piece",
+      "slot": "one_piece",
+      "sections": [
+        "womenswear"
+      ],
+      "formality_default": 3,
+      "formality_min": 2,
+      "formality_max": 4,
+      "warmth": 2,
+      "wears_before_wash": 1
+    },
+    {
+      "id": "romper",
+      "name": "Romper / playsuit",
+      "group": "one_piece",
+      "slot": "one_piece",
+      "sections": [
+        "womenswear"
+      ],
+      "formality_default": 2,
+      "formality_min": 1,
+      "formality_max": 3,
+      "warmth": 1,
+      "wears_before_wash": 1
+    },
+    {
+      "id": "co_ord_set",
+      "name": "Co-ord set (worn as one)",
+      "group": "one_piece",
+      "slot": "one_piece",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 3,
+      "formality_min": 2,
+      "formality_max": 5,
+      "warmth": 2,
+      "wears_before_wash": 2
+    },
+    {
+      "id": "cardigan",
+      "name": "Cardigan",
+      "group": "layers",
+      "slot": "layer",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 3,
+      "formality_min": 2,
+      "formality_max": 4,
+      "warmth": 3,
+      "wears_before_wash": 5
+    },
+    {
+      "id": "blazer",
+      "name": "Blazer / suit jacket",
+      "group": "layers",
+      "slot": "layer",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 4,
+      "formality_min": 3,
+      "formality_max": 5,
+      "warmth": 3,
+      "wears_before_wash": 8
+    },
+    {
+      "id": "casual_jacket",
+      "name": "Casual jacket",
+      "group": "layers",
+      "slot": "layer",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 2,
+      "formality_min": 2,
+      "formality_max": 3,
+      "warmth": 3,
+      "wears_before_wash": 10
+    },
+    {
+      "id": "denim_jacket",
+      "name": "Denim jacket",
+      "group": "layers",
+      "slot": "layer",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 2,
+      "formality_min": 2,
+      "formality_max": 3,
+      "warmth": 3,
+      "wears_before_wash": 10
+    },
+    {
+      "id": "leather_jacket",
+      "name": "Leather jacket",
+      "group": "layers",
+      "slot": "layer",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 2,
+      "formality_min": 2,
+      "formality_max": 3,
+      "warmth": 4,
+      "wears_before_wash": null
+    },
+    {
+      "id": "overshirt",
+      "name": "Overshirt / shacket",
+      "group": "layers",
+      "slot": "layer",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 2,
+      "formality_min": 2,
+      "formality_max": 3,
+      "warmth": 2,
+      "wears_before_wash": 3
+    },
+    {
+      "id": "coat",
+      "name": "Coat / trench",
+      "group": "layers",
+      "slot": "layer",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 4,
+      "formality_min": 3,
+      "formality_max": 5,
+      "warmth": 5,
+      "wears_before_wash": 15
+    },
+    {
+      "id": "puffer_jacket",
+      "name": "Puffer / winter jacket",
+      "group": "layers",
+      "slot": "layer",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 2,
+      "formality_min": 1,
+      "formality_max": 3,
+      "warmth": 5,
+      "wears_before_wash": 15
+    },
+    {
+      "id": "rain_jacket",
+      "name": "Rain jacket / windcheater",
+      "group": "layers",
+      "slot": "layer",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 1,
+      "formality_min": 1,
+      "formality_max": 2,
+      "warmth": 2,
+      "wears_before_wash": 10
+    },
+    {
+      "id": "waistcoat",
+      "name": "Waistcoat",
+      "group": "layers",
+      "slot": "layer",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 4,
+      "formality_min": 3,
+      "formality_max": 5,
+      "warmth": 2,
+      "wears_before_wash": 5
+    },
+    {
+      "id": "shrug",
+      "name": "Shrug",
+      "group": "layers",
+      "slot": "layer",
+      "sections": [
+        "womenswear"
+      ],
+      "formality_default": 2,
+      "formality_min": 2,
+      "formality_max": 3,
+      "warmth": 1,
+      "wears_before_wash": 3
+    },
+    {
+      "id": "kurta",
+      "name": "Kurta",
+      "group": "ethnic",
+      "slot": "top",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 3,
+      "formality_min": 2,
+      "formality_max": 5,
+      "warmth": 1,
+      "wears_before_wash": 1
+    },
+    {
+      "id": "kurti",
+      "name": "Kurti",
+      "group": "ethnic",
+      "slot": "top",
+      "sections": [
+        "womenswear"
+      ],
+      "formality_default": 3,
+      "formality_min": 2,
+      "formality_max": 4,
+      "warmth": 1,
+      "wears_before_wash": 1
+    },
+    {
+      "id": "sherwani",
+      "name": "Sherwani / achkan / bandhgala",
+      "group": "ethnic",
+      "slot": "top",
+      "sections": [
+        "menswear"
+      ],
+      "formality_default": 5,
+      "formality_min": 4,
+      "formality_max": 5,
+      "warmth": 3,
+      "wears_before_wash": null
+    },
+    {
+      "id": "saree_blouse",
+      "name": "Saree blouse",
+      "group": "ethnic",
+      "slot": "top",
+      "sections": [
+        "womenswear"
+      ],
+      "formality_default": 4,
+      "formality_min": 3,
+      "formality_max": 5,
+      "warmth": 1,
+      "wears_before_wash": 1
+    },
+    {
+      "id": "ethnic_bottom",
+      "name": "Pyjama / churidar / salwar",
+      "group": "ethnic",
+      "slot": "bottom",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 3,
+      "formality_min": 2,
+      "formality_max": 5,
+      "warmth": 1,
+      "wears_before_wash": 2
+    },
+    {
+      "id": "dhoti",
+      "name": "Dhoti / dhoti pants",
+      "group": "ethnic",
+      "slot": "bottom",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 4,
+      "formality_min": 3,
+      "formality_max": 5,
+      "warmth": 1,
+      "wears_before_wash": 2
+    },
+    {
+      "id": "lehenga_skirt",
+      "name": "Lehenga skirt",
+      "group": "ethnic",
+      "slot": "bottom",
+      "sections": [
+        "womenswear"
+      ],
+      "formality_default": 5,
+      "formality_min": 4,
+      "formality_max": 5,
+      "warmth": 2,
+      "wears_before_wash": null
+    },
+    {
+      "id": "saree",
+      "name": "Saree",
+      "group": "ethnic",
+      "slot": "one_piece",
+      "sections": [
+        "womenswear"
+      ],
+      "formality_default": 4,
+      "formality_min": 3,
+      "formality_max": 5,
+      "warmth": 1,
+      "wears_before_wash": 2
+    },
+    {
+      "id": "anarkali_gown",
+      "name": "Anarkali / gown",
+      "group": "ethnic",
+      "slot": "one_piece",
+      "sections": [
+        "womenswear"
+      ],
+      "formality_default": 5,
+      "formality_min": 4,
+      "formality_max": 5,
+      "warmth": 2,
+      "wears_before_wash": 2
+    },
+    {
+      "id": "suit_set",
+      "name": "Kurta set / salwar suit (worn as one)",
+      "group": "ethnic",
+      "slot": "one_piece",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 3,
+      "formality_min": 2,
+      "formality_max": 5,
+      "warmth": 1,
+      "wears_before_wash": 1
+    },
+    {
+      "id": "nehru_jacket",
+      "name": "Nehru jacket",
+      "group": "ethnic",
+      "slot": "layer",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 4,
+      "formality_min": 3,
+      "formality_max": 5,
+      "warmth": 2,
+      "wears_before_wash": 5
+    },
+    {
+      "id": "sneakers",
+      "name": "Sneakers",
+      "group": "footwear",
+      "slot": "footwear",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 2,
+      "formality_min": 1,
+      "formality_max": 3,
+      "warmth": 0,
+      "wears_before_wash": null
+    },
+    {
+      "id": "sports_shoes",
+      "name": "Sports shoes",
+      "group": "footwear",
+      "slot": "footwear",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 1,
+      "formality_min": 1,
+      "formality_max": 1,
+      "warmth": 0,
+      "wears_before_wash": null
+    },
+    {
+      "id": "loafers",
+      "name": "Loafers",
+      "group": "footwear",
+      "slot": "footwear",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 3,
+      "formality_min": 3,
+      "formality_max": 4,
+      "warmth": 0,
+      "wears_before_wash": null
+    },
+    {
+      "id": "formal_shoes",
+      "name": "Formal shoes",
+      "group": "footwear",
+      "slot": "footwear",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 4,
+      "formality_min": 4,
+      "formality_max": 5,
+      "warmth": 0,
+      "wears_before_wash": null
+    },
+    {
+      "id": "boots",
+      "name": "Boots",
+      "group": "footwear",
+      "slot": "footwear",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 3,
+      "formality_min": 2,
+      "formality_max": 4,
+      "warmth": 2,
+      "wears_before_wash": null
+    },
+    {
+      "id": "sandals",
+      "name": "Sandals",
+      "group": "footwear",
+      "slot": "footwear",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 2,
+      "formality_min": 1,
+      "formality_max": 3,
+      "warmth": 0,
+      "wears_before_wash": null
+    },
+    {
+      "id": "slides",
+      "name": "Slides / flip-flops",
+      "group": "footwear",
+      "slot": "footwear",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 1,
+      "formality_min": 1,
+      "formality_max": 1,
+      "warmth": 0,
+      "wears_before_wash": null
+    },
+    {
+      "id": "heels",
+      "name": "Heels",
+      "group": "footwear",
+      "slot": "footwear",
+      "sections": [
+        "womenswear"
+      ],
+      "formality_default": 4,
+      "formality_min": 3,
+      "formality_max": 5,
+      "warmth": 0,
+      "wears_before_wash": null
+    },
+    {
+      "id": "flats",
+      "name": "Flats / ballerinas",
+      "group": "footwear",
+      "slot": "footwear",
+      "sections": [
+        "womenswear"
+      ],
+      "formality_default": 3,
+      "formality_min": 2,
+      "formality_max": 4,
+      "warmth": 0,
+      "wears_before_wash": null
+    },
+    {
+      "id": "juttis",
+      "name": "Juttis / mojaris / kolhapuris",
+      "group": "footwear",
+      "slot": "footwear",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 4,
+      "formality_min": 2,
+      "formality_max": 5,
+      "warmth": 0,
+      "wears_before_wash": null
+    },
+    {
+      "id": "backpack",
+      "name": "Backpack",
+      "group": "bags",
+      "slot": "bag",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 2,
+      "formality_min": 1,
+      "formality_max": 3,
+      "warmth": 0,
+      "wears_before_wash": null
+    },
+    {
+      "id": "sling_bag",
+      "name": "Sling / crossbody bag",
+      "group": "bags",
+      "slot": "bag",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 2,
+      "formality_min": 1,
+      "formality_max": 3,
+      "warmth": 0,
+      "wears_before_wash": null
+    },
+    {
+      "id": "tote_handbag",
+      "name": "Tote / handbag",
+      "group": "bags",
+      "slot": "bag",
+      "sections": [
+        "womenswear"
+      ],
+      "formality_default": 3,
+      "formality_min": 2,
+      "formality_max": 5,
+      "warmth": 0,
+      "wears_before_wash": null
+    },
+    {
+      "id": "clutch",
+      "name": "Clutch",
+      "group": "bags",
+      "slot": "bag",
+      "sections": [
+        "womenswear"
+      ],
+      "formality_default": 4,
+      "formality_min": 3,
+      "formality_max": 5,
+      "warmth": 0,
+      "wears_before_wash": null
+    },
+    {
+      "id": "laptop_bag",
+      "name": "Laptop bag / briefcase",
+      "group": "bags",
+      "slot": "bag",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 4,
+      "formality_min": 3,
+      "formality_max": 5,
+      "warmth": 0,
+      "wears_before_wash": null
+    },
+    {
+      "id": "belt",
+      "name": "Belt",
+      "group": "accessories",
+      "slot": "belt",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 3,
+      "formality_min": 2,
+      "formality_max": 5,
+      "warmth": 0,
+      "wears_before_wash": null
+    },
+    {
+      "id": "watch",
+      "name": "Watch",
+      "group": "accessories",
+      "slot": "watch",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 3,
+      "formality_min": 1,
+      "formality_max": 5,
+      "warmth": 0,
+      "wears_before_wash": null
+    },
+    {
+      "id": "sunglasses",
+      "name": "Sunglasses",
+      "group": "accessories",
+      "slot": "eyewear",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 2,
+      "formality_min": 1,
+      "formality_max": 4,
+      "warmth": 0,
+      "wears_before_wash": null
+    },
+    {
+      "id": "spectacles",
+      "name": "Spectacle frames",
+      "group": "accessories",
+      "slot": "eyewear",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 3,
+      "formality_min": 1,
+      "formality_max": 5,
+      "warmth": 0,
+      "wears_before_wash": null
+    },
+    {
+      "id": "cap",
+      "name": "Cap",
+      "group": "accessories",
+      "slot": "headwear",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 1,
+      "formality_min": 1,
+      "formality_max": 2,
+      "warmth": 0,
+      "wears_before_wash": null
+    },
+    {
+      "id": "hat_beanie",
+      "name": "Hat / beanie",
+      "group": "accessories",
+      "slot": "headwear",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 2,
+      "formality_min": 1,
+      "formality_max": 3,
+      "warmth": 1,
+      "wears_before_wash": null
+    },
+    {
+      "id": "scarf_stole",
+      "name": "Scarf / stole / muffler",
+      "group": "accessories",
+      "slot": "neckwear",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 3,
+      "formality_min": 2,
+      "formality_max": 4,
+      "warmth": 2,
+      "wears_before_wash": 5
+    },
+    {
+      "id": "dupatta",
+      "name": "Dupatta",
+      "group": "accessories",
+      "slot": "neckwear",
+      "sections": [
+        "womenswear"
+      ],
+      "formality_default": 3,
+      "formality_min": 2,
+      "formality_max": 5,
+      "warmth": 1,
+      "wears_before_wash": 3
+    },
+    {
+      "id": "tie",
+      "name": "Tie / bow tie",
+      "group": "accessories",
+      "slot": "neckwear",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 5,
+      "formality_min": 4,
+      "formality_max": 5,
+      "warmth": 0,
+      "wears_before_wash": null
+    },
+    {
+      "id": "necklace_chain",
+      "name": "Chain / necklace",
+      "group": "accessories",
+      "slot": "jewellery",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 3,
+      "formality_min": 1,
+      "formality_max": 5,
+      "warmth": 0,
+      "wears_before_wash": null
+    },
+    {
+      "id": "earrings",
+      "name": "Earrings",
+      "group": "accessories",
+      "slot": "jewellery",
+      "sections": [
+        "womenswear"
+      ],
+      "formality_default": 3,
+      "formality_min": 1,
+      "formality_max": 5,
+      "warmth": 0,
+      "wears_before_wash": null
+    },
+    {
+      "id": "bracelet_bangle",
+      "name": "Bracelet / bangle",
+      "group": "accessories",
+      "slot": "jewellery",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 3,
+      "formality_min": 1,
+      "formality_max": 5,
+      "warmth": 0,
+      "wears_before_wash": null
+    },
+    {
+      "id": "ring",
+      "name": "Ring",
+      "group": "accessories",
+      "slot": "jewellery",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 3,
+      "formality_min": 1,
+      "formality_max": 5,
+      "warmth": 0,
+      "wears_before_wash": null
+    },
+    {
+      "id": "hair_accessory",
+      "name": "Hair accessory",
+      "group": "accessories",
+      "slot": "other_accessory",
+      "sections": [
+        "womenswear"
+      ],
+      "formality_default": 2,
+      "formality_min": 1,
+      "formality_max": 5,
+      "warmth": 0,
+      "wears_before_wash": null
+    },
+    {
+      "id": "pocket_square",
+      "name": "Pocket square",
+      "group": "accessories",
+      "slot": "other_accessory",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 5,
+      "formality_min": 4,
+      "formality_max": 5,
+      "warmth": 0,
+      "wears_before_wash": null
+    },
+    {
+      "id": "cufflinks",
+      "name": "Cufflinks",
+      "group": "accessories",
+      "slot": "other_accessory",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 5,
+      "formality_min": 4,
+      "formality_max": 5,
+      "warmth": 0,
+      "wears_before_wash": null
+    },
+    {
+      "id": "wallet",
+      "name": "Wallet",
+      "group": "accessories",
+      "slot": "other_accessory",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 3,
+      "formality_min": 1,
+      "formality_max": 5,
+      "warmth": 0,
+      "wears_before_wash": null
+    },
+    {
+      "id": "socks",
+      "name": "Socks",
+      "group": "accessories",
+      "slot": "socks",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 2,
+      "formality_min": 1,
+      "formality_max": 5,
+      "warmth": 0,
+      "wears_before_wash": 1
+    },
+    {
+      "id": "perfume",
+      "name": "Perfume / attar",
+      "group": "finishing",
+      "slot": "fragrance",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 3,
+      "formality_min": 1,
+      "formality_max": 5,
+      "warmth": 0,
+      "wears_before_wash": null
+    },
+    {
+      "id": "deodorant",
+      "name": "Deodorant / body spray",
+      "group": "finishing",
+      "slot": "fragrance",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 2,
+      "formality_min": 1,
+      "formality_max": 5,
+      "warmth": 0,
+      "wears_before_wash": null
+    },
+    {
+      "id": "grooming_item",
+      "name": "Grooming essential",
+      "group": "finishing",
+      "slot": "grooming",
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "formality_default": 3,
+      "formality_min": 1,
+      "formality_max": 5,
+      "warmth": 0,
+      "wears_before_wash": null
+    }
+  ],
+  "outfit_templates": [
+    {
+      "id": "separates",
+      "name": "Top and bottom",
+      "required": [
+        {
+          "slot": "top",
+          "exclude_categories": [
+            "saree_blouse"
+          ]
+        },
+        {
+          "slot": "bottom"
+        },
+        {
+          "slot": "footwear"
+        }
+      ],
+      "optional": [
+        "layer",
+        "bag",
+        "belt",
+        "watch",
+        "eyewear",
+        "headwear",
+        "neckwear",
+        "jewellery",
+        "socks",
+        "other_accessory",
+        "fragrance"
+      ]
+    },
+    {
+      "id": "one_piece",
+      "name": "One-piece",
+      "required": [
+        {
+          "slot": "one_piece",
+          "exclude_categories": [
+            "saree"
+          ]
+        },
+        {
+          "slot": "footwear"
+        }
+      ],
+      "optional": [
+        "layer",
+        "bag",
+        "belt",
+        "watch",
+        "eyewear",
+        "headwear",
+        "neckwear",
+        "jewellery",
+        "socks",
+        "other_accessory",
+        "fragrance"
+      ]
+    },
+    {
+      "id": "saree",
+      "name": "Saree",
+      "required": [
+        {
+          "slot": "one_piece",
+          "categories": [
+            "saree"
+          ]
+        },
+        {
+          "slot": "top",
+          "categories": [
+            "saree_blouse"
+          ]
+        },
+        {
+          "slot": "footwear"
+        }
+      ],
+      "optional": [
+        "bag",
+        "belt",
+        "watch",
+        "eyewear",
+        "headwear",
+        "neckwear",
+        "jewellery",
+        "socks",
+        "other_accessory",
+        "fragrance"
+      ]
+    }
+  ]
+}

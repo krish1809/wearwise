@@ -1,0 +1,1550 @@
+{
+  "version": 1,
+  "notes": "Common wardrobe staples used by gap analysis and the starter capsule: the analyzer asks 'what would this add?' for each one. They are generic descriptions, not products, and carry no prices; budget maths uses the user's own typical spend per category. Edit freely.",
+  "archetypes": [
+    {
+      "id": "white_tshirt",
+      "name": "White T-shirt",
+      "category": "tshirt",
+      "color": "white",
+      "pattern": "solid",
+      "fabric": "cotton",
+      "formality": 2,
+      "warmth": 1,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "minimal",
+        "streetwear",
+        "athleisure"
+      ]
+    },
+    {
+      "id": "black_tshirt",
+      "name": "Black T-shirt",
+      "category": "tshirt",
+      "color": "black",
+      "pattern": "solid",
+      "fabric": "cotton",
+      "formality": 2,
+      "warmth": 1,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "minimal",
+        "streetwear"
+      ]
+    },
+    {
+      "id": "grey_tshirt",
+      "name": "Grey T-shirt",
+      "category": "tshirt",
+      "color": "grey",
+      "pattern": "solid",
+      "fabric": "cotton",
+      "formality": 2,
+      "warmth": 1,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "minimal",
+        "athleisure"
+      ]
+    },
+    {
+      "id": "navy_tshirt",
+      "name": "Navy T-shirt",
+      "category": "tshirt",
+      "color": "navy",
+      "pattern": "solid",
+      "fabric": "cotton",
+      "formality": 2,
+      "warmth": 1,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "minimal",
+        "classic_smart_casual"
+      ]
+    },
+    {
+      "id": "navy_polo",
+      "name": "Navy polo",
+      "category": "polo",
+      "color": "navy",
+      "pattern": "solid",
+      "fabric": "cotton",
+      "formality": 3,
+      "warmth": 1,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "classic_smart_casual",
+        "old_money",
+        "italian"
+      ]
+    },
+    {
+      "id": "white_polo",
+      "name": "White polo",
+      "category": "polo",
+      "color": "white",
+      "pattern": "solid",
+      "fabric": "cotton",
+      "formality": 3,
+      "warmth": 1,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "classic_smart_casual",
+        "old_money"
+      ]
+    },
+    {
+      "id": "white_casual_shirt",
+      "name": "White casual shirt",
+      "category": "casual_shirt",
+      "color": "white",
+      "pattern": "solid",
+      "fabric": "cotton",
+      "formality": 3,
+      "warmth": 1,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "minimal",
+        "classic_smart_casual",
+        "italian"
+      ]
+    },
+    {
+      "id": "light_blue_shirt",
+      "name": "Light blue shirt",
+      "category": "casual_shirt",
+      "color": "light_blue",
+      "pattern": "solid",
+      "fabric": "cotton",
+      "formality": 3,
+      "warmth": 1,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "classic_smart_casual",
+        "italian",
+        "old_money"
+      ]
+    },
+    {
+      "id": "white_linen_shirt",
+      "name": "White linen shirt",
+      "category": "casual_shirt",
+      "color": "white",
+      "pattern": "solid",
+      "fabric": "linen",
+      "formality": 3,
+      "warmth": 1,
+      "seasons": [
+        "summer",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "linen_summer",
+        "italian"
+      ]
+    },
+    {
+      "id": "olive_casual_shirt",
+      "name": "Olive casual shirt",
+      "category": "casual_shirt",
+      "color": "olive",
+      "pattern": "solid",
+      "fabric": "cotton",
+      "formality": 2,
+      "warmth": 1,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "classic_smart_casual"
+      ]
+    },
+    {
+      "id": "white_formal_shirt",
+      "name": "White formal shirt",
+      "category": "formal_shirt",
+      "color": "white",
+      "pattern": "solid",
+      "fabric": "cotton",
+      "formality": 4,
+      "warmth": 1,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "business_formal"
+      ]
+    },
+    {
+      "id": "light_blue_formal_shirt",
+      "name": "Light blue formal shirt",
+      "category": "formal_shirt",
+      "color": "light_blue",
+      "pattern": "solid",
+      "fabric": "cotton",
+      "formality": 4,
+      "warmth": 1,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "business_formal"
+      ]
+    },
+    {
+      "id": "grey_sweatshirt",
+      "name": "Grey sweatshirt",
+      "category": "sweatshirt",
+      "color": "grey",
+      "pattern": "solid",
+      "fabric": "cotton",
+      "formality": 2,
+      "warmth": 3,
+      "seasons": [
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "streetwear",
+        "athleisure",
+        "minimal"
+      ]
+    },
+    {
+      "id": "black_hoodie",
+      "name": "Black hoodie",
+      "category": "hoodie",
+      "color": "black",
+      "pattern": "solid",
+      "fabric": "cotton",
+      "formality": 2,
+      "warmth": 4,
+      "seasons": [
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "streetwear",
+        "athleisure"
+      ]
+    },
+    {
+      "id": "navy_sweater",
+      "name": "Navy crew-neck sweater",
+      "category": "sweater",
+      "color": "navy",
+      "pattern": "solid",
+      "fabric": "knit",
+      "formality": 3,
+      "warmth": 4,
+      "seasons": [
+        "winter"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "classic_smart_casual",
+        "old_money",
+        "minimal"
+      ]
+    },
+    {
+      "id": "blue_jeans",
+      "name": "Mid-blue jeans",
+      "category": "jeans",
+      "color": "denim_blue",
+      "pattern": "solid",
+      "fabric": "denim",
+      "formality": 2,
+      "warmth": 3,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "classic_smart_casual",
+        "streetwear",
+        "indo_western"
+      ]
+    },
+    {
+      "id": "black_jeans",
+      "name": "Black jeans",
+      "category": "jeans",
+      "color": "black",
+      "pattern": "solid",
+      "fabric": "denim",
+      "formality": 2,
+      "warmth": 3,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "minimal",
+        "streetwear"
+      ]
+    },
+    {
+      "id": "beige_chinos",
+      "name": "Beige chinos",
+      "category": "chinos",
+      "color": "beige",
+      "pattern": "solid",
+      "fabric": "cotton",
+      "formality": 3,
+      "warmth": 2,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "classic_smart_casual",
+        "italian",
+        "old_money"
+      ]
+    },
+    {
+      "id": "navy_chinos",
+      "name": "Navy chinos",
+      "category": "chinos",
+      "color": "navy",
+      "pattern": "solid",
+      "fabric": "cotton",
+      "formality": 3,
+      "warmth": 2,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "classic_smart_casual",
+        "minimal"
+      ]
+    },
+    {
+      "id": "olive_chinos",
+      "name": "Olive chinos",
+      "category": "chinos",
+      "color": "olive",
+      "pattern": "solid",
+      "fabric": "cotton",
+      "formality": 3,
+      "warmth": 2,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "classic_smart_casual"
+      ]
+    },
+    {
+      "id": "grey_formal_trousers",
+      "name": "Grey formal trousers",
+      "category": "formal_trousers",
+      "color": "grey",
+      "pattern": "solid",
+      "fabric": "wool",
+      "formality": 4,
+      "warmth": 2,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "business_formal",
+        "old_money",
+        "italian"
+      ]
+    },
+    {
+      "id": "navy_formal_trousers",
+      "name": "Navy formal trousers",
+      "category": "formal_trousers",
+      "color": "navy",
+      "pattern": "solid",
+      "fabric": "wool",
+      "formality": 4,
+      "warmth": 2,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "business_formal"
+      ]
+    },
+    {
+      "id": "black_formal_trousers",
+      "name": "Black formal trousers",
+      "category": "formal_trousers",
+      "color": "black",
+      "pattern": "solid",
+      "fabric": "blend",
+      "formality": 4,
+      "warmth": 2,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "business_formal",
+        "minimal"
+      ]
+    },
+    {
+      "id": "beige_linen_trousers",
+      "name": "Beige linen trousers",
+      "category": "casual_trousers",
+      "color": "beige",
+      "pattern": "solid",
+      "fabric": "linen",
+      "formality": 2,
+      "warmth": 2,
+      "seasons": [
+        "summer",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "linen_summer",
+        "italian"
+      ]
+    },
+    {
+      "id": "black_joggers",
+      "name": "Black joggers",
+      "category": "joggers",
+      "color": "black",
+      "pattern": "solid",
+      "fabric": "cotton",
+      "formality": 1,
+      "warmth": 3,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "athleisure",
+        "streetwear"
+      ]
+    },
+    {
+      "id": "khaki_shorts",
+      "name": "Khaki shorts",
+      "category": "shorts",
+      "color": "beige",
+      "pattern": "solid",
+      "fabric": "cotton",
+      "formality": 1,
+      "warmth": 1,
+      "seasons": [
+        "summer",
+        "monsoon"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "linen_summer"
+      ]
+    },
+    {
+      "id": "olive_cargo_pants",
+      "name": "Olive cargo pants",
+      "category": "cargo_pants",
+      "color": "olive",
+      "pattern": "solid",
+      "fabric": "cotton",
+      "formality": 2,
+      "warmth": 2,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "streetwear"
+      ]
+    },
+    {
+      "id": "navy_blazer",
+      "name": "Navy blazer",
+      "category": "blazer",
+      "color": "navy",
+      "pattern": "solid",
+      "fabric": "wool",
+      "formality": 4,
+      "warmth": 3,
+      "seasons": [
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "classic_smart_casual",
+        "italian",
+        "old_money",
+        "business_formal"
+      ]
+    },
+    {
+      "id": "denim_jacket",
+      "name": "Blue denim jacket",
+      "category": "denim_jacket",
+      "color": "denim_blue",
+      "pattern": "solid",
+      "fabric": "denim",
+      "formality": 2,
+      "warmth": 3,
+      "seasons": [
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "classic_smart_casual",
+        "streetwear"
+      ]
+    },
+    {
+      "id": "olive_overshirt",
+      "name": "Olive overshirt",
+      "category": "overshirt",
+      "color": "olive",
+      "pattern": "solid",
+      "fabric": "cotton",
+      "formality": 2,
+      "warmth": 2,
+      "seasons": [
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "classic_smart_casual",
+        "streetwear"
+      ]
+    },
+    {
+      "id": "grey_cardigan",
+      "name": "Grey cardigan",
+      "category": "cardigan",
+      "color": "grey",
+      "pattern": "solid",
+      "fabric": "knit",
+      "formality": 3,
+      "warmth": 3,
+      "seasons": [
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "korean_casual",
+        "minimal"
+      ]
+    },
+    {
+      "id": "white_sneakers",
+      "name": "White minimal sneakers",
+      "category": "sneakers",
+      "color": "white",
+      "pattern": "solid",
+      "fabric": "leather",
+      "formality": 2,
+      "warmth": 0,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "minimal",
+        "classic_smart_casual",
+        "streetwear",
+        "korean_casual"
+      ]
+    },
+    {
+      "id": "black_sneakers",
+      "name": "Black sneakers",
+      "category": "sneakers",
+      "color": "black",
+      "pattern": "solid",
+      "fabric": "canvas",
+      "formality": 2,
+      "warmth": 0,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "streetwear",
+        "minimal"
+      ]
+    },
+    {
+      "id": "brown_loafers",
+      "name": "Brown loafers",
+      "category": "loafers",
+      "color": "brown",
+      "pattern": "solid",
+      "fabric": "leather",
+      "formality": 3,
+      "warmth": 0,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "classic_smart_casual",
+        "italian",
+        "old_money"
+      ]
+    },
+    {
+      "id": "black_formal_shoes",
+      "name": "Black formal shoes",
+      "category": "formal_shoes",
+      "color": "black",
+      "pattern": "solid",
+      "fabric": "leather",
+      "formality": 5,
+      "warmth": 0,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "business_formal"
+      ]
+    },
+    {
+      "id": "brown_formal_shoes",
+      "name": "Brown formal shoes",
+      "category": "formal_shoes",
+      "color": "brown",
+      "pattern": "solid",
+      "fabric": "leather",
+      "formality": 4,
+      "warmth": 0,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "business_formal",
+        "italian"
+      ]
+    },
+    {
+      "id": "tan_sandals",
+      "name": "Tan leather sandals",
+      "category": "sandals",
+      "color": "tan",
+      "pattern": "solid",
+      "fabric": "leather",
+      "formality": 2,
+      "warmth": 0,
+      "seasons": [
+        "summer",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "linen_summer",
+        "indo_western"
+      ]
+    },
+    {
+      "id": "brown_belt",
+      "name": "Brown leather belt",
+      "category": "belt",
+      "color": "brown",
+      "pattern": "solid",
+      "fabric": "leather",
+      "formality": 3,
+      "warmth": 0,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "classic_smart_casual",
+        "italian"
+      ]
+    },
+    {
+      "id": "black_belt",
+      "name": "Black leather belt",
+      "category": "belt",
+      "color": "black",
+      "pattern": "solid",
+      "fabric": "leather",
+      "formality": 4,
+      "warmth": 0,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "business_formal",
+        "minimal"
+      ]
+    },
+    {
+      "id": "everyday_watch",
+      "name": "Simple everyday watch",
+      "category": "watch",
+      "color": "silver",
+      "pattern": "solid",
+      "fabric": "other",
+      "formality": 3,
+      "warmth": 0,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "minimal",
+        "classic_smart_casual"
+      ]
+    },
+    {
+      "id": "black_backpack",
+      "name": "Plain black backpack",
+      "category": "backpack",
+      "color": "black",
+      "pattern": "solid",
+      "fabric": "technical",
+      "formality": 2,
+      "warmth": 0,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "minimal",
+        "athleisure"
+      ]
+    },
+    {
+      "id": "sunglasses_classic",
+      "name": "Classic sunglasses",
+      "category": "sunglasses",
+      "color": "black",
+      "pattern": "solid",
+      "fabric": "other",
+      "formality": 2,
+      "warmth": 0,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "italian",
+        "classic_smart_casual"
+      ]
+    },
+    {
+      "id": "white_kurta",
+      "name": "White kurta",
+      "category": "kurta",
+      "color": "white",
+      "pattern": "solid",
+      "fabric": "cotton",
+      "formality": 3,
+      "warmth": 1,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "indo_western",
+        "traditional",
+        "linen_summer"
+      ]
+    },
+    {
+      "id": "navy_kurta",
+      "name": "Navy kurta",
+      "category": "kurta",
+      "color": "navy",
+      "pattern": "solid",
+      "fabric": "cotton",
+      "formality": 3,
+      "warmth": 1,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "indo_western",
+        "traditional"
+      ]
+    },
+    {
+      "id": "white_ethnic_bottom",
+      "name": "White pyjama / churidar",
+      "category": "ethnic_bottom",
+      "color": "white",
+      "pattern": "solid",
+      "fabric": "cotton",
+      "formality": 3,
+      "warmth": 1,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "traditional"
+      ]
+    },
+    {
+      "id": "tan_juttis",
+      "name": "Tan juttis / kolhapuris",
+      "category": "juttis",
+      "color": "tan",
+      "pattern": "solid",
+      "fabric": "leather",
+      "formality": 4,
+      "warmth": 0,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "traditional",
+        "indo_western"
+      ]
+    },
+    {
+      "id": "navy_nehru_jacket",
+      "name": "Navy Nehru jacket",
+      "category": "nehru_jacket",
+      "color": "navy",
+      "pattern": "solid",
+      "fabric": "blend",
+      "formality": 4,
+      "warmth": 2,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "indo_western",
+        "traditional"
+      ]
+    },
+    {
+      "id": "white_blouse",
+      "name": "White blouse",
+      "category": "blouse",
+      "color": "white",
+      "pattern": "solid",
+      "fabric": "cotton",
+      "formality": 3,
+      "warmth": 1,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "womenswear"
+      ],
+      "styles": [
+        "minimal",
+        "classic_smart_casual",
+        "business_formal"
+      ]
+    },
+    {
+      "id": "black_camisole",
+      "name": "Black camisole",
+      "category": "camisole",
+      "color": "black",
+      "pattern": "solid",
+      "fabric": "viscose",
+      "formality": 2,
+      "warmth": 1,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "mild"
+      ],
+      "sections": [
+        "womenswear"
+      ],
+      "styles": [
+        "minimal"
+      ]
+    },
+    {
+      "id": "black_wide_leg",
+      "name": "Black wide-leg trousers",
+      "category": "wide_leg_pants",
+      "color": "black",
+      "pattern": "solid",
+      "fabric": "blend",
+      "formality": 3,
+      "warmth": 2,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "womenswear"
+      ],
+      "styles": [
+        "minimal",
+        "korean_casual",
+        "business_formal"
+      ]
+    },
+    {
+      "id": "beige_wide_leg",
+      "name": "Beige wide-leg trousers",
+      "category": "wide_leg_pants",
+      "color": "beige",
+      "pattern": "solid",
+      "fabric": "linen",
+      "formality": 3,
+      "warmth": 2,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "mild"
+      ],
+      "sections": [
+        "womenswear"
+      ],
+      "styles": [
+        "korean_casual",
+        "linen_summer"
+      ]
+    },
+    {
+      "id": "black_midi_skirt",
+      "name": "Black midi skirt",
+      "category": "skirt",
+      "color": "black",
+      "pattern": "solid",
+      "fabric": "blend",
+      "formality": 3,
+      "warmth": 1,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "womenswear"
+      ],
+      "styles": [
+        "minimal",
+        "classic_smart_casual"
+      ]
+    },
+    {
+      "id": "black_leggings",
+      "name": "Black leggings",
+      "category": "leggings",
+      "color": "black",
+      "pattern": "solid",
+      "fabric": "technical",
+      "formality": 1,
+      "warmth": 2,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "womenswear"
+      ],
+      "styles": [
+        "athleisure"
+      ]
+    },
+    {
+      "id": "little_black_dress",
+      "name": "Black dress",
+      "category": "dress",
+      "color": "black",
+      "pattern": "solid",
+      "fabric": "blend",
+      "formality": 4,
+      "warmth": 1,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "womenswear"
+      ],
+      "styles": [
+        "minimal",
+        "classic_smart_casual"
+      ]
+    },
+    {
+      "id": "summer_day_dress",
+      "name": "Light day dress",
+      "category": "dress",
+      "color": "cream",
+      "pattern": "print",
+      "fabric": "cotton",
+      "formality": 2,
+      "warmth": 1,
+      "seasons": [
+        "summer",
+        "mild"
+      ],
+      "sections": [
+        "womenswear"
+      ],
+      "styles": [
+        "linen_summer",
+        "bohemian"
+      ]
+    },
+    {
+      "id": "blue_kurti",
+      "name": "Blue kurti",
+      "category": "kurti",
+      "color": "blue",
+      "pattern": "print",
+      "fabric": "cotton",
+      "formality": 3,
+      "warmth": 1,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "womenswear"
+      ],
+      "styles": [
+        "indo_western"
+      ]
+    },
+    {
+      "id": "white_palazzo",
+      "name": "White palazzo",
+      "category": "palazzo",
+      "color": "white",
+      "pattern": "solid",
+      "fabric": "cotton",
+      "formality": 3,
+      "warmth": 1,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "mild"
+      ],
+      "sections": [
+        "womenswear"
+      ],
+      "styles": [
+        "indo_western",
+        "linen_summer"
+      ]
+    },
+    {
+      "id": "neutral_dupatta",
+      "name": "Cream dupatta",
+      "category": "dupatta",
+      "color": "cream",
+      "pattern": "solid",
+      "fabric": "cotton",
+      "formality": 3,
+      "warmth": 1,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "womenswear"
+      ],
+      "styles": [
+        "indo_western",
+        "traditional"
+      ]
+    },
+    {
+      "id": "black_flats",
+      "name": "Black flats",
+      "category": "flats",
+      "color": "black",
+      "pattern": "solid",
+      "fabric": "leather",
+      "formality": 3,
+      "warmth": 0,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "womenswear"
+      ],
+      "styles": [
+        "minimal",
+        "classic_smart_casual"
+      ]
+    },
+    {
+      "id": "nude_heels",
+      "name": "Beige block heels",
+      "category": "heels",
+      "color": "beige",
+      "pattern": "solid",
+      "fabric": "leather",
+      "formality": 4,
+      "warmth": 0,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "womenswear"
+      ],
+      "styles": [
+        "classic_smart_casual",
+        "business_formal"
+      ]
+    },
+    {
+      "id": "tan_tote",
+      "name": "Tan tote bag",
+      "category": "tote_handbag",
+      "color": "tan",
+      "pattern": "solid",
+      "fabric": "leather",
+      "formality": 3,
+      "warmth": 0,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "womenswear"
+      ],
+      "styles": [
+        "minimal",
+        "classic_smart_casual",
+        "korean_casual"
+      ]
+    },
+    {
+      "id": "black_sling",
+      "name": "Black sling bag",
+      "category": "sling_bag",
+      "color": "black",
+      "pattern": "solid",
+      "fabric": "leather",
+      "formality": 2,
+      "warmth": 0,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [
+        "minimal",
+        "streetwear"
+      ]
+    },
+    {
+      "id": "simple_studs",
+      "name": "Simple stud earrings",
+      "category": "earrings",
+      "color": "gold",
+      "pattern": "solid",
+      "fabric": "other",
+      "formality": 3,
+      "warmth": 0,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "womenswear"
+      ],
+      "styles": [
+        "minimal",
+        "classic_smart_casual"
+      ]
+    },
+    {
+      "id": "fresh_day_fragrance",
+      "name": "Fresh daytime fragrance",
+      "category": "perfume",
+      "color": "multi",
+      "pattern": "solid",
+      "fabric": "other",
+      "formality": 3,
+      "warmth": 0,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [],
+      "attrs": {
+        "scent_family": "fresh / citrus",
+        "when": "day"
+      }
+    },
+    {
+      "id": "warm_evening_fragrance",
+      "name": "Warm evening fragrance",
+      "category": "perfume",
+      "color": "multi",
+      "pattern": "solid",
+      "fabric": "other",
+      "formality": 3,
+      "warmth": 0,
+      "seasons": [
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [],
+      "attrs": {
+        "scent_family": "warm / woody",
+        "when": "evening"
+      }
+    },
+    {
+      "id": "everyday_deodorant",
+      "name": "Everyday deodorant",
+      "category": "deodorant",
+      "color": "multi",
+      "pattern": "solid",
+      "fabric": "other",
+      "formality": 2,
+      "warmth": 0,
+      "seasons": [
+        "summer",
+        "monsoon",
+        "winter",
+        "mild"
+      ],
+      "sections": [
+        "menswear",
+        "womenswear"
+      ],
+      "styles": [],
+      "attrs": {
+        "scent_family": "light",
+        "when": "day"
+      }
+    }
+  ]
+}

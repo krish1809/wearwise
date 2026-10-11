@@ -1,0 +1,512 @@
+{
+  "version": 1,
+  "notes": "Opinionated starting points for the engine's style score and for the Style Guide pages, not rules about how anyone should dress. A user can pick several. Tune or rewrite freely.",
+  "profiles": [
+    {
+      "id": "minimal",
+      "name": "Minimal",
+      "description": "Few colours, clean lines, no logos. Everything goes with everything.",
+      "signals": {
+        "colors": [
+          "black",
+          "white",
+          "grey",
+          "charcoal",
+          "navy",
+          "cream"
+        ],
+        "fabrics": [
+          "cotton",
+          "wool",
+          "knit",
+          "linen"
+        ],
+        "patterns": [
+          "solid"
+        ],
+        "fits": [
+          "regular",
+          "relaxed"
+        ],
+        "formality_center": 3,
+        "categories": [
+          "tshirt",
+          "casual_shirt",
+          "chinos",
+          "formal_trousers",
+          "sweater",
+          "sneakers",
+          "loafers",
+          "watch"
+        ]
+      }
+    },
+    {
+      "id": "classic_smart_casual",
+      "name": "Classic smart casual",
+      "description": "Shirts, chinos, knitwear, leather shoes. Works almost anywhere.",
+      "signals": {
+        "colors": [
+          "navy",
+          "white",
+          "light_blue",
+          "beige",
+          "brown",
+          "grey",
+          "olive"
+        ],
+        "fabrics": [
+          "cotton",
+          "wool",
+          "knit",
+          "denim",
+          "leather"
+        ],
+        "patterns": [
+          "solid",
+          "stripe",
+          "check"
+        ],
+        "fits": [
+          "regular",
+          "slim"
+        ],
+        "formality_center": 3,
+        "categories": [
+          "casual_shirt",
+          "polo",
+          "chinos",
+          "jeans",
+          "sweater",
+          "blazer",
+          "loafers",
+          "belt",
+          "watch"
+        ]
+      }
+    },
+    {
+      "id": "italian",
+      "name": "Italian-inspired",
+      "description": "Relaxed tailoring in warm neutrals: soft jackets, linen, loafers, sunglasses.",
+      "signals": {
+        "colors": [
+          "tan",
+          "navy",
+          "white",
+          "cream",
+          "olive",
+          "brown",
+          "light_blue",
+          "beige"
+        ],
+        "fabrics": [
+          "linen",
+          "cotton",
+          "wool",
+          "suede",
+          "leather"
+        ],
+        "patterns": [
+          "solid",
+          "stripe",
+          "check"
+        ],
+        "fits": [
+          "regular",
+          "slim"
+        ],
+        "formality_center": 3,
+        "categories": [
+          "casual_shirt",
+          "polo",
+          "formal_trousers",
+          "chinos",
+          "blazer",
+          "loafers",
+          "sunglasses",
+          "belt",
+          "watch"
+        ]
+      }
+    },
+    {
+      "id": "linen_summer",
+      "name": "Linen and summer",
+      "description": "Light, breathable, pale colours for hot weather.",
+      "signals": {
+        "colors": [
+          "white",
+          "cream",
+          "beige",
+          "light_blue",
+          "sage",
+          "tan"
+        ],
+        "fabrics": [
+          "linen",
+          "cotton"
+        ],
+        "patterns": [
+          "solid",
+          "stripe"
+        ],
+        "fits": [
+          "relaxed",
+          "regular"
+        ],
+        "formality_center": 2,
+        "categories": [
+          "casual_shirt",
+          "casual_trousers",
+          "shorts",
+          "kurta",
+          "sandals",
+          "loafers",
+          "sunglasses"
+        ]
+      }
+    },
+    {
+      "id": "old_money",
+      "name": "Old money",
+      "description": "Understated and well kept: knit polos, pleated trousers, loafers, muted colours.",
+      "signals": {
+        "colors": [
+          "navy",
+          "cream",
+          "white",
+          "tan",
+          "green",
+          "brown",
+          "beige",
+          "maroon"
+        ],
+        "fabrics": [
+          "wool",
+          "knit",
+          "cotton",
+          "linen",
+          "leather"
+        ],
+        "patterns": [
+          "solid",
+          "stripe"
+        ],
+        "fits": [
+          "regular"
+        ],
+        "formality_center": 4,
+        "categories": [
+          "polo",
+          "casual_shirt",
+          "sweater",
+          "formal_trousers",
+          "chinos",
+          "blazer",
+          "loafers",
+          "belt",
+          "watch"
+        ]
+      }
+    },
+    {
+      "id": "streetwear",
+      "name": "Streetwear / Gen Z",
+      "description": "Oversized shapes, graphic tees, cargos, statement sneakers.",
+      "signals": {
+        "colors": [
+          "black",
+          "white",
+          "grey",
+          "olive",
+          "beige",
+          "red",
+          "blue"
+        ],
+        "fabrics": [
+          "cotton",
+          "denim",
+          "technical",
+          "knit"
+        ],
+        "patterns": [
+          "solid",
+          "graphic",
+          "print"
+        ],
+        "fits": [
+          "oversized",
+          "relaxed"
+        ],
+        "formality_center": 2,
+        "categories": [
+          "tshirt",
+          "hoodie",
+          "sweatshirt",
+          "cargo_pants",
+          "jeans",
+          "joggers",
+          "sneakers",
+          "cap",
+          "sling_bag"
+        ]
+      }
+    },
+    {
+      "id": "korean_casual",
+      "name": "Korean casual",
+      "description": "Loose shirts and wide trousers in soft, muted tones; neat layering.",
+      "signals": {
+        "colors": [
+          "cream",
+          "white",
+          "beige",
+          "grey",
+          "black",
+          "sage",
+          "light_blue",
+          "lavender"
+        ],
+        "fabrics": [
+          "cotton",
+          "knit",
+          "denim",
+          "linen"
+        ],
+        "patterns": [
+          "solid",
+          "stripe"
+        ],
+        "fits": [
+          "oversized",
+          "relaxed"
+        ],
+        "formality_center": 2,
+        "categories": [
+          "casual_shirt",
+          "tshirt",
+          "sweater",
+          "cardigan",
+          "wide_leg_pants",
+          "casual_trousers",
+          "jeans",
+          "sneakers",
+          "tote_handbag"
+        ]
+      }
+    },
+    {
+      "id": "athleisure",
+      "name": "Athleisure",
+      "description": "Sportswear made presentable: joggers, clean sneakers, technical layers.",
+      "signals": {
+        "colors": [
+          "black",
+          "grey",
+          "white",
+          "navy",
+          "olive"
+        ],
+        "fabrics": [
+          "technical",
+          "cotton",
+          "knit"
+        ],
+        "patterns": [
+          "solid"
+        ],
+        "fits": [
+          "regular",
+          "relaxed",
+          "slim"
+        ],
+        "formality_center": 1,
+        "categories": [
+          "tshirt",
+          "hoodie",
+          "sweatshirt",
+          "joggers",
+          "track_pants",
+          "leggings",
+          "activewear_top",
+          "sneakers",
+          "sports_shoes",
+          "cap"
+        ]
+      }
+    },
+    {
+      "id": "business_formal",
+      "name": "Business formal",
+      "description": "Suits, formal shirts, leather shoes. For interviews and offices that expect it.",
+      "signals": {
+        "colors": [
+          "navy",
+          "charcoal",
+          "grey",
+          "white",
+          "light_blue",
+          "black",
+          "brown"
+        ],
+        "fabrics": [
+          "wool",
+          "cotton",
+          "silk",
+          "leather"
+        ],
+        "patterns": [
+          "solid",
+          "stripe",
+          "check"
+        ],
+        "fits": [
+          "slim",
+          "regular"
+        ],
+        "formality_center": 5,
+        "categories": [
+          "formal_shirt",
+          "formal_trousers",
+          "blazer",
+          "formal_shoes",
+          "belt",
+          "tie",
+          "watch",
+          "laptop_bag"
+        ]
+      }
+    },
+    {
+      "id": "indo_western",
+      "name": "Indo-western",
+      "description": "Ethnic pieces mixed with everyday ones: kurta with jeans, Nehru jacket over a shirt.",
+      "signals": {
+        "colors": [
+          "white",
+          "cream",
+          "navy",
+          "mustard",
+          "maroon",
+          "olive",
+          "beige",
+          "blue"
+        ],
+        "fabrics": [
+          "cotton",
+          "linen",
+          "silk",
+          "denim"
+        ],
+        "patterns": [
+          "solid",
+          "print",
+          "texture"
+        ],
+        "fits": [
+          "regular",
+          "relaxed"
+        ],
+        "formality_center": 3,
+        "categories": [
+          "kurta",
+          "kurti",
+          "jeans",
+          "chinos",
+          "nehru_jacket",
+          "palazzo",
+          "juttis",
+          "sandals",
+          "dupatta"
+        ]
+      }
+    },
+    {
+      "id": "traditional",
+      "name": "Traditional",
+      "description": "Full ethnic wear for festivals, weddings, and family occasions.",
+      "signals": {
+        "colors": [
+          "maroon",
+          "gold",
+          "cream",
+          "red",
+          "green",
+          "navy",
+          "mustard",
+          "pink"
+        ],
+        "fabrics": [
+          "silk",
+          "cotton",
+          "satin"
+        ],
+        "patterns": [
+          "solid",
+          "print",
+          "texture"
+        ],
+        "fits": [
+          "regular"
+        ],
+        "formality_center": 4,
+        "categories": [
+          "kurta",
+          "ethnic_bottom",
+          "sherwani",
+          "saree",
+          "saree_blouse",
+          "anarkali_gown",
+          "suit_set",
+          "lehenga_skirt",
+          "juttis",
+          "dupatta"
+        ]
+      }
+    },
+    {
+      "id": "bohemian",
+      "name": "Bohemian",
+      "description": "Flowing shapes, prints, earthy colours, layered jewellery.",
+      "signals": {
+        "colors": [
+          "rust",
+          "mustard",
+          "cream",
+          "brown",
+          "olive",
+          "teal",
+          "maroon"
+        ],
+        "fabrics": [
+          "cotton",
+          "viscose",
+          "linen",
+          "suede"
+        ],
+        "patterns": [
+          "print",
+          "texture",
+          "solid"
+        ],
+        "fits": [
+          "relaxed"
+        ],
+        "formality_center": 2,
+        "categories": [
+          "dress",
+          "tunic",
+          "skirt",
+          "palazzo",
+          "kurti",
+          "sandals",
+          "tote_handbag",
+          "necklace_chain",
+          "bracelet_bangle",
+          "scarf_stole"
+        ]
+      }
+    }
+  ]
+}

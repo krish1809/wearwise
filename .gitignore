@@ -1,0 +1,36 @@
+# secrets
+.env
+.env.*
+!.env.example
+
+# local data: never commit photos or dumps
+.storage/
+uploads/
+*.dump
+*.sql.gz
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.hypothesis/
+.coverage
+htmlcov/
+
+# node
+node_modules/
+.next/
+out/
+.turbo/
+*.tsbuildinfo
+playwright-report/
+test-results/
+
+# editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
