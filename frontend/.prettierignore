@@ -1,0 +1,4 @@
+# Generated files and the lockfile are not formatted by hand.
+pnpm-lock.yaml
+lib/api/openapi.json
+lib/api/schema.d.ts
