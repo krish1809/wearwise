@@ -49,6 +49,7 @@ Paste both exactly as Neon gives them (`postgresql://...`); the backend adds the
 - Every merge to `main` deploys both: Vercel straight away, Render once CI has passed on that commit.
 - `render.yaml` is the source of truth for the backend's settings. Change it in a pull request, not in the dashboard. Secrets (`sync: false`) are the exception and live only in the dashboard.
 - A new environment variable goes in `.env.example` and on the host (in `render.yaml` if it isn't secret).
+- If the database password changes (Neon: **Connect > Reset password**), paste both new connection strings into Render under **Environment**. Render redeploys with them.
 
 ## Environments
 
