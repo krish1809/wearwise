@@ -6,8 +6,21 @@ The running state of the project, updated at the end of every slice. Keep it sho
 
 - **Last updated:** 2026-10-12
 - **Current milestone:** M1 Design system, app shell, auth
-- **Current slice:** not started.
-- **Next action:** plan M1 against the M1 section of `docs/ROADMAP.md`. It starts with design tokens and components, which the owner approves from screenshots before auth is built.
+- **Current slice:** 3 of 8, design review. Waiting for the owner to approve the look.
+- **Next action (owner):** look at `/styleguide` (run `make dev`, then open http://localhost:3000/styleguide) and approve it or list changes. Slice 4, the auth backend, comes next; its password validator is the owner's by-hand piece for M1.
+
+M1 slices:
+
+| # | Slice | State |
+|---|---|---|
+| 1 | Design tokens and fonts (`frontend/app/globals.css`, `frontend/app/layout.tsx`) | done |
+| 2 | Components in `frontend/components/ui/` and the development-only `/styleguide` page | done |
+| 3 | Design review at 375 px and 1440 px | screenshots taken and fixes made; waiting for approval |
+| 4 | Auth backend: users and sessions, register, log in, log out, current user, rate limits | not started |
+| 5 | Register and log-in pages; protected pages redirect to log in | not started |
+| 6 | App shell: sidebar, phone tab bar, avatar menu | not started |
+| 7 | Landing page | not started |
+| 8 | Account deletion with typed confirmation | not started |
 - **Overall:** 1 of 12 milestones done. v1.0 is M0 to M5.
 
 Live:
@@ -76,7 +89,7 @@ M0 code, merged in pull request #1 and deployed:
 | # | Milestone | You can now... | Status | Released | Notes |
 |---|---|---|---|---|---|
 | M0 | Foundations | open a live URL that talks to the API and database | done | 2026-10-12 | https://wearwise-rouge.vercel.app |
-| M1 | Design system, shell, auth | register, log in, and move around a styled, empty app | not started | | |
+| M1 | Design system, shell, auth | register, log in, and move around a styled, empty app | in progress | | |
 | M2 | Onboarding and profile | set (or skip) sizes, style, budget; edit them later | not started | | |
 | M3 | Wardrobe | add, find, edit everything you own, with photos | not started | | |
 | M4 | Outfit Studio and wear log | build and save outfits; log what you wore | not started | | |
@@ -101,6 +114,13 @@ M0 code, merged in pull request #1 and deployed:
 ## Log
 
 Add an entry per slice, newest first.
+
+### 2026-10-12, M1 slices 1 to 3: design tokens, components, style guide
+
+- Built: colour, type, radius, and shadow tokens with Tailwind's defaults switched off; Bricolage Grotesque and Instrument Sans through `next/font`; 19 components (button, input, field, native select, checkbox, radio, switch, filter and removable chips, tabs, card, photo tile, dialog, bottom sheet, toast, tooltip, skeleton, empty and error states, load more, avatar menu); a development-only `/styleguide` that shows hover, focus, and pressed states through `data-preview`, and opens overlays with `?open=`.
+- Checked: frontend lint, types, and 17 tests pass; the production build passes and `/styleguide` is a 404 there. Screenshots at 375 px and 1440 px, including every overlay, with no element wider than the screen. The review found and fixed: title-case labels, buttons stretched to full width, a clipped focus ring on tabs, blank pre-filled selects, a menu touching the screen edge.
+- Left: the owner's approval of the look, then slice 4.
+- Decided: D18 (shadcn on Radix, restyled, tokens as the only palette) and D19 (native selects).
 
 ### 2026-10-12, M0 slice 6: first deploy (M0 done)
 

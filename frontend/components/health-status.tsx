@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { type HealthState, waitForHealth } from "@/lib/health";
 
 // After this long without an answer, assume a sleeping server rather than a broken one.
@@ -49,17 +50,13 @@ export function HealthStatus() {
       <div role="status" aria-live="polite">
         <p className="text-lg">{MESSAGES[view.kind]}</p>
         {"version" in view && (
-          <p className="text-sm text-neutral-600">API version {view.version}</p>
+          <p className="text-sm text-ink-soft">API version {view.version}</p>
         )}
       </div>
       {failed && (
-        <button
-          type="button"
-          onClick={checkAgain}
-          className="min-h-11 rounded-lg bg-neutral-900 px-4 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-800"
-        >
+        <Button variant="secondary" onClick={checkAgain}>
           Try again
-        </button>
+        </Button>
       )}
     </div>
   );
