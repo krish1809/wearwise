@@ -16,6 +16,33 @@ export const REFERENCE: Reference = {
     { id: "in_uk", name: "IN / UK" },
     { id: "eu", name: "EU" },
   ],
+  slots: [
+    { id: "top", name: "Top" },
+    { id: "footwear", name: "Footwear" },
+  ],
+  patterns: [
+    { id: "solid", name: "Solid" },
+    { id: "stripe", name: "Stripe" },
+  ],
+  fabrics: [
+    { id: "cotton", name: "Cotton" },
+    { id: "linen", name: "Linen" },
+  ],
+  seasons: [
+    { id: "summer", name: "Summer" },
+    { id: "monsoon", name: "Monsoon" },
+  ],
+  statuses: [
+    { id: "available", name: "Available" },
+    { id: "laundry", name: "In the laundry" },
+  ],
+  formality_levels: [
+    { id: "1", name: "Lounge / sport" },
+    { id: "2", name: "Casual" },
+    { id: "3", name: "Smart casual" },
+    { id: "4", name: "Business" },
+    { id: "5", name: "Formal / ceremonial" },
+  ],
   category_groups: [
     { id: "tops", name: "Tops" },
     { id: "footwear", name: "Footwear" },

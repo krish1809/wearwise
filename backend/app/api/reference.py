@@ -54,6 +54,13 @@ class ReferenceOut(BaseModel):
     sections: list[Term]
     fits: list[Term]
     sizing_systems: list[Term]
+    slots: list[Term]
+    patterns: list[Term]
+    fabrics: list[Term]
+    seasons: list[Term]
+    statuses: list[Term]
+    # "1" (lounge or sport) to "5" (formal or ceremonial).
+    formality_levels: list[Term]
     category_groups: list[Term]
     color_families: list[ColorFamilyOut]
     occasions: list[OccasionOut]
@@ -63,10 +70,20 @@ class ReferenceOut(BaseModel):
 @router.get("/reference", response_model=ReferenceOut, responses=error_responses(401))
 def get_reference(_: CurrentUser, db: SessionDep) -> ReferenceOut:
     """Every list in one response: they're small, change only on deploy, and load once per visit."""
+
+    def terms(kind: str) -> list[Term]:
+        return [Term.model_validate(t) for t in reference.terms(db, kind)]
+
     return ReferenceOut(
-        sections=[Term.model_validate(t) for t in reference.terms(db, "section")],
-        fits=[Term.model_validate(t) for t in reference.terms(db, "fit")],
-        sizing_systems=[Term.model_validate(t) for t in reference.terms(db, "sizing_system")],
+        sections=terms("section"),
+        fits=terms("fit"),
+        sizing_systems=terms("sizing_system"),
+        slots=terms("slot"),
+        patterns=terms("pattern"),
+        fabrics=terms("fabric"),
+        seasons=terms("season"),
+        statuses=terms("status"),
+        formality_levels=terms("formality"),
         category_groups=[Term.model_validate(g) for g in reference.ordered(db, CategoryGroup)],
         color_families=[
             ColorFamilyOut.model_validate(c) for c in reference.ordered(db, ColorFamily)

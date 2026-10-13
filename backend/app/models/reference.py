@@ -4,9 +4,10 @@ Each table uses the seed file's id (a slug such as "navy" or "college") as its p
 other rows can refer to it and the ids stay stable when display names change.
 """
 
+import uuid
 from typing import Any
 
-from sqlalchemy import String
+from sqlalchemy import ForeignKey, Index, String, func
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -67,3 +68,40 @@ class VocabularyTerm(TimestampMixin, Base):
     id: Mapped[str] = mapped_column(primary_key=True)
     name: Mapped[str]
     position: Mapped[int]
+
+
+class Category(TimestampMixin, Base):
+    """A kind of garment or accessory. Seeded rows have no user_id; custom ones have an owner."""
+
+    __tablename__ = "categories"
+
+    id: Mapped[str] = mapped_column(primary_key=True)
+    # Null for the seeded categories everyone sees.
+    user_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    name: Mapped[str]
+    group_id: Mapped[str] = mapped_column(ForeignKey("category_groups.id"))
+    # Which outfit slot it fills (top, footwear, watch...): a vocabulary_terms id of kind "slot".
+    slot: Mapped[str]
+    # Which sections show it by default; every category stays available through "show all".
+    sections: Mapped[list[str]] = mapped_column(ARRAY(String), server_default="{}")
+    # Defaults for new items, on the 1 (lounge) to 5 (formal) scale. Items can override them.
+    formality_default: Mapped[int]
+    formality_min: Mapped[int]
+    formality_max: Mapped[int]
+    # 0 none to 5 heavy.
+    warmth: Mapped[int]
+    # Null when it isn't washed on a schedule (shoes, watches, a leather jacket).
+    wears_before_wash: Mapped[int | None]
+    position: Mapped[int]
+
+
+# A person can't have two custom categories with the same name, whatever the capitalisation.
+Index(
+    "uq_categories_user_id_name",
+    Category.user_id,
+    func.lower(Category.name),
+    unique=True,
+    postgresql_where=Category.user_id.is_not(None),
+)

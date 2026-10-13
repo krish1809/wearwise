@@ -4,7 +4,7 @@ from fastapi import APIRouter, Response, status
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.api.auth import UserOut
-from app.api.deps import CurrentUser, SessionDep, SettingsDep
+from app.api.deps import CurrentUser, SessionDep, SettingsDep, StorageDep
 from app.api.errors import ApiError, error_responses
 from app.api.fields import ShortText
 from app.api.session_cookie import clear_session_cookie
@@ -46,11 +46,11 @@ def delete_account(
     user: CurrentUser,
     db: SessionDep,
     settings: SettingsDep,
+    storage: StorageDep,
 ) -> None:
     """Delete the account and everything in it, then log out."""
     if auth.normalize_email(body.confirm_email) != user.email:
         message = "That isn't this account's email address."
         raise ApiError(422, "confirmation_mismatch", message, fields={"confirm_email": message})
-    account.delete_account(db, user)
-    db.commit()
+    account.delete_account(db, storage, user)
     clear_session_cookie(response, settings)

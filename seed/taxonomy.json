@@ -64,12 +64,12 @@
     "mild"
   ],
   "statuses": [
-    "available",
-    "laundry",
-    "repair",
-    "packed",
-    "lent",
-    "retired"
+    {"id": "available", "name": "Available"},
+    {"id": "laundry", "name": "In the laundry"},
+    {"id": "repair", "name": "At repair"},
+    {"id": "packed", "name": "Packed"},
+    {"id": "lent", "name": "Lent out"},
+    {"id": "retired", "name": "Retired"}
   ],
   "slots": [
     {

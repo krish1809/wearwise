@@ -8,13 +8,13 @@ Conventions: UUID primary keys, `created_at` and `updated_at` on every table, `u
 
 | Table | Key columns | Source |
 |---|---|---|
-| `categories` | `id` (slug), `name`, `group`, `slot`, `sections[]`, `formality_default`, `formality_min`, `formality_max`, `warmth`, `wears_before_wash`, `user_id` (null for system rows) | `taxonomy.json` |
+| `categories` | `id` (slug; `custom_<uuid>` for custom rows), `user_id` (null for system rows), `name`, `group_id`, `slot`, `sections[]` (empty for custom rows, which always show), `formality_default`, `formality_min`, `formality_max`, `warmth`, `wears_before_wash`, `position`. Custom names are unique per user, ignoring capitals. | `taxonomy.json` |
 | `outfit_templates` | `id`, `name`, `required` (json), `optional` (json) | `taxonomy.json` |
 | `color_families` | `id`, `name`, `hex` (null for multicolour), `neutrality`, `position` | `colors.json` |
 | `occasions` | `id`, `name`, `formality_min`, `formality_max`, `prefers_groups[]`, `hint`, `position`; `user_id` (null for system rows) arrives with custom occasions | `occasions.json` |
 | `style_profiles` | `id`, `name`, `description`, `signals` (json), `position` | `style_profiles.json` |
 | `category_groups` | `id`, `name`, `position` | `taxonomy.json` groups |
-| `vocabulary_terms` | `kind` (section, fit, sizing_system), `id`, `name`, `position`; key `(kind, id)` | `taxonomy.json` lists |
+| `vocabulary_terms` | `kind` (section, fit, sizing_system, slot, pattern, fabric, season, status, formality), `id`, `name`, `position`; key `(kind, id)` | `taxonomy.json` lists |
 | `archetypes` | `id`, `name`, `category_id`, attributes as for items | `archetypes.json` |
 
 Custom categories and occasions are rows with a `user_id`.
@@ -23,7 +23,7 @@ Reference tables use the seed file's id (a slug) as the primary key, and `positi
 
 ## Accounts (M1, M2)
 
-**`users`**: `email` (unique, lower-cased), `password_hash`, `name`, `wardrobe_version` (int), `onboarding_completed_at`.
+**`users`**: `email` (unique, lower-cased), `password_hash`, `name`, `wardrobe_version` (int), `onboarding_completed_at`, `is_demo` (set only by the demo script, D29).
 
 **`sessions`**: `user_id`, `token_hash` (unique), `expires_at`, `last_seen_at`, `user_agent`.
 
@@ -66,7 +66,9 @@ Lists and json columns default to empty and are never null: empty means not answ
 
 Indexes: `(user_id, archived_at)`, `(user_id, slot)`, `(user_id, category_id)`, and a GIN index on the array columns that get filtered.
 
-**`item_images`**: `item_id`, `storage_key`, `thumb_key`, `width`, `height`, `is_primary`, `dominant_hex`.
+Built in M3 as above, with these choices: `name` is optional and the app shows "colour + category" when it's empty; `pattern` defaults to solid and `status` to available; formality, warmth, and `wears_before_wash` start from the category; empty `seasons[]` means every season; `price` is paise with `currency`. Items reference `categories` with Postgres's default (checked at the end of each statement), so an account's items and custom categories are deleted together (D28).
+
+**`item_images`**: `user_id` (the uploader; for ownership checks and cleanup), `item_id` (null between upload and saving the item; unsaved uploads are removed after a day), `storage_key`, `thumb_key`, `width`, `height`, `is_primary`, `dominant_hex` (D26).
 
 ## Outfits and wear (M4, M5)
 

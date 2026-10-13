@@ -1,10 +1,10 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { House, Settings } from "lucide-react";
+import { House, Settings, Shirt } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 
 import { AvatarMenu } from "@/components/ui/avatar-menu";
 import { Button } from "@/components/ui/button";
@@ -19,10 +19,12 @@ import { cn, focusRing } from "@/lib/utils";
 // Only pages that exist appear in the navigation; new ones join as they are built.
 const NAV = [
   { href: "/home", label: "Home", icon: House },
+  { href: "/wardrobe", label: "Wardrobe", icon: Shirt },
   { href: "/settings", label: "Settings", icon: Settings },
 ] as const;
 
-function isActive(pathname: string, href: string): boolean {
+function isActive(pathname: string | null, href: string): boolean {
+  if (pathname === null) return false;
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
@@ -32,18 +34,9 @@ function isActive(pathname: string, href: string): boolean {
  */
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { data: user, isError, refetch } = useCurrentUser();
-  const router = useRouter();
-  const pathname = usePathname();
 
-  useEffect(() => {
-    // The browser had a cookie, but the session had ended. The API removed the cookie.
-    if (user === null) {
-      router.replace(
-        `/login?reason=expired&next=${encodeURIComponent(pathname)}`,
-      );
-    }
-  }, [user, router, pathname]);
-
+  // The address is only known per request on pages like /wardrobe/[id], so the parts that read
+  // it wait in Suspense; meanwhile the navigation draws without the current page marked.
   return (
     <div className="min-h-screen lg:flex">
       {/* The first Tab stop: lets keyboard users jump past the navigation. */}
@@ -56,7 +49,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       >
         Skip to content
       </a>
-      <Sidebar pathname={pathname} />
+      <Suspense fallback={<Sidebar pathname={null} />}>
+        <WithPathname>
+          {(pathname) => <Sidebar pathname={pathname} />}
+        </WithPathname>
+      </Suspense>
+      <Suspense>
+        <SessionWatch ended={user === null} />
+      </Suspense>
       <div className="flex min-w-0 flex-1 flex-col">
         <TopBar user={user ?? undefined} />
         <main
@@ -81,9 +81,35 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           )}
         </main>
       </div>
-      <TabBar pathname={pathname} />
+      <Suspense fallback={<TabBar pathname={null} />}>
+        <WithPathname>
+          {(pathname) => <TabBar pathname={pathname} />}
+        </WithPathname>
+      </Suspense>
     </div>
   );
+}
+
+function WithPathname({
+  children,
+}: {
+  children: (pathname: string) => React.ReactNode;
+}) {
+  return children(usePathname());
+}
+
+/** The browser had a cookie, but the session had ended (the API removed the cookie). */
+function SessionWatch({ ended }: { ended: boolean }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  useEffect(() => {
+    if (ended) {
+      router.replace(
+        `/login?reason=expired&next=${encodeURIComponent(pathname)}`,
+      );
+    }
+  }, [ended, router, pathname]);
+  return null;
 }
 
 /** What a logged-in page shows until the API has said who is logged in. */
@@ -119,7 +145,7 @@ function Wordmark({ className }: { className?: string }) {
   );
 }
 
-function Sidebar({ pathname }: { pathname: string }) {
+function Sidebar({ pathname }: { pathname: string | null }) {
   return (
     <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-line px-4 py-5 lg:flex">
       <Wordmark className="self-start px-3 py-1" />
@@ -166,6 +192,11 @@ function TopBar({ user }: { user: User | undefined }) {
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-line bg-paper px-4 sm:px-6 lg:justify-end lg:px-10">
       <Wordmark className="lg:hidden" />
+      {user?.is_demo && (
+        <span className="mr-3 ml-auto rounded-full bg-consider/15 px-3 py-1 text-sm font-medium text-ink">
+          Demo account
+        </span>
+      )}
       {user ? (
         <AvatarMenu
           name={user.name}
@@ -180,13 +211,16 @@ function TopBar({ user }: { user: User | undefined }) {
   );
 }
 
-function TabBar({ pathname }: { pathname: string }) {
+function TabBar({ pathname }: { pathname: string | null }) {
   return (
     <nav
       aria-label="Main"
       className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] lg:hidden"
     >
-      <ul className="grid grid-cols-2">
+      <ul
+        className="grid"
+        style={{ gridTemplateColumns: `repeat(${NAV.length}, minmax(0, 1fr))` }}
+      >
         {NAV.map(({ href, label, icon: Icon }) => (
           <li key={href}>
             <Link

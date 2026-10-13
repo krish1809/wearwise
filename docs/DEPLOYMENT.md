@@ -44,6 +44,18 @@ Paste both exactly as Neon gives them (`postgresql://...`); the backend adds the
 4. Deploy. If `BACKEND_URL` is missing, the build stops with a message naming it.
 5. Open the Vercel URL. Within a minute, while the backend wakes up, it should say **API ok, database ok**.
 
+**4. Cloudflare R2 (photos, before merging M3)**
+
+The API refuses to start in production without it, so set it up before the M3 pull request is merged.
+
+1. Create a Cloudflare account. Open **R2 Object Storage** and turn it on. Cloudflare asks for a payment method even for the free allowance (10 GB stored, a million writes a month), and may place a small temporary hold to check the card. Usage inside the allowance isn't charged.
+2. **Create bucket**: name `wearwise-photos`, location hint Asia-Pacific. Leave public access off: the API hands out links that expire after ten minutes.
+3. **Manage API tokens > Create API token**: permission **Object Read & Write**, limited to `wearwise-photos`. Copy the **Access Key ID**, the **Secret Access Key**, and the endpoint (`https://<account id>.r2.cloudflarestorage.com`). The secret is shown once.
+4. In Render, under **Environment**, set `S3_ENDPOINT_URL`, `S3_ACCESS_KEY_ID`, and `S3_SECRET_ACCESS_KEY`. `STORAGE_BACKEND` and `S3_BUCKET` come from `render.yaml`.
+5. After the deploy, add an item with a photo on the live site, and check the bucket shows two files under `users/`.
+
+Any S3-compatible service works with the same four settings, if R2 doesn't suit.
+
 **From then on**
 
 - Every merge to `main` deploys both: Vercel straight away, Render once CI has passed on that commit.

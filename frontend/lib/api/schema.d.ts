@@ -261,6 +261,198 @@ export interface paths {
         patch: operations["update_brand_note"];
         trace?: never;
     };
+    "/api/v1/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Categories
+         * @description Every category this person can use: the seeded ones, then their own.
+         */
+        get: operations["list_categories"];
+        put?: never;
+        /**
+         * Create Category
+         * @description Add a category of the person's own, for something the list doesn't have.
+         */
+        post: operations["create_category"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/categories/{category_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete Category
+         * @description Delete one of the person's own categories, once no item uses it.
+         */
+        delete: operations["delete_category"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/photos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upload Photo
+         * @description Upload a photo before saving the item, so the colour can be suggested from it.
+         */
+        post: operations["upload_photo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/photos/{photo_id}/{size}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Photo
+         * @description The photo, if it's this person's. Anyone else gets the same 404 as for no photo.
+         */
+        get: operations["get_photo"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Items
+         * @description The wardrobe, filtered and sorted. Within one filter any value matches; across filters,
+         *     all must. An item with no seasons matches every season.
+         */
+        get: operations["list_items"];
+        put?: never;
+        /**
+         * Create Item
+         * @description Add an item. Only the category and colour are needed.
+         */
+        post: operations["create_item"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/items/{item_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Item */
+        get: operations["get_item"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete Item
+         * @description Delete the item and its photo for good.
+         */
+        delete: operations["delete_item"];
+        options?: never;
+        head?: never;
+        /** Update Item */
+        patch: operations["update_item"];
+        trace?: never;
+    };
+    "/api/v1/items/{item_id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Archive Item
+         * @description Hide the item from the wardrobe and suggestions, keeping it and its history.
+         */
+        post: operations["archive_item"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/items/{item_id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Restore Item */
+        post: operations["restore_item"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/items/{item_id}/set": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Link Set
+         * @description Make two items a matching set, such as a suit's jacket and trousers.
+         */
+        post: operations["link_set"];
+        /**
+         * Unlink Set
+         * @description Take the item out of its matching set.
+         */
+        delete: operations["unlink_set"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -269,6 +461,14 @@ export interface components {
         AccountUpdate: {
             /** Name */
             name?: string | null;
+        };
+        /** Body_upload_photo */
+        Body_upload_photo: {
+            /**
+             * File
+             * @description A JPEG, PNG, or WebP photo
+             */
+            file: string;
         };
         /** BrandNoteCreate */
         BrandNoteCreate: {
@@ -315,6 +515,49 @@ export interface components {
             quality_notes?: string | null;
             /** Price Notes */
             price_notes?: string | null;
+        };
+        /** CategoryCreate */
+        CategoryCreate: {
+            /** Name */
+            name: string;
+            /** Group Id */
+            group_id: string;
+            /** Slot */
+            slot: string;
+            /** Formality Default */
+            formality_default?: number | null;
+            /** Warmth */
+            warmth?: number | null;
+            /**
+             * Wears Before Wash
+             * @default 1
+             */
+            wears_before_wash: number | null;
+        };
+        /** CategoryOut */
+        CategoryOut: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Group Id */
+            group_id: string;
+            /** Slot */
+            slot: string;
+            /** Sections */
+            sections: string[];
+            /** Formality Default */
+            formality_default: number;
+            /** Formality Min */
+            formality_min: number;
+            /** Formality Max */
+            formality_max: number;
+            /** Warmth */
+            warmth: number;
+            /** Wears Before Wash */
+            wears_before_wash: number | null;
+            /** Custom */
+            custom: boolean;
         };
         /** ColorFamilyOut */
         ColorFamilyOut: {
@@ -372,6 +615,271 @@ export interface components {
              */
             database: "ok" | "error";
         };
+        /** ItemBrief */
+        ItemBrief: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Display Name */
+            display_name: string;
+            /** Category Id */
+            category_id: string;
+            /** Color Primary */
+            color_primary: string;
+            photo: components["schemas"]["PhotoRef"] | null;
+        };
+        /**
+         * ItemCreate
+         * @description A category and a colour are all an item needs; everything else has a default.
+         */
+        ItemCreate: {
+            /** Name */
+            name?: string | null;
+            /** Brand */
+            brand?: string | null;
+            /** Size Label */
+            size_label?: string | null;
+            /** Color Secondary */
+            color_secondary?: string | null;
+            /** Color Hex */
+            color_hex?: string | null;
+            /** Pattern */
+            pattern?: string | null;
+            /** Fabric */
+            fabric?: string | null;
+            /** Fit */
+            fit?: string | null;
+            /** Formality */
+            formality?: number | null;
+            /** Warmth */
+            warmth?: number | null;
+            /** Seasons */
+            seasons?: string[] | null;
+            /** Occasion Ids */
+            occasion_ids?: string[] | null;
+            /** Style Tags */
+            style_tags?: string[] | null;
+            /** Price */
+            price?: number | null;
+            /** Purchased On */
+            purchased_on?: string | null;
+            /** Status */
+            status?: string | null;
+            /** Wears Before Wash */
+            wears_before_wash?: number | null;
+            /** Notes */
+            notes?: string | null;
+            /** Photo Id */
+            photo_id?: string | null;
+            /** Category Id */
+            category_id: string;
+            /** Color Primary */
+            color_primary: string;
+        };
+        /** ItemDetailOut */
+        ItemDetailOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Category Id */
+            category_id: string;
+            /** Slot */
+            slot: string;
+            /** Name */
+            name: string | null;
+            /** Display Name */
+            display_name: string;
+            /** Brand */
+            brand: string | null;
+            /** Size Label */
+            size_label: string | null;
+            /** Color Primary */
+            color_primary: string;
+            /** Color Secondary */
+            color_secondary: string | null;
+            /** Color Hex */
+            color_hex: string | null;
+            /** Pattern */
+            pattern: string;
+            /** Fabric */
+            fabric: string | null;
+            /** Fit */
+            fit: string | null;
+            /** Formality */
+            formality: number;
+            /** Warmth */
+            warmth: number;
+            /** Seasons */
+            seasons: string[];
+            /** Occasion Ids */
+            occasion_ids: string[];
+            /** Style Tags */
+            style_tags: string[];
+            /** Price */
+            price: number | null;
+            /** Currency */
+            currency: string;
+            /** Purchased On */
+            purchased_on: string | null;
+            /** Status */
+            status: string;
+            /** Wears Before Wash */
+            wears_before_wash: number | null;
+            /** Wears Since Wash */
+            wears_since_wash: number;
+            /** Set Id */
+            set_id: string | null;
+            /** Notes */
+            notes: string | null;
+            /** Archived */
+            archived: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            photo: components["schemas"]["PhotoRef"] | null;
+            /** Set Members */
+            set_members: components["schemas"]["ItemBrief"][];
+        };
+        /** ItemOut */
+        ItemOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Category Id */
+            category_id: string;
+            /** Slot */
+            slot: string;
+            /** Name */
+            name: string | null;
+            /** Display Name */
+            display_name: string;
+            /** Brand */
+            brand: string | null;
+            /** Size Label */
+            size_label: string | null;
+            /** Color Primary */
+            color_primary: string;
+            /** Color Secondary */
+            color_secondary: string | null;
+            /** Color Hex */
+            color_hex: string | null;
+            /** Pattern */
+            pattern: string;
+            /** Fabric */
+            fabric: string | null;
+            /** Fit */
+            fit: string | null;
+            /** Formality */
+            formality: number;
+            /** Warmth */
+            warmth: number;
+            /** Seasons */
+            seasons: string[];
+            /** Occasion Ids */
+            occasion_ids: string[];
+            /** Style Tags */
+            style_tags: string[];
+            /** Price */
+            price: number | null;
+            /** Currency */
+            currency: string;
+            /** Purchased On */
+            purchased_on: string | null;
+            /** Status */
+            status: string;
+            /** Wears Before Wash */
+            wears_before_wash: number | null;
+            /** Wears Since Wash */
+            wears_since_wash: number;
+            /** Set Id */
+            set_id: string | null;
+            /** Notes */
+            notes: string | null;
+            /** Archived */
+            archived: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            photo: components["schemas"]["PhotoRef"] | null;
+        };
+        /** ItemPage */
+        ItemPage: {
+            /** Items */
+            items: components["schemas"]["ItemOut"][];
+            /** Next Cursor */
+            next_cursor: string | null;
+            /** Total */
+            total: number;
+        };
+        /**
+         * ItemUpdate
+         * @description Only the fields sent are changed. Null clears an optional field, and photo_id null
+         *     removes the photo.
+         */
+        ItemUpdate: {
+            /** Name */
+            name?: string | null;
+            /** Brand */
+            brand?: string | null;
+            /** Size Label */
+            size_label?: string | null;
+            /** Color Secondary */
+            color_secondary?: string | null;
+            /** Color Hex */
+            color_hex?: string | null;
+            /** Pattern */
+            pattern?: string | null;
+            /** Fabric */
+            fabric?: string | null;
+            /** Fit */
+            fit?: string | null;
+            /** Formality */
+            formality?: number | null;
+            /** Warmth */
+            warmth?: number | null;
+            /** Seasons */
+            seasons?: string[] | null;
+            /** Occasion Ids */
+            occasion_ids?: string[] | null;
+            /** Style Tags */
+            style_tags?: string[] | null;
+            /** Price */
+            price?: number | null;
+            /** Purchased On */
+            purchased_on?: string | null;
+            /** Status */
+            status?: string | null;
+            /** Wears Before Wash */
+            wears_before_wash?: number | null;
+            /** Notes */
+            notes?: string | null;
+            /** Photo Id */
+            photo_id?: string | null;
+            /** Category Id */
+            category_id?: string | null;
+            /** Color Primary */
+            color_primary?: string | null;
+        };
         /** LoginRequest */
         LoginRequest: {
             /** Email */
@@ -407,6 +915,42 @@ export interface components {
             formality_max: number;
             /** Hint */
             hint: string | null;
+        };
+        /** PhotoOut */
+        PhotoOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Url */
+            url: string;
+            /** Thumb Url */
+            thumb_url: string;
+            /** Width */
+            width: number;
+            /** Height */
+            height: number;
+            /** Dominant Hex */
+            dominant_hex: string | null;
+            /** Suggested Color */
+            suggested_color: string | null;
+        };
+        /** PhotoRef */
+        PhotoRef: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Url */
+            url: string;
+            /** Thumb Url */
+            thumb_url: string;
+            /** Width */
+            width: number;
+            /** Height */
+            height: number;
         };
         /** ProfileOut */
         ProfileOut: {
@@ -490,6 +1034,18 @@ export interface components {
             fits: components["schemas"]["Term"][];
             /** Sizing Systems */
             sizing_systems: components["schemas"]["Term"][];
+            /** Slots */
+            slots: components["schemas"]["Term"][];
+            /** Patterns */
+            patterns: components["schemas"]["Term"][];
+            /** Fabrics */
+            fabrics: components["schemas"]["Term"][];
+            /** Seasons */
+            seasons: components["schemas"]["Term"][];
+            /** Statuses */
+            statuses: components["schemas"]["Term"][];
+            /** Formality Levels */
+            formality_levels: components["schemas"]["Term"][];
             /** Category Groups */
             category_groups: components["schemas"]["Term"][];
             /** Color Families */
@@ -507,6 +1063,14 @@ export interface components {
             password: string;
             /** Name */
             name?: string | null;
+        };
+        /** SetLink */
+        SetLink: {
+            /**
+             * Item Id
+             * Format: uuid
+             */
+            item_id: string;
         };
         /** SizeChoice */
         SizeChoice: {
@@ -552,6 +1116,8 @@ export interface components {
             name: string | null;
             /** Onboarding Completed */
             onboarding_completed: boolean;
+            /** Is Demo */
+            is_demo: boolean;
         };
         /** ValidationError */
         ValidationError: {
@@ -1286,6 +1852,809 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_categories: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryOut"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_category: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CategoryCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_category: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                category_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upload_photo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_upload_photo"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhotoOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_photo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                photo_id: string;
+                size: "thumb" | "full";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The photo */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/webp": unknown;
+                };
+            };
+            /** @description A short-lived link to the photo in storage */
+            307: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_items: {
+        parameters: {
+            query?: {
+                q?: string;
+                group?: string[] | null;
+                category?: string[] | null;
+                color?: string[] | null;
+                season?: string[] | null;
+                occasion?: string[] | null;
+                style?: string[] | null;
+                status?: string[] | null;
+                archived?: boolean;
+                sort?: "newest" | "oldest" | "category";
+                limit?: number;
+                cursor?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemPage"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_item: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ItemCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemDetailOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_item: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemDetailOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_item: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_item: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ItemUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemDetailOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    archive_item: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemDetailOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    restore_item: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemDetailOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    link_set: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetLink"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemDetailOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    unlink_set: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemDetailOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

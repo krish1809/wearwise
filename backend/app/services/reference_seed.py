@@ -1,8 +1,9 @@
 """Load the reference lists in seed/ into the database.
 
 Safe to run on every deploy. Rows are inserted or updated by id and never deleted, because
-profiles (and, from M3, items) refer to them by id; a row dropped from a seed file stays until a
-migration retires it. Rows that haven't changed aren't touched, so their updated_at stays put.
+profiles and items refer to them by id; a row dropped from a seed file stays until a migration
+retires it. Custom categories (those with a user_id) are never touched. Rows that haven't
+changed aren't rewritten, so their updated_at stays put.
 """
 
 import json
@@ -14,13 +15,29 @@ from sqlalchemy import func, or_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
-from app.models import CategoryGroup, ColorFamily, Occasion, StyleProfile, VocabularyTerm
+from app.models import (
+    Category,
+    CategoryGroup,
+    ColorFamily,
+    Occasion,
+    StyleProfile,
+    VocabularyTerm,
+)
 from app.models.base import Base
 
 SEED_DIR = Path(__file__).resolve().parents[3] / "seed"
 
 # taxonomy.json lists that become vocabulary_terms rows, keyed by kind.
-VOCABULARY_KINDS = {"section": "sections", "fit": "fits", "sizing_system": "sizing_systems"}
+VOCABULARY_KINDS = {
+    "section": "sections",
+    "fit": "fits",
+    "sizing_system": "sizing_systems",
+    "slot": "slots",
+    "pattern": "patterns",
+    "fabric": "fabrics",
+    "season": "seasons",
+    "status": "statuses",
+}
 
 
 class SeedError(Exception):
@@ -48,10 +65,28 @@ def seed_reference_data(db: Session, seed_dir: Path = SEED_DIR) -> dict[str, int
     for kind, key in VOCABULARY_KINDS.items():
         entries = taxonomy[key]
         for position, entry in enumerate(entries):
-            # Most of these lists are bare ids ("slim"); sizing systems also carry a display name.
+            # Some lists are bare ids ("slim"); others carry a display name.
             term_id = entry if isinstance(entry, str) else entry["id"]
             name = entry["name"] if isinstance(entry, dict) else _title(entry)
             vocabulary.append({"kind": kind, "id": term_id, "name": name, "position": position})
+    # The formality scale is a mapping, "1": "Lounge / sport" to "5": "Formal / ceremonial".
+    for position, (level, name) in enumerate(sorted(taxonomy["formality_scale"].items())):
+        vocabulary.append({"kind": "formality", "id": level, "name": name, "position": position})
+
+    categories = taxonomy["categories"]
+    _ids("taxonomy.json categories", categories)
+    slot_ids = _ids("taxonomy.json slots", taxonomy["slots"])
+    section_ids = set(taxonomy["sections"])
+    for category in categories:
+        problems = []
+        if category["group"] not in group_ids:
+            problems.append(f"group {category['group']!r}")
+        if category["slot"] not in slot_ids:
+            problems.append(f"slot {category['slot']!r}")
+        if set(category["sections"]) - section_ids:
+            problems.append(f"sections {sorted(set(category['sections']) - section_ids)}")
+        if problems:
+            raise SeedError(f"Category {category['id']!r} has unknown {', '.join(problems)}")
 
     changed = {
         "category_groups": _upsert(
@@ -104,6 +139,26 @@ def seed_reference_data(db: Session, seed_dir: Path = SEED_DIR) -> dict[str, int
             ],
         ),
         "vocabulary_terms": _upsert(db, VocabularyTerm, vocabulary, key=("kind", "id")),
+        "categories": _upsert(
+            db,
+            Category,
+            [
+                {
+                    "id": c["id"],
+                    "name": c["name"],
+                    "group_id": c["group"],
+                    "slot": c["slot"],
+                    "sections": c["sections"],
+                    "formality_default": c["formality_default"],
+                    "formality_min": c["formality_min"],
+                    "formality_max": c["formality_max"],
+                    "warmth": c["warmth"],
+                    "wears_before_wash": c["wears_before_wash"],
+                    "position": i,
+                }
+                for i, c in enumerate(categories)
+            ],
+        ),
     }
     db.commit()
     return changed

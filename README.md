@@ -8,7 +8,7 @@ It is not a store. There is no checkout. When WearWise points to a product, you 
 
 ## Status
 
-Live at https://wearwise-rouge.vercel.app. Milestone M1 adds the design system and accounts: register, log in and out, a styled app shell, and deleting your account. M2 adds a skippable six-step setup (sizes, measurements, occasions, style, colours, budget), Settings to change or clear every answer, and brand size notes. Wardrobe features start in M3. See [`docs/PROGRESS.md`](docs/PROGRESS.md).
+Live at https://wearwise-rouge.vercel.app. Milestone M1 adds the design system and accounts: register, log in and out, a styled app shell, and deleting your account. M2 adds a skippable six-step setup (sizes, measurements, occasions, style, colours, budget), Settings to change or clear every answer, and brand size notes. M3 adds the wardrobe: add items with a photo (the colour is suggested from it), search, filter, sort, edit, archive, matching sets, and categories of your own. See [`docs/PROGRESS.md`](docs/PROGRESS.md).
 
 <!-- At each release, replace this section with the live URL, a screenshot, and what works. -->
 
@@ -62,6 +62,7 @@ Run `make` to list them all.
 | `make migration m="add users"` | Create a migration from changed models |
 | `make migrate` | Apply migrations, then load the reference data in `seed/` |
 | `make seed` | Load the reference data in `seed/` again (safe to repeat) |
+| `make demo` | Fill the demo account (`demo@example.com`) with a wardrobe of generic staples |
 | `make api-types` | Regenerate the frontend's API types after changing a route |
 | `make check` | Everything CI runs |
 

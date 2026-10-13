@@ -5,9 +5,13 @@ The running state of the project, updated at the end of every slice. Keep it sho
 ## Now
 
 - **Last updated:** 2026-10-13
-- **Current milestone:** M2 Onboarding and profile, built and checked locally. M1 is also built and checked locally. Neither is merged or deployed yet.
-- **Current slice:** none open. M1 and M2 go out together in one pull request.
-- **Next action (owner):** test locally (`make dev`, then register at http://localhost:3000), commit, push `m1-design-auth`, open a pull request, and merge when CI passes. Then check in production: register, go through onboarding, edit Settings, log out and back in. After that, M3 (wardrobe).
+- **Current milestone:** M3 Wardrobe, built and checked locally. M1 and M2 are built and checked, staged for one commit on `m1-design-auth`; nothing is merged or deployed past M0 yet.
+- **Current slice:** none open.
+- **Next action (owner):**
+  1. Commit the staged M1 and M2 changes, push `m1-design-auth`, open a pull request, merge when CI passes.
+  2. Create a branch for M3 (`git switch -c m3-wardrobe`), commit the rest, push, and open a second pull request.
+  3. Before merging it, set up Cloudflare R2 (`docs/DEPLOYMENT.md`, step 4): production won't start without photo storage.
+  4. After it deploys, add your own 25 to 30 items on the live site; that is M3's last "Done when" item.
 
 M1 slices:
 
@@ -32,7 +36,18 @@ M2 slices:
 | 4 | Onboarding: six steps with Back, Skip, Continue, and Skip all | done |
 | 5 | Settings tabs (Profile, Style, Budget, Brands, Account) and the Home reminder | done |
 | 6 | Browser walkthrough at 375 px and 1440 px | done |
-- **Overall:** 1 of 12 milestones released (M0); M1 and M2 built, waiting to merge. v1.0 is M0 to M5.
+
+M3 slices:
+
+| # | Slice | State |
+|---|---|---|
+| 1 | Categories (seeded and custom) and the rest of the taxonomy lists in the database | done |
+| 2 | Items API: create with category defaults, edit, archive, delete, status, matching sets, filtered and searched pages | done |
+| 3 | Photos: storage adapter (folder, R2, memory), checks, EXIF removal, resizing, dominant colour | done |
+| 4 | Wardrobe grid: search, filter rail and sheet, removable chips, sort, load more | done |
+| 5 | Add, edit, and item pages; custom categories page | done |
+| 6 | Demo wardrobe script; browser walkthrough; docs | done (your own 25 to 30 items: after deploy) |
+- **Overall:** 1 of 12 milestones released (M0); M1 to M3 built, waiting to merge. v1.0 is M0 to M5.
 
 Live:
 
@@ -102,7 +117,7 @@ M0 code, merged in pull request #1 and deployed:
 | M0 | Foundations | open a live URL that talks to the API and database | done | 2026-10-12 | https://wearwise-rouge.vercel.app |
 | M1 | Design system, shell, auth | register, log in, and move around a styled, empty app | built, not merged | | |
 | M2 | Onboarding and profile | set (or skip) sizes, style, budget; edit them later | built, not merged | | |
-| M3 | Wardrobe | add, find, edit everything you own, with photos | not started | | |
+| M3 | Wardrobe | add, find, edit everything you own, with photos | built, not merged | | |
 | M4 | Outfit Studio and wear log | build and save outfits; log what you wore | not started | | |
 | M5 | Outfit engine (v1.0) | get ranked outfit suggestions with reasons | not started | | v1.0 release |
 | M6 | My Week | plan seven days with weather, laundry, events, packing | not started | | |
@@ -125,6 +140,13 @@ M0 code, merged in pull request #1 and deployed:
 ## Log
 
 Add an entry per slice, newest first.
+
+### 2026-10-13, M3 slices 1 to 6: wardrobe
+
+- Built: `categories` (89 seeded, plus custom ones per person), `items`, and `item_images` tables in one migration; the seed now loads slots, patterns, fabrics, seasons, statuses, the formality scale, and categories. API: categories (list, add, delete when unused), photos (upload, view), items (list with search, filters, sort, and cursor pages; add; view; edit; archive and restore; delete; matching sets). Photos are shrunk in the browser, then checked, cleaned of metadata, resized, and stored by the API, with the dominant colour mapped to a colour family (`app/engine/color.py`). Storage is a folder locally and Cloudflare R2 in production; the API refuses to start in production without R2. Frontend: Wardrobe in the navigation; a photo-first grid with search, filters (a rail on desktop, a bottom sheet on phones), colour swatches, removable chips, sort, and "Load more"; add and edit forms (photo, suggested colour, category filtered by the sections you shop, "More details"); item page with status, archive, delete, and matching sets; your own categories. `make demo` fills a demo account from `seed/archetypes.json`. A favicon, which also removes a 404 on every page.
+- Checked: `make check` passes (ruff, mypy on 70 files, 117 backend tests, TypeScript, 71 frontend tests, build). The migration applies, rolls back, and reapplies with no drift. Tests cover CRUD, every filter and their combination, search, all three sorts across pages, ownership (another account gets 404 for items, photos, and categories), the upload checks (not a photo, GIF, oversized, metadata removed, rotation applied), cleanup of unsaved photos, deletion of files with items and accounts, and the demo script refusing real accounts. A browser walkthrough at 1440 px and 375 px: empty wardrobe, add an item from a phone-style photo (upright, colour suggested as navy), the section filter and "show all", status change, two items without photos, filter by colour, search and back, matching set, edit, archive and restore, delete, a non-photo refused with its reason, a custom category; no console errors. Fixed from the screenshots: colour filters as swatches in a compact grid, filter groups that fold, a rail that scrolls on its own, only the suggested colour shown until "Other colours". Fixed from the build: the shell's navigation now waits in Suspense for the address on pages like `/wardrobe/[id]`.
+- Left: R2 set up and the owner's own 25 to 30 items after deploy.
+- Decided: D26 (photo pipeline), D27 (dominant colour), D28 (items), D29 (demo accounts).
 
 ### 2026-10-13, M2 slices 1 to 6: onboarding and profile
 
@@ -208,4 +230,7 @@ Things that are deliberately not handled yet. Move them into the README at M11.
 - No password reset by email yet: it needs an email provider. Until then, a forgotten password means a new account. Planned for M11 at the latest.
 - The email address can't be changed yet: doing it safely needs the password again. The name can be changed in Settings.
 - Weather isn't used yet: the city is saved for M6.
+- Photos in R2 aren't backed up. For a personal project that's acceptable.
+- iPhone HEIC photos upload from Safari, which can read them; other browsers may not.
+- Settings still sits in the main navigation while it has only two neighbours; it moves to the avatar menu alone as Outfits and My Week arrive (D22).
 - The `make` commands assume Linux or macOS. On Windows, use WSL.

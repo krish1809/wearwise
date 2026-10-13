@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
 // Multicolour has no single hex, so it gets a wheel of colours instead.
-const MULTICOLOUR =
+export const MULTICOLOUR =
   "conic-gradient(#C0282D, #E07B2A, #C9A227, #2E7D4F, #1F2A44, #6B4A9E, #C0282D)";
 
 type SwatchProps = {

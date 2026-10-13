@@ -2,9 +2,11 @@
 
 from app.models.app_meta import AppMeta
 from app.models.base import Base
+from app.models.item import Item, ItemImage
 from app.models.profile import BrandNote, Profile
 from app.models.rate_limit import RateLimitHit
 from app.models.reference import (
+    Category,
     CategoryGroup,
     ColorFamily,
     Occasion,
@@ -18,8 +20,11 @@ __all__ = [
     "AppMeta",
     "Base",
     "BrandNote",
+    "Category",
     "CategoryGroup",
     "ColorFamily",
+    "Item",
+    "ItemImage",
     "Occasion",
     "Profile",
     "RateLimitHit",

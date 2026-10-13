@@ -31,6 +31,8 @@ class UserOut(BaseModel):
     name: str | None
     # False until onboarding is finished or skipped; logging in resumes it until then.
     onboarding_completed: bool
+    # Demo accounts are made only by the demo script; the app labels them.
+    is_demo: bool
 
 
 class RegisterRequest(BaseModel):

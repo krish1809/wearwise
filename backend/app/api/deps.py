@@ -5,6 +5,7 @@ from typing import Annotated
 from fastapi import Depends, Request
 from sqlalchemy.orm import Session
 
+from app.adapters.storage import Storage, get_storage
 from app.api.errors import ApiError
 from app.api.session_cookie import SESSION_COOKIE, clear_session_cookie_headers
 from app.core.config import Settings, get_settings
@@ -14,6 +15,7 @@ from app.services import auth
 
 SessionDep = Annotated[Session, Depends(get_session)]
 SettingsDep = Annotated[Settings, Depends(get_settings)]
+StorageDep = Annotated[Storage, Depends(get_storage)]
 
 
 def get_current_user(request: Request, db: SessionDep, settings: SettingsDep) -> User:

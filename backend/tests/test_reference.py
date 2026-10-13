@@ -36,6 +36,14 @@ def test_reference_lists_match_the_seed_files_in_order(sam: TestClient) -> None:
     assert [t["id"] for t in body["sections"]] == taxonomy["sections"]
     assert [t["id"] for t in body["fits"]] == taxonomy["fits"]
     assert body["sizing_systems"] == taxonomy["sizing_systems"]
+    assert body["statuses"] == taxonomy["statuses"]
+    assert [t["id"] for t in body["slots"]] == [s["id"] for s in taxonomy["slots"]]
+    assert [t["id"] for t in body["patterns"]] == taxonomy["patterns"]
+    assert [t["id"] for t in body["fabrics"]] == taxonomy["fabrics"]
+    assert [t["id"] for t in body["seasons"]] == taxonomy["seasons"]
+    assert [t["name"] for t in body["formality_levels"]] == list(
+        taxonomy["formality_scale"].values()
+    )
 
 
 def test_reference_entries_carry_what_the_screens_show(sam: TestClient) -> None:

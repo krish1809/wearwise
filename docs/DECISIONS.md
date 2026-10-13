@@ -162,3 +162,24 @@ Next.js runs with `cacheComponents` and `partialPrefetching` on, as create-next-
 
 **Why:** a unique index on `(user_id, lower(brand))` stops "H&M" and "h&m" becoming two notes, even when two saves race. Notes are typed by hand, so the list is capped at 200 per person and returned whole, sorted A to Z; cursor pagination (the API convention) is kept for lists that grow without limit, such as items and the wear log.
 **Rejected:** pagination for a list nobody will fill; checking duplicates only in Python.
+
+## D26. Photos: shrunk in the browser, checked and converted by the API, private in R2
+
+**Why:** phone photos are 3 to 8 MB, and Vercel limits request bodies on its functions to 4.5 MB, so the web app first redraws each photo at most 2000 px on its longest side as a JPEG (about half a megabyte). Uploads are quicker on mobile data, and redrawing drops the metadata, so a phone's recorded location never leaves the device. Safari can read iPhone HEIC photos, so they work too. The API still treats every upload as untrusted: it decides the format from the content (JPEG, PNG, or WebP), refuses files over `MAX_UPLOAD_MB` (8) or 50 megapixels, applies the rotation tag, drops all metadata again, and stores a 1600 px WebP and a 400 px thumbnail under a new key, so a stored file never changes and browsers can cache it for a year. Photos are uploaded before the item is saved, so the colour can be suggested; unsaved uploads are removed after a day. The bucket is private: the API checks ownership and answers with a ten-minute signed link to R2 (locally, it streams the file). Files are deleted only after the database change that removes them is committed. New libraries: Pillow 12.3 (images), boto3 1.43 (the S3 protocol, which R2 speaks; types-boto3 for mypy), python-multipart 0.0.32 (FastAPI's file uploads).
+**Rejected:** uploading straight from the browser to R2 with presigned POSTs (the API couldn't check or convert the file first); a public bucket; serving through Next.js image optimisation (it can't see the login cookie).
+**Revisit if:** quick add (several photos at once) arrives, or R2's free allowance runs short.
+
+## D27. Dominant colour without AI
+
+**Why:** the colour in the middle of a photo that isn't also around its edges is usually the garment, since clothes are photographed in the middle of a bed, floor, or wall. Pixels go into coarse colour buckets; the winner is the bucket covering the most of the middle minus how much of the border it covers, and its average is widened to every middle pixel within a small CIELAB distance, so one garment's shades aren't split across buckets. The nearest colour family is found in CIELAB, where equal distances look about equally different, unlike RGB. It's plain functions in `backend/app/engine/color.py`, tested on made-up pixel grids, and always shown as a suggestion the person can change.
+**Rejected:** k-means clustering (slower, and needs a library for little gain at 64 px); asking a vision model (M10, and only to propose).
+
+## D28. Items: category defaults, archive before delete, keyset pages
+
+**Why:** an item needs only a category and a main colour; formality, warmth, and washing start from the category and can be changed. "No seasons" means every season, so the season filter includes those items. Archive hides an item but keeps it (and, from M4, its wear history); delete removes it and its photo after a confirmation. Matching sets are a shared `set_id`, at most six items, and a set of one dissolves. Lists use keyset pagination: the cursor holds the last row's sort key and id, so pages don't repeat or skip items when something is added meanwhile; sorts are newest, oldest, and by category. Search matches every word against the name, brand, size, notes, category, and colour. Custom categories are rows with a `user_id`; the foreign key from items to categories checks at the end of each statement (Postgres's default), not immediately, so deleting an account can remove both, while the service refuses to delete a custom category still in use. Every change bumps `users.wardrobe_version` for the engine's cache in M5.
+**Rejected:** offset pagination (shifts when items are added); deleting rows on archive.
+
+## D29. A demo wardrobe only in demo accounts
+
+**Why:** `make demo` fills `demo@example.com` with the 66 generic staples from `seed/archetypes.json`, without photos or prices, because the staples have none and nothing may be made up. The account is marked `is_demo`, the app labels it "Demo account", and the script refuses any account that isn't a demo. Running it again replaces the demo wardrobe. A new demo account gets a random password, printed once.
+**Rejected:** demo items in seed files or migrations (they would reach real accounts); invented photos or prices.

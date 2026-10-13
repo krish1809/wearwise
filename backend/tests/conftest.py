@@ -9,6 +9,7 @@ other's data even when the code under test commits.
 import os
 from collections.abc import Iterator
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 from alembic import command
@@ -18,6 +19,9 @@ from fastapi.testclient import TestClient
 from sqlalchemy import Engine, create_engine, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.orm import Session
+
+if TYPE_CHECKING:
+    from app.adapters.storage import MemoryStorage
 
 TEST_DATABASE_URL = os.environ.get(
     "TEST_DATABASE_URL", "postgresql+psycopg://wearwise:wearwise@localhost:5433/wearwise_test"
@@ -85,12 +89,22 @@ def db(engine: Engine) -> Iterator[Session]:
 
 
 @pytest.fixture
-def app(db: Session) -> Iterator[FastAPI]:
+def storage() -> MemoryStorage:
+    """Photo storage in memory, so a test can see exactly which files exist."""
+    from app.adapters.storage import MemoryStorage
+
+    return MemoryStorage()
+
+
+@pytest.fixture
+def app(db: Session, storage: MemoryStorage) -> Iterator[FastAPI]:
+    from app.adapters.storage import get_storage
     from app.core.db import get_session
     from app.main import create_app
 
     application = create_app()
     application.dependency_overrides[get_session] = lambda: db
+    application.dependency_overrides[get_storage] = lambda: storage
     yield application
     application.dependency_overrides.clear()
 
