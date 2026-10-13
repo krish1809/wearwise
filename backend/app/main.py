@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.routing import APIRoute
 
 from app import __version__
+from app.api.errors import install_error_handlers
 from app.api.router import api_router
 from app.core.config import get_settings
 
@@ -19,6 +20,7 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title="WearWise API", version=__version__, generate_unique_id_function=_operation_id
     )
+    install_error_handlers(app)
     app.include_router(api_router)
     return app
 

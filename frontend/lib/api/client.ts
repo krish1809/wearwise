@@ -7,4 +7,9 @@ import type { paths } from "@/lib/api/schema";
  * OpenAPI schema; run `make api-types` after changing a route. URLs are relative, so browser
  * requests go to this app, which forwards /api/* to the backend.
  */
-export const api = createClient<paths>({ baseUrl: "" });
+export const api = createClient<paths>({
+  baseUrl: "",
+  // The API refuses state-changing requests without this header; other sites can't add it,
+  // which blocks forged requests (CSRF).
+  headers: { "X-Requested-With": "fetch" },
+});

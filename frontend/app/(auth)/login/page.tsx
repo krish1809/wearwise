@@ -1,0 +1,24 @@
+import type { Metadata } from "next";
+import { Suspense } from "react";
+
+import { TextLink } from "@/components/text-link";
+
+import { LoginForm } from "./login-form";
+
+export const metadata: Metadata = { title: "Log in · WearWise" };
+
+export default function LoginPage() {
+  return (
+    <>
+      <h1 className="font-display text-2xl font-semibold tracking-tight">
+        Log in
+      </h1>
+      <Suspense>
+        <LoginForm />
+      </Suspense>
+      <p className="mt-8 text-ink-soft">
+        New to WearWise? <TextLink href="/register">Create an account</TextLink>
+      </p>
+    </>
+  );
+}

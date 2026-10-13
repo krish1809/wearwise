@@ -85,7 +85,7 @@ The browser never calls the Render URL directly, so the session cookie is first-
 ## Migrations
 
 - Every schema change is an Alembic migration, committed with the code that needs it.
-- The backend's start command runs `alembic upgrade head` and then starts the server, so every deploy migrates first.
+- The backend's start command runs `alembic upgrade head`, loads the reference data from `seed/` (`python -m scripts.seed_reference`), and then starts the server, so every deploy migrates and reseeds first. `render.yaml` lists `backend/**` and `seed/**` as build filters, so a change to either deploys.
 - Migrations must work on a database that already has data. Add a column as nullable or with a default, backfill, then tighten.
 - Never edit a migration that has run in production. Write a new one.
 

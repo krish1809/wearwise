@@ -10,12 +10,16 @@ Conventions: UUID primary keys, `created_at` and `updated_at` on every table, `u
 |---|---|---|
 | `categories` | `id` (slug), `name`, `group`, `slot`, `sections[]`, `formality_default`, `formality_min`, `formality_max`, `warmth`, `wears_before_wash`, `user_id` (null for system rows) | `taxonomy.json` |
 | `outfit_templates` | `id`, `name`, `required` (json), `optional` (json) | `taxonomy.json` |
-| `color_families` | `id`, `name`, `hex`, `neutrality` | `colors.json` |
-| `occasions` | `id`, `name`, `formality_min`, `formality_max`, `prefers_groups[]`, `user_id` (null for system rows) | `occasions.json` |
-| `style_profiles` | `id`, `name`, `description`, `signals` (json) | `style_profiles.json` |
+| `color_families` | `id`, `name`, `hex` (null for multicolour), `neutrality`, `position` | `colors.json` |
+| `occasions` | `id`, `name`, `formality_min`, `formality_max`, `prefers_groups[]`, `hint`, `position`; `user_id` (null for system rows) arrives with custom occasions | `occasions.json` |
+| `style_profiles` | `id`, `name`, `description`, `signals` (json), `position` | `style_profiles.json` |
+| `category_groups` | `id`, `name`, `position` | `taxonomy.json` groups |
+| `vocabulary_terms` | `kind` (section, fit, sizing_system), `id`, `name`, `position`; key `(kind, id)` | `taxonomy.json` lists |
 | `archetypes` | `id`, `name`, `category_id`, attributes as for items | `archetypes.json` |
 
 Custom categories and occasions are rows with a `user_id`.
+
+Reference tables use the seed file's id (a slug) as the primary key, and `position` keeps the files' order. `backend/scripts/seed_reference.py` loads them after every migration and deploy; it inserts and updates, never deletes (D23).
 
 ## Accounts (M1, M2)
 
@@ -23,12 +27,14 @@ Custom categories and occasions are rows with a `user_id`.
 
 **`sessions`**: `user_id`, `token_hash` (unique), `expires_at`, `last_seen_at`, `user_agent`.
 
-**`profiles`** (one per user, every column nullable):
-`sections[]`, `city`, `latitude`, `longitude`, `units` (cm or in), `currency`, `height_cm`, `measurements` (json: chest, waist, hips, shoulder, inseam, all in cm), `sizes` (json: top, bottom, shoe, with sizing system), `fit_preference`, `style_profile_ids[]`, `preferred_colors[]`, `avoided_colors[]`, `occasion_ids[]`, `budget_monthly`, `category_budgets` (json: category group to typical spend).
+**`rate_limit_hits`**: `bucket` (for example `login:ip:203.0.113.5`; emails are hashed), `window_start`, `count`. Unique on `(bucket, window_start)`.
 
-Store measurements in cm and convert for display.
+**`profiles`** (one per user, `user_id` unique; every answer optional, D24):
+`sections[]`, `city`, `units` (cm or in, default cm), `currency` (INR), `height_cm`, `measurements` (json: chest, waist, hips, shoulder, inseam, all in cm), `sizes` (json: top, bottom, shoe, each `{label, system}`), `fit_preference`, `style_profile_ids[]`, `preferred_colors[]`, `avoided_colors[]`, `occasion_ids[]`, `budget_monthly` (paise), `category_budgets` (json: category group to typical spend in paise), `onboarding_step` (0 to 6), `onboarding_skipped`, `onboarding_reminder_dismissed_at`. `latitude` and `longitude` arrive with weather in M6.
 
-**`brand_notes`**: `user_id`, `brand`, `size_notes`, `quality_notes`, `price_notes`.
+Lists and json columns default to empty and are never null: empty means not answered. Store measurements in cm to one decimal place and convert for display.
+
+**`brand_notes`**: `user_id`, `brand`, `size_notes`, `quality_notes`, `price_notes`. Unique on `(user_id, lower(brand))`; at most 200 per user (D25).
 
 ## Wardrobe (M3)
 

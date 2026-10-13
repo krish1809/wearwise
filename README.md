@@ -8,7 +8,7 @@ It is not a store. There is no checkout. When WearWise points to a product, you 
 
 ## Status
 
-Milestone M0 (foundations) is live at https://wearwise-rouge.vercel.app: the web app, the API, and the database talk to each other in production, and every merge to `main` deploys once CI passes. There are no user features yet; M1 adds the design system and accounts. See [`docs/PROGRESS.md`](docs/PROGRESS.md).
+Live at https://wearwise-rouge.vercel.app. Milestone M1 adds the design system and accounts: register, log in and out, a styled app shell, and deleting your account. M2 adds a skippable six-step setup (sizes, measurements, occasions, style, colours, budget), Settings to change or clear every answer, and brand size notes. Wardrobe features start in M3. See [`docs/PROGRESS.md`](docs/PROGRESS.md).
 
 <!-- At each release, replace this section with the live URL, a screenshot, and what works. -->
 
@@ -60,7 +60,8 @@ Run `make` to list them all.
 | `make format` | Fix formatting and auto-fixable lint |
 | `make typecheck` | mypy for the backend, TypeScript for the frontend |
 | `make migration m="add users"` | Create a migration from changed models |
-| `make migrate` | Apply migrations |
+| `make migrate` | Apply migrations, then load the reference data in `seed/` |
+| `make seed` | Load the reference data in `seed/` again (safe to repeat) |
 | `make api-types` | Regenerate the frontend's API types after changing a route |
 | `make check` | Everything CI runs |
 

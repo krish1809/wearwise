@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import "./globals.css";
+import { Providers } from "./providers";
 
 // Self-hosted by next/font at build time; the browser never calls Google.
 const display = Bricolage_Grotesque({
@@ -31,8 +32,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={cn(display.variable, sans.variable, "antialiased")}
     >
       <body className="min-h-screen">
-        <TooltipProvider>{children}</TooltipProvider>
-        <Toaster />
+        <Providers>
+          <TooltipProvider>{children}</TooltipProvider>
+          <Toaster />
+        </Providers>
       </body>
     </html>
   );

@@ -1,0 +1,209 @@
+"use client";
+
+import { useQueryClient } from "@tanstack/react-query";
+import { House, Settings } from "lucide-react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
+
+import { AvatarMenu } from "@/components/ui/avatar-menu";
+import { Button } from "@/components/ui/button";
+import { ErrorState } from "@/components/ui/error-state";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "@/components/ui/toast";
+import { api } from "@/lib/api/client";
+import { type User, useCurrentUser } from "@/lib/auth";
+import { useSlow } from "@/lib/hooks";
+import { cn, focusRing } from "@/lib/utils";
+
+// Only pages that exist appear in the navigation; new ones join as they are built.
+const NAV = [
+  { href: "/home", label: "Home", icon: House },
+  { href: "/settings", label: "Settings", icon: Settings },
+] as const;
+
+function isActive(pathname: string, href: string): boolean {
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+/**
+ * The frame around every logged-in page: sidebar on desktop, tab bar on phones. The frame
+ * draws straight away; each page shows its own placeholder until the API says who is here.
+ */
+export function AppShell({ children }: { children: React.ReactNode }) {
+  const { data: user, isError, refetch } = useCurrentUser();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    // The browser had a cookie, but the session had ended. The API removed the cookie.
+    if (user === null) {
+      router.replace(
+        `/login?reason=expired&next=${encodeURIComponent(pathname)}`,
+      );
+    }
+  }, [user, router, pathname]);
+
+  return (
+    <div className="min-h-screen lg:flex">
+      {/* The first Tab stop: lets keyboard users jump past the navigation. */}
+      <a
+        href="#main"
+        className={cn(
+          "sr-only rounded-lg bg-surface px-4 py-3 font-medium focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50",
+          focusRing,
+        )}
+      >
+        Skip to content
+      </a>
+      <Sidebar pathname={pathname} />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <TopBar user={user ?? undefined} />
+        <main
+          id="main"
+          tabIndex={-1}
+          className="flex-1 px-4 pt-6 pb-28 outline-none sm:px-6 lg:px-10 lg:pt-8 lg:pb-12"
+        >
+          {isError ? (
+            <ErrorState
+              className="mx-auto max-w-md"
+              title="Couldn't reach WearWise"
+              action={
+                <Button variant="secondary" onClick={() => void refetch()}>
+                  Try again
+                </Button>
+              }
+            >
+              Check your connection and try again.
+            </ErrorState>
+          ) : (
+            children
+          )}
+        </main>
+      </div>
+      <TabBar pathname={pathname} />
+    </div>
+  );
+}
+
+/** What a logged-in page shows until the API has said who is logged in. */
+export function PageLoading() {
+  const waking = useSlow(true);
+  return (
+    <div aria-busy="true" className="flex max-w-md flex-col gap-3">
+      <Skeleton className="h-10 w-1/2" />
+      <Skeleton className="h-4 w-3/4" />
+      <p role="status" className="mt-4 text-sm text-ink-soft">
+        {waking ? (
+          "Waking the server. This can take up to a minute."
+        ) : (
+          <span className="sr-only">Loading</span>
+        )}
+      </p>
+    </div>
+  );
+}
+
+function Wordmark({ className }: { className?: string }) {
+  return (
+    <Link
+      href="/home"
+      className={cn(
+        "rounded-lg font-display text-xl font-semibold tracking-tight",
+        focusRing,
+        className,
+      )}
+    >
+      WearWise
+    </Link>
+  );
+}
+
+function Sidebar({ pathname }: { pathname: string }) {
+  return (
+    <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-line px-4 py-5 lg:flex">
+      <Wordmark className="self-start px-3 py-1" />
+      <nav aria-label="Main" className="mt-8">
+        <ul className="flex flex-col gap-1">
+          {NAV.map(({ href, label, icon: Icon }) => (
+            <li key={href}>
+              <Link
+                href={href}
+                aria-current={isActive(pathname, href) ? "page" : undefined}
+                className={cn(
+                  "flex min-h-11 items-center gap-3 rounded-lg px-3 font-medium text-ink-soft transition-colors",
+                  "hover:bg-tile hover:text-ink aria-[current=page]:bg-indigo/10 aria-[current=page]:text-indigo",
+                  focusRing,
+                )}
+              >
+                <Icon aria-hidden className="size-5" />
+                {label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </aside>
+  );
+}
+
+function TopBar({ user }: { user: User | undefined }) {
+  const queryClient = useQueryClient();
+  const router = useRouter();
+
+  async function logOut() {
+    try {
+      await api.POST("/api/v1/auth/logout");
+    } catch {
+      toast.error("Couldn't log out. Check your connection and try again.");
+      return;
+    }
+    queryClient.clear();
+    router.replace("/");
+    toast("You're logged out.");
+  }
+
+  return (
+    <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-line bg-paper px-4 sm:px-6 lg:justify-end lg:px-10">
+      <Wordmark className="lg:hidden" />
+      {user ? (
+        <AvatarMenu
+          name={user.name}
+          email={user.email}
+          settingsHref="/settings"
+          onLogOut={() => void logOut()}
+        />
+      ) : (
+        <Skeleton className="size-11 rounded-full" />
+      )}
+    </header>
+  );
+}
+
+function TabBar({ pathname }: { pathname: string }) {
+  return (
+    <nav
+      aria-label="Main"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] lg:hidden"
+    >
+      <ul className="grid grid-cols-2">
+        {NAV.map(({ href, label, icon: Icon }) => (
+          <li key={href}>
+            <Link
+              href={href}
+              aria-current={isActive(pathname, href) ? "page" : undefined}
+              className={cn(
+                "flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-medium text-ink-soft",
+                "hover:text-ink aria-[current=page]:text-indigo",
+                focusRing,
+              )}
+            >
+              <Icon aria-hidden className="size-6" />
+              {label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}

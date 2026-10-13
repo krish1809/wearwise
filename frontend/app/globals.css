@@ -12,6 +12,8 @@
   --color-surface: #ffffff;
   --color-tile: #e8eae7;
   --color-line: #d9dcd8;
+  /* Borders of inputs and selects: 3.5:1 on white, 3.2:1 on paper, so the box is visible. */
+  --color-line-strong: #858a91;
   --color-ink: #1b1d20;
   --color-ink-soft: #5a5f66;
   --color-indigo: #2c3a82;

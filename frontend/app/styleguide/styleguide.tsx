@@ -12,6 +12,12 @@ import {
 import { useSearchParams } from "next/navigation";
 import * as React from "react";
 
+import {
+  GarmentShirt,
+  GarmentSneaker,
+  GarmentTrousers,
+} from "@/components/garment-drawings";
+import { Alert } from "@/components/ui/alert";
 import { AvatarMenu } from "@/components/ui/avatar-menu";
 import {
   BottomSheet,
@@ -72,8 +78,14 @@ const COLOURS = [
   {
     name: "line",
     hex: "#D9DCD8",
-    use: "Dividers, input borders",
+    use: "Dividers, card edges",
     swatch: "bg-line",
+  },
+  {
+    name: "line-strong",
+    hex: "#858A91",
+    use: "Input and select borders",
+    swatch: "bg-line-strong",
   },
   {
     name: "ink",
@@ -487,6 +499,19 @@ export function Styleguide() {
         </div>
       </Section>
 
+      <Section
+        title="Alert"
+        note="A message about a whole form or page. The icon carries the tone."
+      >
+        <div className="flex max-w-md flex-col gap-3">
+          <Alert>Your session has ended. Log in again.</Alert>
+          <Alert tone="error">
+            That email and password don&apos;t match an account. Check them and
+            try again.
+          </Alert>
+        </div>
+      </Section>
+
       <Section title="Empty and error states">
         <div className="grid gap-6 lg:grid-cols-2">
           <EmptyState
@@ -806,77 +831,5 @@ function LoadMoreDemo() {
       loading={loading}
       onLoadMore={loadMore}
     />
-  );
-}
-
-// Sample drawings for the photo tiles. Real tiles show the person's own photos.
-function GarmentShirt() {
-  return (
-    <svg
-      viewBox="0 0 120 120"
-      role="img"
-      aria-label="Drawing of a shirt"
-      className="h-full w-full"
-    >
-      <path
-        d="M42 18 L60 26 L78 18 L104 34 L94 54 L84 49 L84 104 L36 104 L36 49 L26 54 L16 34 Z"
-        fill="#2F3E5C"
-        stroke="#1B1D20"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M52 21 L60 34 L68 21"
-        fill="none"
-        stroke="#E8EAE7"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function GarmentTrousers() {
-  return (
-    <svg
-      viewBox="0 0 120 120"
-      role="img"
-      aria-label="Drawing of trousers"
-      className="h-full w-full"
-    >
-      <path
-        d="M36 12 L84 12 L90 108 L68 108 L60 44 L52 108 L30 108 Z"
-        fill="#C9B79C"
-        stroke="#1B1D20"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-      <path d="M36 20 L84 20" stroke="#1B1D20" strokeWidth="1.5" />
-    </svg>
-  );
-}
-
-function GarmentSneaker() {
-  return (
-    <svg
-      viewBox="0 0 120 120"
-      role="img"
-      aria-label="Drawing of a sneaker"
-      className="h-full w-full"
-    >
-      <path
-        d="M14 72 C14 58 26 50 38 48 L52 46 L62 56 C74 60 92 62 104 70 C108 74 108 82 104 84 L18 84 C15 84 14 80 14 72 Z"
-        fill="#FFFFFF"
-        stroke="#1B1D20"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M14 84 L106 84 L106 90 L14 90 Z"
-        fill="#D9DCD8"
-        stroke="#1B1D20"
-        strokeWidth="1.5"
-      />
-    </svg>
   );
 }

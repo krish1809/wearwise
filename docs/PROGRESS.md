@@ -4,10 +4,10 @@ The running state of the project, updated at the end of every slice. Keep it sho
 
 ## Now
 
-- **Last updated:** 2026-10-12
-- **Current milestone:** M1 Design system, app shell, auth
-- **Current slice:** 3 of 8, design review. Waiting for the owner to approve the look.
-- **Next action (owner):** look at `/styleguide` (run `make dev`, then open http://localhost:3000/styleguide) and approve it or list changes. Slice 4, the auth backend, comes next; its password validator is the owner's by-hand piece for M1.
+- **Last updated:** 2026-10-13
+- **Current milestone:** M2 Onboarding and profile, built and checked locally. M1 is also built and checked locally. Neither is merged or deployed yet.
+- **Current slice:** none open. M1 and M2 go out together in one pull request.
+- **Next action (owner):** test locally (`make dev`, then register at http://localhost:3000), commit, push `m1-design-auth`, open a pull request, and merge when CI passes. Then check in production: register, go through onboarding, edit Settings, log out and back in. After that, M3 (wardrobe).
 
 M1 slices:
 
@@ -15,13 +15,24 @@ M1 slices:
 |---|---|---|
 | 1 | Design tokens and fonts (`frontend/app/globals.css`, `frontend/app/layout.tsx`) | done |
 | 2 | Components in `frontend/components/ui/` and the development-only `/styleguide` page | done |
-| 3 | Design review at 375 px and 1440 px | screenshots taken and fixes made; waiting for approval |
-| 4 | Auth backend: users and sessions, register, log in, log out, current user, rate limits | not started |
-| 5 | Register and log-in pages; protected pages redirect to log in | not started |
-| 6 | App shell: sidebar, phone tab bar, avatar menu | not started |
-| 7 | Landing page | not started |
-| 8 | Account deletion with typed confirmation | not started |
-- **Overall:** 1 of 12 milestones done. v1.0 is M0 to M5.
+| 3 | Design review at 375 px and 1440 px | approved 2026-10-12, with a stronger input border (D20) |
+| 4 | Auth backend: users and sessions, register, log in, log out, current user, rate limits | done |
+| 5 | Register and log-in pages; protected pages redirect to log in | done |
+| 6 | App shell: sidebar, phone tab bar, avatar menu | done |
+| 7 | Landing page | done |
+| 8 | Account deletion with typed confirmation | done |
+
+M2 slices:
+
+| # | Slice | State |
+|---|---|---|
+| 1 | Reference tables and the seed script; `GET /api/v1/reference` | done |
+| 2 | Profile, brand notes, onboarding finish and reminder routes; name editing | done |
+| 3 | Shared section forms; units and money helpers | done |
+| 4 | Onboarding: six steps with Back, Skip, Continue, and Skip all | done |
+| 5 | Settings tabs (Profile, Style, Budget, Brands, Account) and the Home reminder | done |
+| 6 | Browser walkthrough at 375 px and 1440 px | done |
+- **Overall:** 1 of 12 milestones released (M0); M1 and M2 built, waiting to merge. v1.0 is M0 to M5.
 
 Live:
 
@@ -65,7 +76,7 @@ Planning and reference material, committed and pushed to `github.com/krish1809/w
 | Design | Colour and type tokens, spacing, the outfit board, component list, navigation, writing rules | `docs/DESIGN_SYSTEM.md` |
 | Hosting | Vercel, Render, Neon, R2; environments; migrations; release checklist | `docs/DEPLOYMENT.md` |
 | Decisions | D1 to D17 | `docs/DECISIONS.md` |
-| Seed data | 16 slots, 89 categories, 3 outfit templates; 28 colour families; 12 occasions; 12 style profiles; 66 archetypes. Not loaded anywhere yet: the seed script is written in M2 and M3. | `seed/` |
+| Seed data | 16 slots, 89 categories, 3 outfit templates; 28 colour families; 12 occasions; 12 style profiles; 66 archetypes; 3 sizing systems (added in M2). M2 loads colours, occasions, style profiles, category groups, sections, fits, and sizing systems; M3 loads the rest. | `seed/` |
 | Config | Every environment variable up to M10, `.gitignore`, pull request template | `.env.example`, `.github/` |
 
 M0 code, merged in pull request #1 and deployed:
@@ -89,8 +100,8 @@ M0 code, merged in pull request #1 and deployed:
 | # | Milestone | You can now... | Status | Released | Notes |
 |---|---|---|---|---|---|
 | M0 | Foundations | open a live URL that talks to the API and database | done | 2026-10-12 | https://wearwise-rouge.vercel.app |
-| M1 | Design system, shell, auth | register, log in, and move around a styled, empty app | in progress | | |
-| M2 | Onboarding and profile | set (or skip) sizes, style, budget; edit them later | not started | | |
+| M1 | Design system, shell, auth | register, log in, and move around a styled, empty app | built, not merged | | |
+| M2 | Onboarding and profile | set (or skip) sizes, style, budget; edit them later | built, not merged | | |
 | M3 | Wardrobe | add, find, edit everything you own, with photos | not started | | |
 | M4 | Outfit Studio and wear log | build and save outfits; log what you wore | not started | | |
 | M5 | Outfit engine (v1.0) | get ranked outfit suggestions with reasons | not started | | v1.0 release |
@@ -114,6 +125,27 @@ M0 code, merged in pull request #1 and deployed:
 ## Log
 
 Add an entry per slice, newest first.
+
+### 2026-10-13, M2 slices 1 to 6: onboarding and profile
+
+- Built: reference tables (`color_families`, `occasions`, `style_profiles`, `category_groups`, `vocabulary_terms`) loaded from `seed/` by `scripts/seed_reference.py`, which `make migrate`, CI, the tests, and Render's start command run; `render.yaml` now deploys on changes to `seed/` too. `profiles` and `brand_notes` tables; `GET /api/v1/reference`, `GET`/`PATCH /api/v1/profile`, `POST /api/v1/onboarding/finish`, `POST /api/v1/onboarding/reminder/dismiss`, brand-note routes, and `PATCH /api/v1/account` for the name. Frontend: six onboarding steps (what you shop and city; sizes and fit; measurements in cm or inches; occasions; styles and colours; budget) with Back, Skip, Continue, and Skip all, resuming where the person stopped; register goes to onboarding, and log in does until it's finished or skipped; Settings in tabs, where every section can be saved or cleared (with Undo); brand notes; Home offers once to finish a skipped setup.
+- Checked: `make check` passes (ruff, mypy on 53 files, 70 backend tests, TypeScript, 53 frontend tests, build). The migration applies, rolls back, and reapplies, and `alembic check` finds no drift. The seed restores edited and deleted rows and changes nothing on a second run. Tests cover the M2 "Done when" list: skipping everything leaves a working empty profile; every answer can be changed and cleared; cm and inches convert both ways and untouched values are saved exactly; user A can't see user B's profile, and B gets 404 for A's brand notes. A browser walkthrough at 1440 px and 375 px: register, all six steps (saving, skipping, switching units), Settings shows the answers, clear and undo, brand notes with a duplicate refused, name change, a second account skips everything and dismisses the reminder, the first logs back in to Home. Fixed from the screenshots: size fields grouped under a clear heading, settings tabs on one line at 360 px, toasts above the phone tab bar.
+- Left: the production check for M1 and M2 after merging.
+- Decided: D23 (reference data), D24 (profile shape), D25 (brand notes).
+
+### 2026-10-12, M1 slices 5 to 8: sign-in pages, app shell, landing page, account deletion
+
+- Built: the password rule (12 characters or more, nothing else) and its tests; log-in and register pages with checks in the form and the API's messages; `proxy.ts` sends anyone without a session cookie to log in and back; the app shell (sidebar on desktop, tab bar on phones, avatar menu with log out, skip link); Home; Settings with account details and deletion behind a typed email; the landing page; `POST /api/v1/account/delete`; an expired session's cookie is now cleared by the API.
+- Checked: `make check` passes (ruff, mypy on 39 files, 37 backend tests, TypeScript, 30 frontend tests, build); API types regenerate unchanged. A browser run at 1440 px and 375 px: a logged-in page redirects to log in and back; register, home, settings, log out, wrong password, log in, delete account, old login refused. Keyboard order on desktop: skip link, wordmark, Home, Settings, account menu. No instant-navigation warnings from Next.js.
+- Left: the production check after merging.
+- Decided: D22 (the shell draws first; pages wait for the user).
+
+### 2026-10-12, M1 slice 4: auth backend
+
+- Built: `users`, `sessions`, and `rate_limit_hits` tables and their migration; register, log in, log out, and current-user routes under `/api/v1/auth`; Argon2id hashing; session tokens stored only as hashes in an httpOnly cookie; a `current_user` dependency; the `X-Requested-With` check on state-changing requests; rate limits counted in Postgres; one error shape for every failure; the frontend client sends the header.
+- Checked: ruff and mypy clean (35 files); 24 backend tests pass; the 4 sign-up tests fail with `password_problem is waiting to be written`. The migration applies, rolls back, and reapplies.
+- Left: the owner's password rule and its tests; then slices 5 to 8.
+- Decided: D20 (stronger input border), D21 (sessions and sign-in).
 
 ### 2026-10-12, M1 slices 1 to 3: design tokens, components, style guide
 
@@ -172,5 +204,8 @@ After each milestone, three lines: the hardest problem, the decision you made an
 
 Things that are deliberately not handled yet. Move them into the README at M11.
 
-- On Render's free plan, the first request after 15 idle minutes takes about a minute while the backend wakes. The home page says so and keeps checking.
+- On Render's free plan, the first request after 15 idle minutes takes about a minute while the backend wakes. The landing and log-in pages wake it early, and every waiting screen says so.
+- No password reset by email yet: it needs an email provider. Until then, a forgotten password means a new account. Planned for M11 at the latest.
+- The email address can't be changed yet: doing it safely needs the password again. The name can be changed in Settings.
+- Weather isn't used yet: the city is saved for M6.
 - The `make` commands assume Linux or macOS. On Windows, use WSL.

@@ -43,6 +43,20 @@
     "relaxed",
     "oversized"
   ],
+  "sizing_systems": [
+    {
+      "id": "in_uk",
+      "name": "IN / UK"
+    },
+    {
+      "id": "eu",
+      "name": "EU"
+    },
+    {
+      "id": "us",
+      "name": "US"
+    }
+  ],
   "seasons": [
     "summer",
     "monsoon",

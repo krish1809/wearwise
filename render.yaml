@@ -8,9 +8,17 @@ services:
     # Same region as the Neon database, so each query stays inside Singapore.
     region: singapore
     rootDir: backend
+    # rootDir alone would deploy only for changes in backend/; the reference data lives in seed/.
+    # Paths here are relative to the repository root.
+    buildFilter:
+      paths:
+        - backend/**
+        - seed/**
     buildCommand: uv sync --locked --no-dev
-    # Free instances can't run a pre-deploy command, so migrations run just before the server starts.
-    startCommand: uv run --no-sync alembic upgrade head && uv run --no-sync uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    # Free instances can't run a pre-deploy command, so migrations and the reference data load
+    # just before the server starts.
+    # --proxy-headers: take the visitor's IP from X-Forwarded-For, for rate limits.
+    startCommand: uv run --no-sync alembic upgrade head && uv run --no-sync python -m scripts.seed_reference && uv run --no-sync uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips='*'
     # Deploy a commit on main only after its CI checks pass.
     autoDeployTrigger: checksPass
     # No healthCheckPath on purpose: the health route queries the database, and frequent checks
@@ -20,6 +28,9 @@ services:
         value: 3.14.8
       - key: UV_VERSION
         value: 0.12.23
+      # Marks the session cookie Secure (https only).
+      - key: APP_ENV
+        value: production
       # Neon's pooled connection string (the host contains -pooler).
       - key: DATABASE_URL
         sync: false

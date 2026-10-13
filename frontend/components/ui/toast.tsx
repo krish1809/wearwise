@@ -15,6 +15,9 @@ function Toaster() {
     <Sonner
       theme="light"
       position="bottom-center"
+      // Above the phone tab bar, which is 64px tall and shows below 1024px.
+      offset={{ bottom: 88 }}
+      mobileOffset={{ bottom: 80 }}
       icons={{
         success: <CircleCheck className="size-5 text-buy" />,
         error: <CircleAlert className="size-5 text-skip" />,
