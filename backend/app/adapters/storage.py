@@ -1,16 +1,17 @@
 """Where photos are kept. One interface, three implementations:
 
-- LocalStorage: a folder, for development. The API streams files after checking who owns them.
-- S3Storage: an S3-compatible bucket (Cloudflare R2) in production. The bucket stays private;
-  the API hands out links that work for a few minutes.
+- LocalStorage: a folder, for development.
+- S3Storage: a private S3-compatible bucket (Backblaze B2) in production.
 - MemoryStorage: a dictionary, for tests.
 
-Keys are paths such as "users/<user id>/<photo id>/full.webp", never reused, so a stored file
-never changes and browsers can cache it.
+The API streams every photo itself after checking who owns it. Keys are paths such as
+"users/<user id>/<photo id>/full.webp", never reused, so a stored file never changes and
+browsers can cache it for a year.
 """
 
 import logging
 from collections.abc import Sequence
+from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
 from pathlib import Path
 from typing import TYPE_CHECKING, Protocol
@@ -41,11 +42,6 @@ class Storage(Protocol):
     def delete(self, keys: Sequence[str]) -> None:
         """Remove files. Missing ones are ignored, and failures are logged rather than raised,
         because this runs after the database change it belongs to has been committed."""
-        ...
-
-    def link(self, key: str, seconds: int) -> str | None:
-        """A link that works without logging in, for a limited time; None if the API must
-        stream the file itself."""
         ...
 
 
@@ -79,8 +75,9 @@ class LocalStorage:
             except OSError:
                 log.warning("Couldn't delete stored file %s", key, exc_info=True)
 
-    def link(self, key: str, seconds: int) -> str | None:
-        return None
+
+# Deletes run this many at a time, each on its own connection.
+DELETE_THREADS = 8
 
 
 class S3Storage:
@@ -91,14 +88,20 @@ class S3Storage:
             endpoint_url=settings.s3_endpoint_url,
             aws_access_key_id=settings.s3_access_key_id,
             aws_secret_access_key=settings.s3_secret_access_key,
-            # R2 ignores the region, but the signing code needs one.
-            region_name="auto",
+            # Part of every request's signature; Backblaze refuses one signed for another region.
+            region_name=settings.s3_region,
             config=Config(
                 connect_timeout=5,
                 read_timeout=15,
                 # One retry at most, as for every external call.
                 retries={"max_attempts": 2, "mode": "standard"},
                 signature_version="s3v4",
+                # Newer boto3 adds checksum headers to every request by default, and Backblaze
+                # has refused some of them. Send them only where the S3 protocol requires one.
+                request_checksum_calculation="when_required",
+                response_checksum_validation="when_required",
+                # A page of thumbnails asks for many photos at once; keep the connections open.
+                max_pool_connections=20,
             ),
         )
 
@@ -123,21 +126,23 @@ class S3Storage:
             raise StorageError(str(error)) from error
 
     def delete(self, keys: Sequence[str]) -> None:
-        # The API deletes up to 1,000 keys per request.
-        for start in range(0, len(keys), 1000):
-            batch = keys[start : start + 1000]
-            try:
-                self.client.delete_objects(
-                    Bucket=self.bucket,
-                    Delete={"Objects": [{"Key": key} for key in batch], "Quiet": True},
-                )
-            except BotoCoreError, ClientError:
-                log.warning("Couldn't delete %d stored files", len(batch), exc_info=True)
+        # One request per file rather than the bulk delete: the bulk delete must carry a
+        # checksum, and boto3 now sends a kind Backblaze has refused. A few at a time, so
+        # deleting an account with hundreds of photos takes seconds, not minutes.
+        if not keys:
+            return
+        with ThreadPoolExecutor(max_workers=DELETE_THREADS) as pool:
+            failed = sum(not done for done in pool.map(self._delete_one, keys))
+        if failed:
+            log.warning("Couldn't delete %d of %d stored files", failed, len(keys))
 
-    def link(self, key: str, seconds: int) -> str | None:
-        return self.client.generate_presigned_url(
-            "get_object", Params={"Bucket": self.bucket, "Key": key}, ExpiresIn=seconds
-        )
+    def _delete_one(self, key: str) -> bool:
+        try:
+            self.client.delete_object(Bucket=self.bucket, Key=key)
+        except BotoCoreError, ClientError:
+            log.warning("Couldn't delete stored file %s", key, exc_info=True)
+            return False
+        return True
 
 
 class MemoryStorage:
@@ -155,9 +160,6 @@ class MemoryStorage:
     def delete(self, keys: Sequence[str]) -> None:
         for key in keys:
             self.files.pop(key, None)
-
-    def link(self, key: str, seconds: int) -> str | None:
-        return None
 
 
 @lru_cache

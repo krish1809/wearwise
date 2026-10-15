@@ -29,7 +29,7 @@ Details: [`docs/ENGINE.md`](docs/ENGINE.md), [`docs/SHOPPING.md`](docs/SHOPPING.
 
 ## Stack
 
-Next.js, TypeScript, and Tailwind on the frontend. FastAPI, SQLAlchemy, and PostgreSQL on the backend. Images in S3-compatible object storage. Deployed on Vercel, Render, Neon, and Cloudflare R2.
+Next.js, TypeScript, and Tailwind on the frontend. FastAPI, SQLAlchemy, and PostgreSQL on the backend. Images in S3-compatible object storage. Deployed on Vercel, Render, Neon, and Backblaze B2.
 
 Why: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/DECISIONS.md`](docs/DECISIONS.md).
 

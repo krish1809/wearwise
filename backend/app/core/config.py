@@ -34,11 +34,14 @@ class Settings(BaseSettings):
     # A login lasts this long, and is extended while the person keeps using the app.
     session_days: int = Field(default=30, ge=1, le=365)
 
-    # Photos: a folder in development, an S3-compatible bucket (Cloudflare R2) in production.
+    # Photos: a folder in development, an S3-compatible bucket (Backblaze B2) in production.
     storage_backend: Literal["local", "s3"] = "local"
     # Relative paths are relative to the folder the API runs in (backend/).
     storage_local_dir: Path = Path(".storage")
+    # Backblaze shows both on the bucket's page: endpoint s3.<region>.backblazeb2.com, and the
+    # region is the part between "s3." and ".backblazeb2.com", such as eu-central-003.
     s3_endpoint_url: str | None = None
+    s3_region: str | None = None
     s3_bucket: str | None = None
     s3_access_key_id: str | None = None
     s3_secret_access_key: str | None = None
@@ -53,6 +56,7 @@ class Settings(BaseSettings):
         if self.storage_backend == "s3":
             needed = {
                 "S3_ENDPOINT_URL": self.s3_endpoint_url,
+                "S3_REGION": self.s3_region,
                 "S3_BUCKET": self.s3_bucket,
                 "S3_ACCESS_KEY_ID": self.s3_access_key_id,
                 "S3_SECRET_ACCESS_KEY": self.s3_secret_access_key,
@@ -64,6 +68,14 @@ class Settings(BaseSettings):
             # Render's disk is wiped on every deploy, so local photos would vanish.
             raise ValueError("STORAGE_BACKEND must be s3 in production")
         return self
+
+    @field_validator("s3_endpoint_url")
+    @classmethod
+    def use_https(cls, url: str | None) -> str | None:
+        # Backblaze shows the endpoint without https://, and boto3 needs it.
+        if url is None or "://" in url:
+            return url
+        return "https://" + url
 
     @field_validator("database_url", "migration_database_url")
     @classmethod

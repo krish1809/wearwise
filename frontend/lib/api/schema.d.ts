@@ -2442,13 +2442,6 @@ export interface operations {
                     "image/webp": unknown;
                 };
             };
-            /** @description A short-lived link to the photo in storage */
-            307: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
             /** @description Unauthorized */
             401: {
                 headers: {
@@ -2474,6 +2467,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
         };

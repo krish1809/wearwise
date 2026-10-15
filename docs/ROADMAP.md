@@ -35,7 +35,7 @@ Effort is a guess, counted in working days of two to three focused hours. Treat 
 
 - [ ] Create the GitHub repo `wearwise` and push the docs.
 - [ ] Photograph 25 to 30 of your own items against a plain wall or bedsheet, in daylight. They are your test data for every milestone.
-- [ ] Create accounts: Vercel, Render, Neon, Cloudflare (for R2). No payment is needed to start; check each signup page.
+- [ ] Create accounts: Vercel, Render, Neon, Backblaze (for B2 photo storage). No payment is needed to start; check each signup page.
 - [ ] If you want live product data later, apply now for an affiliate or product API (see `docs/SHOPPING.md`). Approval can take weeks, and M9 works without it.
 
 ---
@@ -110,7 +110,7 @@ Effort is a guess, counted in working days of two to three focused hours. Treat 
 **Build**
 - Categories seeded from `seed/taxonomy.json`, filtered by the sections you shop, with a "show all" switch. Custom categories.
 - Item create, edit, archive, delete. Defaults come from the category so the minimum is photo, category, colour.
-- Photo upload: validate type and size, resize, make a thumbnail, store through a storage interface (local folder in development, Cloudflare R2 in production).
+- Photo upload: validate type and size, resize, make a thumbnail, store through a storage interface (local folder in development, Backblaze B2 in production).
 - Dominant colour picked from the photo and mapped to a colour family from `seed/colors.json`, editable.
 - Grid with search, filters, sort, and pagination. Item detail page.
 - Status changes (available, laundry, repair, packed, lent, retired) and matching sets.

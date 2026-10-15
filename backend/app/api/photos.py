@@ -5,7 +5,6 @@ from datetime import timedelta
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, File, Response, UploadFile, status
-from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 
 from app.adapters.storage import StorageError
@@ -17,8 +16,6 @@ from app.services import photos, rate_limit
 router = APIRouter(prefix="/photos", tags=["photos"])
 
 UPLOADS_PER_USER = rate_limit.Limit(attempts=120, window=timedelta(hours=1))
-# A link to a photo in the bucket works for this long; the browser keeps it a little less.
-LINK_SECONDS = 600
 
 
 class PhotoOut(BaseModel):
@@ -96,8 +93,7 @@ def upload_photo(
     response_class=Response,
     responses={
         200: {"content": {"image/webp": {}}, "description": "The photo"},
-        307: {"description": "A short-lived link to the photo in storage"},
-        **error_responses(401, 404),
+        **error_responses(401, 404, 503),
     },
 )
 def get_photo(
@@ -112,17 +108,16 @@ def get_photo(
     if image is None:
         raise ApiError(404, "photo_not_found", "That photo doesn't exist.")
     key = image.thumb_key if size == "thumb" else image.storage_key
-    link = storage.link(key, LINK_SECONDS)
-    if link is not None:
-        return RedirectResponse(
-            link,
-            status_code=307,
-            headers={"Cache-Control": f"private, max-age={LINK_SECONDS - 60}"},
-        )
-    data = storage.get(key)
+    try:
+        data = storage.get(key)
+    except StorageError as error:
+        raise ApiError(
+            503, "storage_unavailable", "Couldn't load the photo. Try again in a moment."
+        ) from error
     if data is None:
         raise ApiError(404, "photo_not_found", "That photo doesn't exist.")
-    # A key is never reused, so the file under it never changes.
+    # A key is never reused, so the file under it never changes and the browser can keep it,
+    # which also means Backblaze sends each photo to each device about once.
     return Response(
         data,
         media_type="image/webp",

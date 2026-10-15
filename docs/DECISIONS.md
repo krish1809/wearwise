@@ -45,6 +45,7 @@ Format: what was decided, why, what was rejected, and when to revisit.
 **Why:** free to start, and deployment problems surface early. Neon over Render's free Postgres because the latter expires after 30 days. R2 because Render's free instances have no permanent disk.
 **Rejected:** deploying at the end; a single VPS (more to manage while learning).
 **Revisit if:** cold starts hurt demos, or the project becomes commercial.
+**Changed by D33:** photos are stored in Backblaze B2, not R2.
 
 ## D8. Images are private and served through signed URLs
 
@@ -168,6 +169,7 @@ Next.js runs with `cacheComponents` and `partialPrefetching` on, as create-next-
 **Why:** phone photos are 3 to 8 MB, and Vercel limits request bodies on its functions to 4.5 MB, so the web app first redraws each photo at most 2000 px on its longest side as a JPEG (about half a megabyte). Uploads are quicker on mobile data, and redrawing drops the metadata, so a phone's recorded location never leaves the device. Safari can read iPhone HEIC photos, so they work too. The API still treats every upload as untrusted: it decides the format from the content (JPEG, PNG, or WebP), refuses files over `MAX_UPLOAD_MB` (8) or 50 megapixels, applies the rotation tag, drops all metadata again, and stores a 1600 px WebP and a 400 px thumbnail under a new key, so a stored file never changes and browsers can cache it for a year. Photos are uploaded before the item is saved, so the colour can be suggested; unsaved uploads are removed after a day. The bucket is private: the API checks ownership and answers with a ten-minute signed link to R2 (locally, it streams the file). Files are deleted only after the database change that removes them is committed. New libraries: Pillow 12.3 (images), boto3 1.43 (the S3 protocol, which R2 speaks; types-boto3 for mypy), python-multipart 0.0.32 (FastAPI's file uploads).
 **Rejected:** uploading straight from the browser to R2 with presigned POSTs (the API couldn't check or convert the file first); a public bucket; serving through Next.js image optimisation (it can't see the login cookie).
 **Revisit if:** quick add (several photos at once) arrives, or R2's free allowance runs short.
+**Changed by D33:** photos are stored in Backblaze B2, and the API streams them rather than answering with signed links.
 
 ## D27. Dominant colour without AI
 
@@ -198,3 +200,9 @@ Next.js runs with `cacheComponents` and `partialPrefetching` on, as create-next-
 
 **Why:** logged-in pages are client components whose data comes from the API in the browser, so the server renders their loading state. The app shell asks who is logged in before the page itself hydrates, and if that answer arrives first, the page's first render in the browser would differ from the server's HTML, which React rejects. `useCurrentUser` therefore hides the user until hydration is done (`useHydrated`, built on `useSyncExternalStore`), so the first render always matches, and the page fills in a moment later. Any data a component fetches before pages hydrate needs the same treatment.
 **Rejected:** turning off server rendering for logged-in pages (loses the instant frame and navigation); fetching the user on the server (a backend call on every page through Render's cold starts, as D22 explains).
+
+## D33. Photos in Backblaze B2, streamed by the API
+
+**Why:** Cloudflare R2 asks for a card on file even for its free allowance; Backblaze B2 gives 10 GB free without one and speaks the same S3 protocol, so the adapter stays and only its details change. B2 differs from R2 in five ways that shaped them. Every request is signed for the account's region, so `S3_REGION` is required (R2 would take `auto`). Downloads are free only up to three times the average stored each month, about 20 MB for a 30-item wardrobe, so the API now streams each photo after the ownership check, with a one-year private browser cache. The signed links it gave before changed every ten minutes, so the browser downloaded every photo again on each visit; a fixed address lets each device download a photo about once. Newer boto3 adds checksum headers to every request, and Backblaze has refused them, so checksums are sent only where the S3 protocol requires one, and files are deleted one request at a time, eight at once, instead of with the bulk delete, which requires one. B2 keeps every version of a file, so a delete only hides it; the bucket's lifecycle setting "Keep only the last version" removes it a day later. Bucket names are shared by every Backblaze account, so the bucket's name is set in Render's dashboard, not in `render.yaml`. Photos now pass through Render, which adds a hop on a photo's first load, but the browser keeps them afterwards.
+**Rejected:** R2 (needs a card); Supabase Storage (1 GB free, and free projects pause after a week without use); keeping signed links on B2 (a few dozen visits a month would use up the free downloads).
+**Revisit if:** photos load too slowly through the API, or Render's bandwidth runs short; R2 with signed links is the way back, since its downloads are free.

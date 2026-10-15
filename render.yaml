@@ -37,14 +37,19 @@ services:
       # Neon's direct connection string, used only by migrations.
       - key: MIGRATION_DATABASE_URL
         sync: false
-      # Photos go to a private Cloudflare R2 bucket (M3). The API refuses to start in production
+      # Photos go to a private Backblaze B2 bucket (M3). The API refuses to start in production
       # with local storage, since Render's disk is wiped on every deploy.
       - key: STORAGE_BACKEND
         value: s3
-      - key: S3_BUCKET
-        value: wearwise-photos
-      # https://<account id>.r2.cloudflarestorage.com
+      # The rest come from the Backblaze account, so they're set in the dashboard. Bucket names
+      # are shared by every Backblaze account, so even the name can't be fixed here.
+      # s3.<region>.backblazeb2.com
       - key: S3_ENDPOINT_URL
+        sync: false
+      # The <region> part of the endpoint, such as eu-central-003.
+      - key: S3_REGION
+        sync: false
+      - key: S3_BUCKET
         sync: false
       - key: S3_ACCESS_KEY_ID
         sync: false

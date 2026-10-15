@@ -9,7 +9,7 @@ Deploy in M0 and keep deploying. Every merge to `main` goes live, so a broken de
 | Frontend | Vercel, Hobby plan | Free; personal, non-commercial use only | Fine for a portfolio project. Adding affiliate links or ads would make it commercial. |
 | Backend | Render, free web service | Sleeps after 15 minutes without traffic; waking takes about a minute; 750 instance hours a month; no permanent disk | First request after a quiet spell is slow. Show a "waking up" state. Never store uploads on its disk. |
 | Database | Neon, Free plan | 1 GB storage per project; 100 compute-hours a month; pauses after 5 minutes idle | Plenty for this app. First query after a pause is slightly slow. |
-| Images | Cloudflare R2 | 10 GB storage and 1 million writes a month free; no egress fees | About 1 MB per item with thumbnail, so thousands of items fit. |
+| Images | Backblaze B2 | 10 GB storage free, no card needed; downloads free up to three times the average stored each month, then $0.01 per GB; without a card on file, Backblaze refuses requests past a free limit rather than charging | About 0.25 MB per item with its thumbnail. The API serves each photo with a one-year browser cache, so each device downloads it about once. |
 | Weather | Open-Meteo | No key; non-commercial; 10,000 calls a day; attribution required | Cache per city per day. Credit Open-Meteo in the footer. |
 
 Do not use Render's free Postgres: it expires 30 days after creation.
@@ -44,17 +44,19 @@ Paste both exactly as Neon gives them (`postgresql://...`); the backend adds the
 4. Deploy. If `BACKEND_URL` is missing, the build stops with a message naming it.
 5. Open the Vercel URL. Within a minute, while the backend wakes up, it should say **API ok, database ok**.
 
-**4. Cloudflare R2 (photos, before merging M3)**
+**4. Backblaze B2 (photos, before merging M3)**
 
 The API refuses to start in production without it, so set it up before the M3 pull request is merged.
 
-1. Create a Cloudflare account. Open **R2 Object Storage** and turn it on. Cloudflare asks for a payment method even for the free allowance (10 GB stored, a million writes a month), and may place a small temporary hold to check the card. Usage inside the allowance isn't charged.
-2. **Create bucket**: name `wearwise-photos`, location hint Asia-Pacific. Leave public access off: the API hands out links that expire after ten minutes.
-3. **Manage API tokens > Create API token**: permission **Object Read & Write**, limited to `wearwise-photos`. Copy the **Access Key ID**, the **Secret Access Key**, and the endpoint (`https://<account id>.r2.cloudflarestorage.com`). The secret is shown once.
-4. In Render, under **Environment**, set `S3_ENDPOINT_URL`, `S3_ACCESS_KEY_ID`, and `S3_SECRET_ACCESS_KEY`. `STORAGE_BACKEND` and `S3_BUCKET` come from `render.yaml`.
-5. After the deploy, add an item with a photo on the live site, and check the bucket shows two files under `users/`.
+1. Sign up for **B2 Cloud Storage** at backblaze.com. No card is needed for the free allowance. When asked for a region, choose **EU Central**: Backblaze has no region in Asia, and Amsterdam is the closest to Singapore and India. The region can't be changed later.
+2. **B2 Cloud Storage > Buckets > Create a Bucket**: a name such as `wearwise-photos-` followed by a few random letters, because bucket names are shared by every Backblaze account and `wearwise-photos` alone may be taken. Files in the bucket: **Private**. Default encryption: **Enable**. Object lock: **Disable** (it would stop the API deleting photos).
+3. On the new bucket, open **Lifecycle Settings** and choose **Keep only the last version of the file**. Backblaze keeps every version of a file by default, so a deleted photo would only be hidden and still stored; with this setting it is removed a day later.
+4. Note the bucket's **Endpoint**, such as `s3.eu-central-003.backblazeb2.com`. The region is the part between `s3.` and `.backblazeb2.com`, here `eu-central-003`.
+5. **Application Keys > Add a New Application Key**: name `wearwise-api`, access to the new bucket only, type **Read and Write**. Copy the **keyID** and the **applicationKey**; the second is shown once. The master application key doesn't work with the S3 protocol.
+6. In Render, under **Environment**, set `S3_ENDPOINT_URL` (the endpoint; `https://` is optional), `S3_REGION`, `S3_BUCKET` (the bucket's name), `S3_ACCESS_KEY_ID` (the keyID), and `S3_SECRET_ACCESS_KEY` (the applicationKey). `STORAGE_BACKEND` comes from `render.yaml`.
+7. After the deploy, add an item with a photo on the live site, and check the bucket shows two files under `users/`.
 
-Any S3-compatible service works with the same four settings, if R2 doesn't suit.
+Any S3-compatible service works with the same five settings. Cloudflare R2, for example, takes the region `auto`, but asks for a card on file.
 
 **From then on**
 
@@ -70,7 +72,7 @@ Any S3-compatible service works with the same four settings, if R2 doesn't suit.
 | Frontend | `localhost:3000` | Vercel |
 | Backend | `localhost:8000` | Render |
 | Database | Postgres in Docker | Neon |
-| Images | `./.storage` folder | R2 bucket |
+| Images | `./.storage` folder | Backblaze B2 bucket |
 | AI | Fake provider by default | Real provider |
 | Email | Printed to the console | Real provider |
 
@@ -121,7 +123,7 @@ A sleeping backend plus a paused database makes the first request after a break 
 
 ## Backups
 
-Neon keeps a short history for restores on the free plan; check the current window. Before any risky migration, take a manual dump with `pg_dump`. Photos in R2 are not backed up; for a personal project that is acceptable, and the README should say so.
+Neon keeps a short history for restores on the free plan; check the current window. Before any risky migration, take a manual dump with `pg_dump`. Photos in Backblaze B2 are not backed up; for a personal project that is acceptable, and the README should say so.
 
 ## Observability (M11)
 

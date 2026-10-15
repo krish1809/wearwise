@@ -5,11 +5,11 @@ The running state of the project, updated at the end of every slice. Keep it sho
 ## Now
 
 - **Last updated:** 2026-10-15
-- **Current milestone:** M4 Outfit Studio and wear log, built and checked locally on branch `m4-outfits`. M1 to M3 are committed and pushed (`m1-design-auth`, `m3-wardrobe`) but not merged; production is still at M0.
+- **Current milestone:** M4 Outfit Studio and wear log, committed and pushed on branch `m4-outfits`, which also carries M1 to M3. Nothing is merged yet; production is still at M0. Photo storage moved from Cloudflare R2 to Backblaze B2 before the first deploy (D33).
 - **Current slice:** none open.
 - **Next action (owner):**
-  1. Commit M4 on `m4-outfits` (the files are staged) and push the branch.
-  2. Set up Cloudflare R2 and add its three secrets in Render (`docs/DEPLOYMENT.md`, step 4). Production won't start without photo storage, so this comes before merging.
+  1. Commit the Backblaze change on `m4-outfits` (the files are staged) and push the branch.
+  2. Set up Backblaze B2 and add its five settings in Render (`docs/DEPLOYMENT.md`, step 4). Production won't start without photo storage, so this comes before merging.
   3. Open one pull request from `m4-outfits` into `main`. It carries M1 to M4, since each branch was built on the last. Merge it with a merge commit once CI passes.
   4. Check the live site against M1 to M4's "Done when" lists, then add your own 25 to 30 items.
 
@@ -143,7 +143,7 @@ M0 code, merged in pull request #1 and deployed:
 - [x] GitHub repo created and the docs pushed (checked 2026-10-11: local `main` matches `origin/main`)
 - [ ] 25 to 30 photos of your own items taken (needed by M3)
 - [x] Accounts: Vercel, Render, Neon (set up 2026-10-12)
-- [ ] Cloudflare account (needed by M3 for R2 photo storage)
+- [ ] Backblaze account (needed by M3 for B2 photo storage; replaces Cloudflare, D33)
 - [ ] Optional: applied for an affiliate or product API (only matters in M9)
 
 **Local tools (checked 2026-10-11):** uv 0.12.23 (it installs Python 3.14 for the backend), Node 22.23.0, pnpm 10.34.6, Docker 29.8.0 with Compose v5.5.1, make 4.3, gh 2.45.0.
@@ -151,6 +151,13 @@ M0 code, merged in pull request #1 and deployed:
 ## Log
 
 Add an entry per slice, newest first.
+
+### 2026-10-15, photo storage: Backblaze B2 instead of Cloudflare R2
+
+- Built: `S3_REGION` (required with S3 storage; Backblaze signs every request for the account's region), and an endpoint pasted without `https://` gets it added. The S3 adapter sends checksum headers only where the protocol requires them, and deletes files one request at a time, eight at once, instead of the bulk delete. The API now streams every photo with a one-year private browser cache instead of redirecting to a ten-minute signed link, so each device downloads each photo about once, and Backblaze's free downloads (three times what's stored) go far; a storage outage now gives a 503 with a reason instead of a server error. The bucket's name moved from `render.yaml` to Render's dashboard, since Backblaze bucket names are shared by every account. Deploy steps rewritten for Backblaze.
+- Checked: ruff, mypy, 163 backend tests (9 new: the adapter's requests caught before they leave, showing the endpoint, the region in the signature, no checksum headers, one delete per file, failures logged; the endpoint fix; the region named when missing; the year-long cache; the 503), TypeScript, ESLint, Prettier, 86 frontend tests, API types regenerated. With the checksum setting removed, the new test fails on the `x-amz-sdk-checksum-algorithm` header that Backblaze has been reported to refuse.
+- Left: Backblaze set up, then merge; the first upload on the live site is the real check against Backblaze.
+- Decided: D33.
 
 ### 2026-10-15, M4 slices 1 to 6: Outfit Studio and wear log
 
@@ -248,7 +255,7 @@ Things that are deliberately not handled yet. Move them into the README at M11.
 - No password reset by email yet: it needs an email provider. Until then, a forgotten password means a new account. Planned for M11 at the latest.
 - The email address can't be changed yet: doing it safely needs the password again. The name can be changed in Settings.
 - Weather isn't used yet: the city is saved for M6.
-- Photos in R2 aren't backed up. For a personal project that's acceptable.
+- Photos in Backblaze B2 aren't backed up. For a personal project that's acceptable.
 - iPhone HEIC photos upload from Safari, which can read them; other browsers may not.
 - Settings still sits in the main navigation while it has only two neighbours; it moves to the avatar menu alone as Outfits and My Week arrive (D22).
 - The `make` commands assume Linux or macOS. On Windows, use WSL.

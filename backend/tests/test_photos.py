@@ -1,6 +1,7 @@
 import io
 from datetime import UTC, datetime, timedelta
 
+import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from photo_support import photo_bytes
@@ -8,7 +9,7 @@ from PIL import Image
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
-from app.adapters.storage import MemoryStorage
+from app.adapters.storage import MemoryStorage, StorageError
 from app.core.config import Settings, get_settings
 from app.models import ItemImage
 
@@ -93,6 +94,31 @@ def test_a_photo_is_visible_only_to_its_owner(sam: TestClient, ana: TestClient) 
     assert sam.get(photo["url"]).headers["content-type"] == "image/webp"
     assert ana.get(photo["url"]).status_code == 404
     assert ana.get(photo["thumb_url"]).status_code == 404
+
+
+def test_the_browser_keeps_a_photo_for_a_year(sam: TestClient) -> None:
+    # A stored file never changes, and each download from the bucket counts against its
+    # free allowance, so the browser shouldn't ask twice.
+    photo = upload(sam, photo_bytes()).json()
+
+    for url in (photo["url"], photo["thumb_url"]):
+        cache = sam.get(url).headers["cache-control"]
+        assert cache == "private, max-age=31536000, immutable"
+
+
+def test_a_photo_when_storage_is_down_is_a_503_with_a_reason(
+    sam: TestClient, storage: MemoryStorage, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    photo = upload(sam, photo_bytes()).json()
+
+    def unreachable(key: str) -> bytes | None:
+        raise StorageError("timed out")
+
+    monkeypatch.setattr(storage, "get", unreachable)
+    response = sam.get(photo["thumb_url"])
+
+    assert response.status_code == 503
+    assert response.json()["error"]["code"] == "storage_unavailable"
 
 
 def test_photos_need_a_login(client: TestClient) -> None:

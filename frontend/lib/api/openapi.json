@@ -1143,9 +1143,6 @@
               "image/webp": {}
             }
           },
-          "307": {
-            "description": "A short-lived link to the photo in storage"
-          },
           "401": {
             "content": {
               "application/json": {
@@ -1165,6 +1162,16 @@
               }
             },
             "description": "Not Found"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
           },
           "422": {
             "description": "Validation Error",
