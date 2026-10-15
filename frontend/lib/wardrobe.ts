@@ -38,6 +38,8 @@ export type WardrobeFilters = {
   status: string[];
   archived: boolean;
   sort: Sort;
+  /** Only items for these outfit slots (used by the outfit studio). */
+  slot?: string[];
 };
 
 export const LIST_FILTERS = [

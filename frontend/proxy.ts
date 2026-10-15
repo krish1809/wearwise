@@ -19,6 +19,8 @@ export const config = {
   matcher: [
     "/home/:path*",
     "/wardrobe/:path*",
+    "/outfits/:path*",
+    "/worn/:path*",
     "/settings/:path*",
     "/onboarding/:path*",
   ],

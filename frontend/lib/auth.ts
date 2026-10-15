@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/schema";
+import { useHydrated } from "@/lib/hooks";
 
 export type User = components["schemas"]["UserOut"];
 
@@ -19,11 +20,15 @@ export async function fetchMe(): Promise<User | null> {
 }
 
 export function useCurrentUser() {
-  return useQuery({
+  const query = useQuery({
     queryKey: meQueryKey,
     queryFn: fetchMe,
     staleTime: 5 * 60_000,
   });
+  // The shell fetches the user before pages hydrate; pages must still hydrate as the server
+  // rendered them (waiting for the user), then show the user.
+  const hydrated = useHydrated();
+  return hydrated ? query : { ...query, data: undefined };
 }
 
 /** Where to go after logging in. Only a path on this site, so a link can't send people elsewhere. */

@@ -9,6 +9,9 @@ import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/toast";
 import { problemFrom } from "@/lib/api/errors";
 import { useCurrentUser } from "@/lib/auth";
+import { todayIso } from "@/lib/dates";
+import { useWearLogs } from "@/lib/outfits";
+import { listed } from "@/lib/text";
 import { useDismissOnboardingReminder, useProfile } from "@/lib/profile";
 
 export function HomeContent() {
@@ -27,6 +30,7 @@ export function HomeContent() {
           account are in <TextLink href="/settings">Settings</TextLink>.
         </p>
       </div>
+      <Today />
       <FinishSetup />
     </div>
   );
@@ -62,6 +66,43 @@ function FinishSetup() {
         >
           Not now
         </Button>
+      </div>
+    </Card>
+  );
+}
+
+/** What was worn today, or a nudge to log it. */
+function Today() {
+  const logs = useWearLogs({ on: todayIso() });
+  if (!logs.data) return null;
+  const today = logs.data.pages.flatMap((page) => page.logs);
+  const pieces = today.flatMap((log) => log.pieces.map((piece) => piece.name));
+
+  return (
+    <Card className="flex flex-col gap-4">
+      <div>
+        <CardTitle>Today</CardTitle>
+        <CardDescription className="mt-1 max-w-prose">
+          {today.length > 0
+            ? `You wore ${listed(pieces)}.`
+            : "Nothing logged for today yet. Logging what you wear keeps wear counts and laundry right."}
+        </CardDescription>
+      </div>
+      <div className="flex flex-wrap gap-3">
+        {today.length > 0 ? (
+          <Button asChild variant="secondary">
+            <Link href="/worn">See the wear log</Link>
+          </Button>
+        ) : (
+          <>
+            <Button asChild>
+              <Link href="/outfits">Choose an outfit</Link>
+            </Button>
+            <Button asChild variant="secondary">
+              <Link href="/worn/new">Log loose items</Link>
+            </Button>
+          </>
+        )}
       </div>
     </Card>
   );

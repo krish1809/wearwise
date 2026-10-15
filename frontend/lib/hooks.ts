@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 import { checkHealth } from "@/lib/health";
 
@@ -26,4 +26,19 @@ export function useWarmUpBackend(): void {
   useEffect(() => {
     void checkHealth();
   }, []);
+}
+
+const noSubscription = () => () => {};
+
+/**
+ * False while the server renders and while the browser hydrates that HTML; true afterwards.
+ * Data already cached in the browser (such as who is logged in, fetched by the app shell)
+ * must not change that first render, or React's hydration fails.
+ */
+export function useHydrated(): boolean {
+  return useSyncExternalStore(
+    noSubscription,
+    () => true,
+    () => false,
+  );
 }

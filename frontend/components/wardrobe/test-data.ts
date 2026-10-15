@@ -70,6 +70,8 @@ export function makeItem(overrides: Partial<Item> = {}): Item {
     updated_at: "2026-10-13T10:00:00Z",
     photo: null,
     set_members: [],
+    wear_count: 0,
+    last_worn_on: null,
     ...overrides,
   };
 }

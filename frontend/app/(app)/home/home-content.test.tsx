@@ -20,12 +20,14 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-function showHome(profile: Profile) {
-  vi.spyOn(api, "GET").mockImplementation(async (path) =>
-    path === "/api/v1/profile"
-      ? (apiAnswer(200, profile) as never)
-      : (apiAnswer(200, USER) as never),
-  );
+function showHome(profile: Profile, todaysLogs: unknown[] = []) {
+  vi.spyOn(api, "GET").mockImplementation(async (path) => {
+    if (path === "/api/v1/profile") return apiAnswer(200, profile) as never;
+    if (path === "/api/v1/wear-logs") {
+      return apiAnswer(200, { logs: todaysLogs, next_cursor: null }) as never;
+    }
+    return apiAnswer(200, USER) as never;
+  });
   renderWithQueries(<HomeContent />);
 }
 
@@ -51,4 +53,44 @@ it("says nothing about setup otherwise", async () => {
 
   expect(await screen.findByText("Hello, Sam")).toBeDefined();
   expect(screen.queryByText("Finish setting up WearWise")).toBeNull();
+});
+
+it("nudges to log today's outfit when nothing is logged", async () => {
+  showHome(makeProfile());
+
+  expect(await screen.findByText(/Nothing logged for today yet/)).toBeDefined();
+  expect(
+    screen.getByRole("link", { name: "Choose an outfit" }).getAttribute("href"),
+  ).toBe("/outfits");
+});
+
+it("says what was worn today", async () => {
+  const piece = (name: string) => ({
+    slot: "top",
+    item: null,
+    name,
+    removed: false,
+  });
+  showHome(makeProfile(), [
+    {
+      id: "log-1",
+      worn_on: "2026-10-15",
+      outfit_id: null,
+      outfit_name: null,
+      occasion_id: null,
+      note: null,
+      pieces: [
+        piece("Navy casual shirt"),
+        piece("Olive chinos"),
+        piece("Brown loafers"),
+      ],
+      created_at: "2026-10-15T08:00:00Z",
+    },
+  ]);
+
+  expect(
+    await screen.findByText(
+      "You wore Navy casual shirt, olive chinos and brown loafers.",
+    ),
+  ).toBeDefined();
 });

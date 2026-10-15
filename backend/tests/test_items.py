@@ -176,6 +176,7 @@ def test_filters_combine(sam: TestClient) -> None:
         "Navy tee",
     ]
     assert listed(sam, group="bottoms") == ["Winter jeans"]
+    assert listed(sam, slot="bottom") == ["Winter jeans"]
     assert listed(sam, category=["tshirt", "jeans"], season="winter") == [
         "Winter jeans",
         "Any-season tee",

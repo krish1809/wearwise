@@ -3,6 +3,7 @@
 from app.models.app_meta import AppMeta
 from app.models.base import Base
 from app.models.item import Item, ItemImage
+from app.models.outfit import Outfit, OutfitItem, WearLog, WearLogItem
 from app.models.profile import BrandNote, Profile
 from app.models.rate_limit import RateLimitHit
 from app.models.reference import (
@@ -10,6 +11,7 @@ from app.models.reference import (
     CategoryGroup,
     ColorFamily,
     Occasion,
+    OutfitTemplate,
     StyleProfile,
     VocabularyTerm,
 )
@@ -26,10 +28,15 @@ __all__ = [
     "Item",
     "ItemImage",
     "Occasion",
+    "Outfit",
+    "OutfitItem",
+    "OutfitTemplate",
     "Profile",
     "RateLimitHit",
     "StyleProfile",
     "User",
     "UserSession",
     "VocabularyTerm",
+    "WearLog",
+    "WearLogItem",
 ]

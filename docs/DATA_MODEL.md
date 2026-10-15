@@ -72,13 +72,15 @@ Built in M3 as above, with these choices: `name` is optional and the app shows "
 
 ## Outfits and wear (M4, M5)
 
-**`outfits`**: `user_id`, `name`, `template_id`, `occasion_id`, `source` (manual, engine, stylist), `is_favorite`, `engine_version`, `score`, `reasons` (json).
+**`outfit_templates`** (reference, from `taxonomy.json`): `id`, `name`, `required` (json: slot, and optionally `categories` or `exclude_categories`), `optional[]` (slots), `position`.
 
-**`outfit_items`**: `outfit_id`, `item_id`, `slot`. One row per item.
+**`outfits`**: `user_id`, `name` (optional), `template_id`, `occasion_id`, `is_favorite`. Built in M4; `source` (manual, engine, stylist), `engine_version`, `score`, and `reasons` (json) arrive with the engine in M5.
 
-**`wear_logs`**: `user_id`, `worn_on` (date), `outfit_id` (nullable), `occasion_id`, `note`.
+**`outfit_items`**: `outfit_id`, `item_id` (null once the item is deleted), `slot`, `item_name` (kept so a deleted item shows as removed). One row per slot, unique on `(outfit_id, slot)` (D30).
 
-**`wear_log_items`**: `wear_log_id`, `item_id`. This table is the truth for every wear statistic. An outfit worn is expanded into its items at logging time, so later edits to the outfit don't rewrite history.
+**`wear_logs`**: `user_id`, `worn_on` (date), `outfit_id` (nullable; null once the outfit is deleted), `occasion_id`, `note`. Indexed on `(user_id, worn_on)`.
+
+**`wear_log_items`**: `wear_log_id`, `item_id` (null once the item is deleted), `slot`, `item_name`. Unique on `(wear_log_id, item_id)`. This table is the truth for every wear statistic. An outfit worn is expanded into its items at logging time, so later edits to the outfit don't rewrite history. `items.wears_since_wash` is recounted from it as wears after `items.last_washed_on` (D31).
 
 **`suggestion_feedback`**: `user_id`, `item_ids[]` (sorted), `occasion_id`, `verdict` (like, dislike, skip, saved, worn), `reason` (optional), `engine_version`.
 

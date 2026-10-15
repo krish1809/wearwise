@@ -17,8 +17,14 @@ export const REFERENCE: Reference = {
     { id: "eu", name: "EU" },
   ],
   slots: [
-    { id: "top", name: "Top" },
-    { id: "footwear", name: "Footwear" },
+    { id: "top", name: "Top", role: "core" },
+    { id: "bottom", name: "Bottom", role: "core" },
+    { id: "one_piece", name: "One-piece", role: "core" },
+    { id: "layer", name: "Layer", role: "core" },
+    { id: "footwear", name: "Footwear", role: "core" },
+    { id: "belt", name: "Belt", role: "accessory" },
+    { id: "watch", name: "Watch", role: "accessory" },
+    { id: "fragrance", name: "Fragrance", role: "finishing" },
   ],
   patterns: [
     { id: "solid", name: "Solid" },

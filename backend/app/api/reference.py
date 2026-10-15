@@ -20,6 +20,11 @@ class Term(BaseModel):
     name: str
 
 
+class SlotTerm(Term):
+    # "core" (top, bottom, one-piece, layer, footwear), "accessory", or "finishing".
+    role: str
+
+
 class ColorFamilyOut(Term):
     # Empty for multicolour.
     hex: str | None
@@ -54,7 +59,7 @@ class ReferenceOut(BaseModel):
     sections: list[Term]
     fits: list[Term]
     sizing_systems: list[Term]
-    slots: list[Term]
+    slots: list[SlotTerm]
     patterns: list[Term]
     fabrics: list[Term]
     seasons: list[Term]
@@ -78,7 +83,7 @@ def get_reference(_: CurrentUser, db: SessionDep) -> ReferenceOut:
         sections=terms("section"),
         fits=terms("fit"),
         sizing_systems=terms("sizing_system"),
-        slots=terms("slot"),
+        slots=[SlotTerm.model_validate(t) for t in reference.terms(db, "slot")],
         patterns=terms("pattern"),
         fabrics=terms("fabric"),
         seasons=terms("season"),

@@ -453,6 +453,135 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/outfits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Outfits
+         * @description Saved outfits, newest first. `item_id` finds the outfits an item is part of.
+         */
+        get: operations["list_outfits"];
+        put?: never;
+        /**
+         * Create Outfit
+         * @description Save an outfit. It must fill a template: a top, a bottom, and footwear, for example.
+         */
+        post: operations["create_outfit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/outfits/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Check
+         * @description Which template these items fill, and what's still needed. Changes nothing.
+         */
+        post: operations["check"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/outfits/{outfit_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Outfit */
+        get: operations["get_outfit"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete Outfit
+         * @description Delete the outfit. What was worn stays in the wear log.
+         */
+        delete: operations["delete_outfit"];
+        options?: never;
+        head?: never;
+        /** Update Outfit */
+        patch: operations["update_outfit"];
+        trace?: never;
+    };
+    "/api/v1/outfits/{outfit_id}/duplicate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Duplicate Outfit
+         * @description A copy to vary, saved straight away.
+         */
+        post: operations["duplicate_outfit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/wear-logs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Logs
+         * @description What was worn, newest day first. Filter to one item, one outfit, or one day.
+         */
+        get: operations["list_logs"];
+        put?: never;
+        /**
+         * Log Wear
+         * @description Mark an outfit or some items as worn. The same outfit on the same day is logged once:
+         *     a repeat answers 200 with the existing log.
+         */
+        post: operations["log_wear"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/wear-logs/{log_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Log */
+        delete: operations["delete_log"];
+        options?: never;
+        head?: never;
+        /** Update Log */
+        patch: operations["update_log"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -559,6 +688,11 @@ export interface components {
             /** Custom */
             custom: boolean;
         };
+        /** CheckRequest */
+        CheckRequest: {
+            /** Item Ids */
+            item_ids: string[];
+        };
         /** ColorFamilyOut */
         ColorFamilyOut: {
             /** Id */
@@ -626,8 +760,16 @@ export interface components {
             display_name: string;
             /** Category Id */
             category_id: string;
+            /** Slot */
+            slot: string;
             /** Color Primary */
             color_primary: string;
+            /** Color Hex */
+            color_hex: string | null;
+            /** Status */
+            status: string;
+            /** Archived */
+            archived: boolean;
             photo: components["schemas"]["PhotoRef"] | null;
         };
         /**
@@ -750,6 +892,10 @@ export interface components {
             photo: components["schemas"]["PhotoRef"] | null;
             /** Set Members */
             set_members: components["schemas"]["ItemBrief"][];
+            /** Wear Count */
+            wear_count: number;
+            /** Last Worn On */
+            last_worn_on: string | null;
         };
         /** ItemOut */
         ItemOut: {
@@ -916,6 +1062,106 @@ export interface components {
             /** Hint */
             hint: string | null;
         };
+        /** OutfitCheck */
+        OutfitCheck: {
+            /** Complete */
+            complete: boolean;
+            /** Template Id */
+            template_id: string | null;
+            /** Template Name */
+            template_name: string | null;
+            /** Missing */
+            missing: string[];
+            /** Missing Names */
+            missing_names: string[];
+            /** Misplaced Item Ids */
+            misplaced_item_ids: string[];
+            /** Crowded */
+            crowded: string[];
+            /** Optional Slots */
+            optional_slots: string[];
+            /** Message */
+            message: string | null;
+        };
+        /** OutfitCreate */
+        OutfitCreate: {
+            /** Item Ids */
+            item_ids: string[];
+            /** Name */
+            name?: string | null;
+            /** Occasion Id */
+            occasion_id?: string | null;
+            /** Is Favorite */
+            is_favorite?: boolean | null;
+        };
+        /** OutfitOut */
+        OutfitOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string | null;
+            /** Display Name */
+            display_name: string;
+            /** Template Id */
+            template_id: string | null;
+            /** Occasion Id */
+            occasion_id: string | null;
+            /** Is Favorite */
+            is_favorite: boolean;
+            /** Complete */
+            complete: boolean;
+            /** Pieces */
+            pieces: components["schemas"]["OutfitPiece"][];
+            /** Wear Count */
+            wear_count: number;
+            /** Last Worn On */
+            last_worn_on: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** OutfitPage */
+        OutfitPage: {
+            /** Outfits */
+            outfits: components["schemas"]["OutfitOut"][];
+            /** Next Cursor */
+            next_cursor: string | null;
+        };
+        /** OutfitPiece */
+        OutfitPiece: {
+            /** Slot */
+            slot: string;
+            item: components["schemas"]["ItemBrief"] | null;
+            /** Name */
+            name: string;
+            /** Removed */
+            removed: boolean;
+        };
+        /**
+         * OutfitUpdate
+         * @description Only the fields sent change. Sending item_ids replaces the pieces: that is how one piece
+         *     is swapped for another.
+         */
+        OutfitUpdate: {
+            /** Item Ids */
+            item_ids?: string[] | null;
+            /** Name */
+            name?: string | null;
+            /** Occasion Id */
+            occasion_id?: string | null;
+            /** Is Favorite */
+            is_favorite?: boolean | null;
+        };
         /** PhotoOut */
         PhotoOut: {
             /**
@@ -1035,7 +1281,7 @@ export interface components {
             /** Sizing Systems */
             sizing_systems: components["schemas"]["Term"][];
             /** Slots */
-            slots: components["schemas"]["Term"][];
+            slots: components["schemas"]["SlotTerm"][];
             /** Patterns */
             patterns: components["schemas"]["Term"][];
             /** Fabrics */
@@ -1085,6 +1331,15 @@ export interface components {
             bottom?: components["schemas"]["SizeChoice"] | null;
             shoe?: components["schemas"]["SizeChoice"] | null;
         };
+        /** SlotTerm */
+        SlotTerm: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Role */
+            role: string;
+        };
         /** StyleProfileOut */
         StyleProfileOut: {
             /** Id */
@@ -1131,6 +1386,84 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /**
+         * WearLogCreate
+         * @description An outfit, or loose items, worn on a day. Logging an outfit copies its pieces.
+         */
+        WearLogCreate: {
+            /**
+             * Worn On
+             * Format: date
+             */
+            worn_on: string;
+            /** Outfit Id */
+            outfit_id?: string | null;
+            /** Item Ids */
+            item_ids?: string[] | null;
+            /** Occasion Id */
+            occasion_id?: string | null;
+            /** Note */
+            note?: string | null;
+        };
+        /** WearLogOut */
+        WearLogOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Worn On
+             * Format: date
+             */
+            worn_on: string;
+            /** Outfit Id */
+            outfit_id: string | null;
+            /** Outfit Name */
+            outfit_name: string | null;
+            /** Occasion Id */
+            occasion_id: string | null;
+            /** Note */
+            note: string | null;
+            /** Pieces */
+            pieces: components["schemas"]["WornPiece"][];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** WearLogPage */
+        WearLogPage: {
+            /** Logs */
+            logs: components["schemas"]["WearLogOut"][];
+            /** Next Cursor */
+            next_cursor: string | null;
+        };
+        /**
+         * WearLogUpdate
+         * @description Only the fields sent change. item_ids replaces what was worn.
+         */
+        WearLogUpdate: {
+            /** Worn On */
+            worn_on?: string | null;
+            /** Item Ids */
+            item_ids?: string[] | null;
+            /** Occasion Id */
+            occasion_id?: string | null;
+            /** Note */
+            note?: string | null;
+        };
+        /** WornPiece */
+        WornPiece: {
+            /** Slot */
+            slot: string;
+            item: components["schemas"]["ItemBrief"] | null;
+            /** Name */
+            name: string;
+            /** Removed */
+            removed: boolean;
         };
     };
     responses: never;
@@ -2151,6 +2484,7 @@ export interface operations {
                 q?: string;
                 group?: string[] | null;
                 category?: string[] | null;
+                slot?: string[] | null;
                 color?: string[] | null;
                 season?: string[] | null;
                 occasion?: string[] | null;
@@ -2655,6 +2989,599 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_outfits: {
+        parameters: {
+            query?: {
+                favorite?: boolean;
+                occasion?: string | null;
+                item_id?: string | null;
+                limit?: number;
+                cursor?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OutfitPage"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_outfit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OutfitCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OutfitOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    check: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CheckRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OutfitCheck"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_outfit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                outfit_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OutfitOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_outfit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                outfit_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_outfit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                outfit_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OutfitUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OutfitOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    duplicate_outfit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                outfit_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OutfitOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_logs: {
+        parameters: {
+            query?: {
+                item_id?: string | null;
+                outfit_id?: string | null;
+                on?: string | null;
+                limit?: number;
+                cursor?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WearLogPage"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    log_wear: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WearLogCreate"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WearLogOut"];
+                };
+            };
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WearLogOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_log: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                log_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_log: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                log_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WearLogUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WearLogOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
         };

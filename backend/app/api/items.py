@@ -7,14 +7,14 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, Query, status
 from pydantic import AfterValidator, BaseModel, BeforeValidator, ConfigDict, Field
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.deps import CurrentUser, SessionDep, StorageDep
 from app.api.errors import ApiError, error_responses
 from app.api.fields import Amount, IdList, NoteText, ShortText, tidy_text
-from app.models import ColorFamily, Item, ItemImage, User
-from app.services import categories, items
+from app.api.item_views import ItemBrief, Names, PhotoRef, photo_ref
+from app.models import Item, ItemImage, User
+from app.services import items, wear
 
 router = APIRouter(prefix="/items", tags=["items"])
 
@@ -97,14 +97,6 @@ class ItemUpdate(ItemFields):
     color_primary: str | None = None
 
 
-class PhotoRef(BaseModel):
-    id: uuid.UUID
-    url: str
-    thumb_url: str
-    width: int
-    height: int
-
-
 class ItemOut(BaseModel):
     id: uuid.UUID
     category_id: str
@@ -139,17 +131,12 @@ class ItemOut(BaseModel):
     photo: PhotoRef | None
 
 
-class ItemBrief(BaseModel):
-    id: uuid.UUID
-    display_name: str
-    category_id: str
-    color_primary: str
-    photo: PhotoRef | None
-
-
 class ItemDetailOut(ItemOut):
     # The other items in its matching set.
     set_members: list[ItemBrief]
+    # From the wear log.
+    wear_count: int
+    last_worn_on: date | None
 
 
 class ItemPage(BaseModel):
@@ -166,72 +153,31 @@ class SetLink(BaseModel):
     item_id: uuid.UUID
 
 
-class _Names:
-    """Category and colour names, looked up once per request, for display names."""
-
-    def __init__(self, db: Session, user: User) -> None:
-        self.categories = {c.id: c.name for c in categories.list_categories(db, user)}
-        self.colors = {
-            id_: name for id_, name in db.execute(select(ColorFamily.id, ColorFamily.name))
-        }
-
-    def display_name(self, item: Item) -> str:
-        if item.name:
-            return item.name
-        colour = _short(self.colors.get(item.color_primary, ""))
-        category = _short(self.categories.get(item.category_id, "item"))
-        name = f"{colour} {category[:1].lower()}{category[1:]}".strip()
-        return name[:1].upper() + name[1:]
-
-
-def _short(name: str) -> str:
-    # "Cream / off-white" -> "Cream"; "Gold (metal)" -> "Gold".
-    return name.split(" / ")[0].split(" (")[0]
-
-
-def _photo_ref(image: ItemImage | None) -> PhotoRef | None:
-    if image is None:
-        return None
-    return PhotoRef(
-        id=image.id,
-        url=f"/api/v1/photos/{image.id}/full",
-        thumb_url=f"/api/v1/photos/{image.id}/thumb",
-        width=image.width,
-        height=image.height,
-    )
-
-
 _COLUMNS = [
     name for name in ItemOut.model_fields if name not in {"display_name", "archived", "photo"}
 ]
 
 
-def _out(item: Item, names: _Names, photo: ItemImage | None) -> dict[str, Any]:
+def _out(item: Item, names: Names, photo: ItemImage | None) -> dict[str, Any]:
     return {
         **{name: getattr(item, name) for name in _COLUMNS},
         "display_name": names.display_name(item),
         "archived": item.archived_at is not None,
-        "photo": _photo_ref(photo),
+        "photo": photo_ref(photo),
     }
 
 
 def _detail(db: Session, user: User, item: Item) -> ItemDetailOut:
-    names = _Names(db, user)
+    names = Names(db, user)
     members = items.set_members(db, user, item)
     photos = items.primary_photos(db, [item.id, *(m.id for m in members)])
+    worn = wear.item_wear(db, [item.id]).get(item.id)
     return ItemDetailOut.model_validate(
         {
             **_out(item, names, photos.get(item.id)),
-            "set_members": [
-                ItemBrief(
-                    id=m.id,
-                    display_name=names.display_name(m),
-                    category_id=m.category_id,
-                    color_primary=m.color_primary,
-                    photo=_photo_ref(photos.get(m.id)),
-                )
-                for m in members
-            ],
+            "set_members": [names.brief(m, photos.get(m.id)) for m in members],
+            "wear_count": worn.count if worn else 0,
+            "last_worn_on": worn.last_worn_on if worn else None,
         }
     )
 
@@ -258,6 +204,7 @@ def list_items(
     q: Annotated[str, Query(max_length=100)] = "",
     group: ListParam = None,
     category: ListParam = None,
+    slot: ListParam = None,
     color: ListParam = None,
     season: ListParam = None,
     occasion: ListParam = None,
@@ -274,6 +221,7 @@ def list_items(
         q=q,
         groups=group or [],
         categories=category or [],
+        slots=slot or [],
         colors=color or [],
         seasons=season or [],
         occasions=occasion or [],
@@ -286,7 +234,7 @@ def list_items(
     except items.BadCursor as error:
         message = "That page link has expired. Start from the top."
         raise ApiError(422, "bad_cursor", message) from error
-    names = _Names(db, user)
+    names = Names(db, user)
     photos = items.primary_photos(db, [item.id for item in page.items])
     return ItemPage(
         items=[ItemOut.model_validate(_out(i, names, photos.get(i.id))) for i in page.items],

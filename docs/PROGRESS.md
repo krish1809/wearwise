@@ -4,14 +4,14 @@ The running state of the project, updated at the end of every slice. Keep it sho
 
 ## Now
 
-- **Last updated:** 2026-10-13
-- **Current milestone:** M3 Wardrobe, built and checked locally. M1 and M2 are built and checked, staged for one commit on `m1-design-auth`; nothing is merged or deployed past M0 yet.
+- **Last updated:** 2026-10-15
+- **Current milestone:** M4 Outfit Studio and wear log, built and checked locally on branch `m4-outfits`. M1 to M3 are committed and pushed (`m1-design-auth`, `m3-wardrobe`) but not merged; production is still at M0.
 - **Current slice:** none open.
 - **Next action (owner):**
-  1. Commit the staged M1 and M2 changes, push `m1-design-auth`, open a pull request, merge when CI passes.
-  2. Create a branch for M3 (`git switch -c m3-wardrobe`), commit the rest, push, and open a second pull request.
-  3. Before merging it, set up Cloudflare R2 (`docs/DEPLOYMENT.md`, step 4): production won't start without photo storage.
-  4. After it deploys, add your own 25 to 30 items on the live site; that is M3's last "Done when" item.
+  1. Commit M4 on `m4-outfits` (the files are staged) and push the branch.
+  2. Set up Cloudflare R2 and add its three secrets in Render (`docs/DEPLOYMENT.md`, step 4). Production won't start without photo storage, so this comes before merging.
+  3. Open one pull request from `m4-outfits` into `main`. It carries M1 to M4, since each branch was built on the last. Merge it with a merge commit once CI passes.
+  4. Check the live site against M1 to M4's "Done when" lists, then add your own 25 to 30 items.
 
 M1 slices:
 
@@ -47,7 +47,18 @@ M3 slices:
 | 4 | Wardrobe grid: search, filter rail and sheet, removable chips, sort, load more | done |
 | 5 | Add, edit, and item pages; custom categories page | done |
 | 6 | Demo wardrobe script; browser walkthrough; docs | done (your own 25 to 30 items: after deploy) |
-- **Overall:** 1 of 12 milestones released (M0); M1 to M3 built, waiting to merge. v1.0 is M0 to M5.
+
+M4 slices:
+
+| # | Slice | State |
+|---|---|---|
+| 1 | Outfit templates from the seed; template rules in the engine; slot roles | done |
+| 2 | Outfits API: save, check, edit and swap, favourite, duplicate, delete; removed pieces | done |
+| 3 | Wear log API: log an outfit or loose items, edit, delete; recounted wears since wash | done |
+| 4 | Outfit board, studio, finishing touches | done |
+| 5 | Outfits list and page, wear log pages, item wear details, Home's Today card | done |
+| 6 | Browser walkthrough at 375 px and 1440 px; docs | done |
+- **Overall:** 1 of 12 milestones released (M0); M1 to M4 built, waiting to merge. v1.0 is M0 to M5.
 
 Live:
 
@@ -118,7 +129,7 @@ M0 code, merged in pull request #1 and deployed:
 | M1 | Design system, shell, auth | register, log in, and move around a styled, empty app | built, not merged | | |
 | M2 | Onboarding and profile | set (or skip) sizes, style, budget; edit them later | built, not merged | | |
 | M3 | Wardrobe | add, find, edit everything you own, with photos | built, not merged | | |
-| M4 | Outfit Studio and wear log | build and save outfits; log what you wore | not started | | |
+| M4 | Outfit Studio and wear log | build and save outfits; log what you wore | built, not merged | | |
 | M5 | Outfit engine (v1.0) | get ranked outfit suggestions with reasons | not started | | v1.0 release |
 | M6 | My Week | plan seven days with weather, laundry, events, packing | not started | | |
 | M7 | Insights | see cost per wear, versatility, orphans, coverage | not started | | |
@@ -140,6 +151,13 @@ M0 code, merged in pull request #1 and deployed:
 ## Log
 
 Add an entry per slice, newest first.
+
+### 2026-10-15, M4 slices 1 to 6: Outfit Studio and wear log
+
+- Built: `outfit_templates` (seeded and cross-checked), `outfits`, `outfit_items`, `wear_logs`, `wear_log_items`, `items.last_washed_on`, and `vocabulary_terms.role` (slot kinds from the seed) in one migration. Template rules as plain functions (`app/engine/outfits.py`). API: outfits (list with favourite, occasion, and item filters; check; save; view; edit and swap; duplicate; delete) and the wear log (list by item, outfit, or day; log an outfit or loose items; edit; delete). Wear counts, last worn, and wears since washing on item pages. Frontend: Outfits in the navigation; the flat-lay outfit board with its swatch strip; the studio (pick by slot, live "still needed" line, finishing touches, name, occasion, favourite); outfit pages ("I wore this today", another day, favourite, duplicate, edit, delete, when you wore it); the wear log (by day, edit, delete) and logging loose items; the item page's wear card and outfits; Home's Today card.
+- Checked: `make check` passes (ruff, mypy on 82 files, 154 backend tests, TypeScript, 86 frontend tests, build). The migration applies, rolls back, and reapplies with no drift. Tests cover the template rules (separates, one-piece, saree, crowded slots, misplaced pieces, the empty start), saving and checking outfits, swapping, duplicating, removed pieces after an item is deleted, the wear log (double taps, future days, edits and deletes recounting, washing, history after outfits and items change), and ownership for both. A browser walkthrough at 1440 px and 375 px: empty outfits, the studio slot by slot with its "still needed" line, a finishing touch, save, "I wore this today" (then disabled), favourite, duplicate, swap the shoes, favourites filter, the item page's wear card and outfits, deleting an item an outfit uses (shown as removed), the wear log (edit a note, log loose items for yesterday, delete), and Home's Today card; no console errors. Fixed while testing: the best-fit rule pointing an empty outfit at one-piece; slot buttons whose spoken names ran together ("Choosetop"); outfit cards that read every piece aloud before the outfit's name; a hydration mismatch on a full page load, because the shell had fetched the user before the page hydrated (the user is now exposed only after hydration).
+- Left: merging M1 to M3, then M4.
+- Decided: D30 (outfits and templates), D31 (wear log).
 
 ### 2026-10-13, M3 slices 1 to 6: wardrobe
 

@@ -60,13 +60,15 @@ class CategoryGroup(TimestampMixin, Base):
 
 
 class VocabularyTerm(TimestampMixin, Base):
-    """Short fixed lists from taxonomy.json: sections, fits, sizing systems."""
+    """Short fixed lists from taxonomy.json: sections, fits, sizing systems, slots, and more."""
 
     __tablename__ = "vocabulary_terms"
 
     kind: Mapped[str] = mapped_column(primary_key=True)
     id: Mapped[str] = mapped_column(primary_key=True)
     name: Mapped[str]
+    # Slots only: "core" (top, bottom, footwear...), "accessory", or "finishing" (fragrance).
+    role: Mapped[str | None]
     position: Mapped[int]
 
 
@@ -105,3 +107,18 @@ Index(
     unique=True,
     postgresql_where=Category.user_id.is_not(None),
 )
+
+
+class OutfitTemplate(TimestampMixin, Base):
+    """A shape an outfit can take, such as top, bottom, and footwear. From taxonomy.json."""
+
+    __tablename__ = "outfit_templates"
+
+    id: Mapped[str] = mapped_column(primary_key=True)
+    name: Mapped[str]
+    # Each requirement: {"slot": ..., and optionally "categories": [...] (only these) or
+    # "exclude_categories": [...] (not these)}.
+    required: Mapped[list[dict[str, Any]]] = mapped_column(JSONB)
+    # Slots that may be added: layers, accessories, fragrance.
+    optional: Mapped[list[str]] = mapped_column(ARRAY(String), server_default="{}")
+    position: Mapped[int]

@@ -1,7 +1,7 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { House, Settings, Shirt } from "lucide-react";
+import { House, Layers, Settings, Shirt } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Suspense, useEffect } from "react";
@@ -20,6 +20,7 @@ import { cn, focusRing } from "@/lib/utils";
 const NAV = [
   { href: "/home", label: "Home", icon: House },
   { href: "/wardrobe", label: "Wardrobe", icon: Shirt },
+  { href: "/outfits", label: "Outfits", icon: Layers },
   { href: "/settings", label: "Settings", icon: Settings },
 ] as const;
 

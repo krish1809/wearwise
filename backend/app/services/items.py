@@ -16,7 +16,7 @@ from sqlalchemy import Select, and_, func, or_, select, update
 from sqlalchemy.orm import Session
 
 from app.models import Category, ColorFamily, Item, ItemImage, Occasion, User
-from app.services import categories, photos, reference
+from app.services import categories, photos, reference, wear
 
 Sort = Literal["newest", "oldest", "category"]
 
@@ -48,6 +48,7 @@ class Filters:
     q: str = ""
     groups: list[str] = field(default_factory=list)
     categories: list[str] = field(default_factory=list)
+    slots: list[str] = field(default_factory=list)
     colors: list[str] = field(default_factory=list)
     seasons: list[str] = field(default_factory=list)
     occasions: list[str] = field(default_factory=list)
@@ -126,11 +127,12 @@ def update_item(db: Session, user: User, item: Item, changes: dict[str, Any]) ->
 
     if category is not None:
         item.slot = category.slot
-    # Back from the laundry: clean again.
-    if changes.get("status") == "available" and item.status == "laundry":
-        item.wears_since_wash = 0
+    back_from_laundry = changes.get("status") == "available" and item.status == "laundry"
     for name, value in changes.items():
         setattr(item, name, value)
+    if back_from_laundry:
+        # Clean again: earlier wears stop counting towards the next wash.
+        wear.mark_washed(db, item, wear.today())
 
     keys: list[str] = []
     if replacing_photo:
@@ -255,6 +257,8 @@ def _filtered(query: Select[Item], user: User, f: Filters) -> Select[Item]:
         query = query.where(Category.group_id.in_(f.groups))
     if f.categories:
         query = query.where(Item.category_id.in_(f.categories))
+    if f.slots:
+        query = query.where(Item.slot.in_(f.slots))
     if f.colors:
         query = query.where(
             or_(Item.color_primary.in_(f.colors), Item.color_secondary.in_(f.colors))

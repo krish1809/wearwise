@@ -20,6 +20,7 @@ from app.models import (
     CategoryGroup,
     ColorFamily,
     Occasion,
+    OutfitTemplate,
     StyleProfile,
     VocabularyTerm,
 )
@@ -65,13 +66,18 @@ def seed_reference_data(db: Session, seed_dir: Path = SEED_DIR) -> dict[str, int
     for kind, key in VOCABULARY_KINDS.items():
         entries = taxonomy[key]
         for position, entry in enumerate(entries):
-            # Some lists are bare ids ("slim"); others carry a display name.
+            # Some lists are bare ids ("slim"); others carry a display name, and slots a kind.
             term_id = entry if isinstance(entry, str) else entry["id"]
             name = entry["name"] if isinstance(entry, dict) else _title(entry)
-            vocabulary.append({"kind": kind, "id": term_id, "name": name, "position": position})
+            role = entry.get("kind") if isinstance(entry, dict) else None
+            vocabulary.append(
+                {"kind": kind, "id": term_id, "name": name, "role": role, "position": position}
+            )
     # The formality scale is a mapping, "1": "Lounge / sport" to "5": "Formal / ceremonial".
     for position, (level, name) in enumerate(sorted(taxonomy["formality_scale"].items())):
-        vocabulary.append({"kind": "formality", "id": level, "name": name, "position": position})
+        vocabulary.append(
+            {"kind": "formality", "id": level, "name": name, "role": None, "position": position}
+        )
 
     categories = taxonomy["categories"]
     _ids("taxonomy.json categories", categories)
@@ -87,6 +93,22 @@ def seed_reference_data(db: Session, seed_dir: Path = SEED_DIR) -> dict[str, int
             problems.append(f"sections {sorted(set(category['sections']) - section_ids)}")
         if problems:
             raise SeedError(f"Category {category['id']!r} has unknown {', '.join(problems)}")
+
+    templates = taxonomy["outfit_templates"]
+    _ids("taxonomy.json outfit_templates", templates)
+    category_ids = {c["id"] for c in categories}
+    for template in templates:
+        named_slots = [r["slot"] for r in template["required"]] + template["optional"]
+        named_categories = [
+            c
+            for r in template["required"]
+            for c in r.get("categories", []) + r.get("exclude_categories", [])
+        ]
+        strangers = sorted(set(named_slots) - slot_ids) + sorted(
+            set(named_categories) - category_ids
+        )
+        if strangers:
+            raise SeedError(f"Outfit template {template['id']!r} names unknown {strangers}")
 
     changed = {
         "category_groups": _upsert(
@@ -157,6 +179,20 @@ def seed_reference_data(db: Session, seed_dir: Path = SEED_DIR) -> dict[str, int
                     "position": i,
                 }
                 for i, c in enumerate(categories)
+            ],
+        ),
+        "outfit_templates": _upsert(
+            db,
+            OutfitTemplate,
+            [
+                {
+                    "id": t["id"],
+                    "name": t["name"],
+                    "required": t["required"],
+                    "optional": t["optional"],
+                    "position": i,
+                }
+                for i, t in enumerate(templates)
             ],
         ),
     }

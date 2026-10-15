@@ -48,7 +48,10 @@ class Item(IdMixin, TimestampMixin, Base):
     status: Mapped[str] = mapped_column(default="available", server_default="available")
     # Null for things that aren't washed on a schedule.
     wears_before_wash: Mapped[int | None] = mapped_column(SmallInteger)
+    # Wears logged after the last wash; recounted from the wear log whenever it changes.
     wears_since_wash: Mapped[int] = mapped_column(SmallInteger, default=0, server_default="0")
+    # When it last came back from the laundry. Wears on or before this day don't count.
+    last_washed_on: Mapped[date | None] = mapped_column(Date)
     # Items sharing a set id are a matching set, such as a suit's jacket and trousers.
     set_id: Mapped[uuid.UUID | None] = mapped_column(index=True)
     # Extras for one slot, such as a fragrance's scent family.

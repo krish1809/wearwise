@@ -25,11 +25,15 @@ import { Field } from "@/components/ui/field";
 import { Select } from "@/components/ui/select";
 import { toast } from "@/components/ui/toast";
 import { ItemPhoto } from "@/components/wardrobe/item-photo";
+import { MarkWorn } from "@/components/outfits/mark-worn";
 import { SetPanel } from "@/components/wardrobe/set-panel";
 import { BackLink } from "@/components/wardrobe/wardrobe-data";
 import { ApiRequestError, problemFrom } from "@/lib/api/errors";
+import { dayPhrase, todayIso } from "@/lib/dates";
 import { formatRupees } from "@/lib/money";
+import { useOutfits } from "@/lib/outfits";
 import { type Reference, useReference } from "@/lib/profile";
+import { cn, focusRing } from "@/lib/utils";
 import {
   type Category,
   type Item,
@@ -255,6 +259,8 @@ function ItemDetails({
                 </div>
               ))}
           </dl>
+          <WearCard item={item} />
+          <ItemOutfits itemId={item.id} />
           <Card>
             <CardTitle>Matching set</CardTitle>
             <CardDescription className="mt-1">
@@ -325,5 +331,68 @@ function DeleteItem({ item }: { item: Item }) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function WearCard({ item }: { item: Item }) {
+  const wash =
+    item.wears_before_wash === null
+      ? null
+      : item.wears_since_wash >= item.wears_before_wash
+        ? "Due a wash."
+        : `${item.wears_since_wash} of ${item.wears_before_wash} ${item.wears_before_wash === 1 ? "wear" : "wears"} before a wash.`;
+  return (
+    <Card className="flex flex-col gap-4">
+      <div>
+        <CardTitle>Wear</CardTitle>
+        <CardDescription className="mt-1">
+          {item.wear_count && item.last_worn_on
+            ? `Worn ${item.wear_count} ${item.wear_count === 1 ? "time" : "times"}, last ${dayPhrase(item.last_worn_on)}.`
+            : "Not worn yet."}{" "}
+          {wash}
+        </CardDescription>
+      </div>
+      {!item.archived && (
+        <MarkWorn
+          what={{ item_ids: [item.id] }}
+          wornToday={item.last_worn_on === todayIso()}
+        />
+      )}
+      <Link
+        href="/worn"
+        className={cn(
+          "self-start rounded text-sm font-medium text-indigo underline underline-offset-4",
+          focusRing,
+        )}
+      >
+        See the wear log
+      </Link>
+    </Card>
+  );
+}
+
+function ItemOutfits({ itemId }: { itemId: string }) {
+  const outfits = useOutfits({ favorite: false, itemId });
+  const found = (outfits.data?.pages ?? []).flatMap((page) => page.outfits);
+  if (found.length === 0) return null;
+  return (
+    <Card>
+      <CardTitle>In your outfits</CardTitle>
+      <ul className="mt-3 flex flex-col gap-1">
+        {found.map((outfit) => (
+          <li key={outfit.id}>
+            <Link
+              href={`/outfits/${outfit.id}`}
+              className={cn(
+                "block truncate rounded py-1.5 font-medium hover:underline",
+                focusRing,
+              )}
+            >
+              {outfit.display_name}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </Card>
   );
 }
