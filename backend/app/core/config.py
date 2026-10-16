@@ -6,8 +6,9 @@ dashboard, and real environment variables always win over the file.
 
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
-from pydantic import ValidationError, field_validator
+from pydantic import Field, ValidationError, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 ROOT_ENV_FILE = Path(__file__).resolve().parents[3] / ".env"
@@ -25,10 +26,56 @@ class Settings(BaseSettings):
         env_ignore_empty=True,
     )
 
+    app_env: Literal["development", "production"] = "development"
     database_url: str
     # Neon recommends running migrations over a direct connection, not the pooled one.
     # When unset, migrations use database_url.
     migration_database_url: str | None = None
+    # A login lasts this long, and is extended while the person keeps using the app.
+    session_days: int = Field(default=30, ge=1, le=365)
+
+    # Photos: a folder in development, an S3-compatible bucket (Backblaze B2) in production.
+    storage_backend: Literal["local", "s3"] = "local"
+    # Relative paths are relative to the folder the API runs in (backend/).
+    storage_local_dir: Path = Path(".storage")
+    # Backblaze shows both on the bucket's page: endpoint s3.<region>.backblazeb2.com, and the
+    # region is the part between "s3." and ".backblazeb2.com", such as eu-central-003.
+    s3_endpoint_url: str | None = None
+    s3_region: str | None = None
+    s3_bucket: str | None = None
+    s3_access_key_id: str | None = None
+    s3_secret_access_key: str | None = None
+    max_upload_mb: int = Field(default=8, ge=1, le=25)
+
+    @property
+    def is_production(self) -> bool:
+        return self.app_env == "production"
+
+    @model_validator(mode="after")
+    def check_storage(self) -> Settings:
+        if self.storage_backend == "s3":
+            needed = {
+                "S3_ENDPOINT_URL": self.s3_endpoint_url,
+                "S3_REGION": self.s3_region,
+                "S3_BUCKET": self.s3_bucket,
+                "S3_ACCESS_KEY_ID": self.s3_access_key_id,
+                "S3_SECRET_ACCESS_KEY": self.s3_secret_access_key,
+            }
+            missing = [name for name, value in needed.items() if not value]
+            if missing:
+                raise ValueError(f"STORAGE_BACKEND=s3 also needs {', '.join(missing)}")
+        elif self.is_production:
+            # Render's disk is wiped on every deploy, so local photos would vanish.
+            raise ValueError("STORAGE_BACKEND must be s3 in production")
+        return self
+
+    @field_validator("s3_endpoint_url")
+    @classmethod
+    def use_https(cls, url: str | None) -> str | None:
+        # Backblaze shows the endpoint without https://, and boto3 needs it.
+        if url is None or "://" in url:
+            return url
+        return "https://" + url
 
     @field_validator("database_url", "migration_database_url")
     @classmethod
@@ -48,6 +95,10 @@ def load_settings(env_file: Path | None = ROOT_ENV_FILE) -> Settings:
     except ValidationError as error:
         problems = []
         for item in error.errors():
+            if not item["loc"]:
+                # A check across several settings; its message names them.
+                problems.append(str(item["msg"]).removeprefix("Value error, "))
+                continue
             reason = "missing" if item["type"] == "missing" else "invalid"
             problems.append(f"{str(item['loc'][0]).upper()} ({reason})")
         raise ConfigError(

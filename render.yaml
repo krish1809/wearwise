@@ -8,9 +8,17 @@ services:
     # Same region as the Neon database, so each query stays inside Singapore.
     region: singapore
     rootDir: backend
+    # rootDir alone would deploy only for changes in backend/; the reference data lives in seed/.
+    # Paths here are relative to the repository root.
+    buildFilter:
+      paths:
+        - backend/**
+        - seed/**
     buildCommand: uv sync --locked --no-dev
-    # Free instances can't run a pre-deploy command, so migrations run just before the server starts.
-    startCommand: uv run --no-sync alembic upgrade head && uv run --no-sync uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    # Free instances can't run a pre-deploy command, so migrations and the reference data load
+    # just before the server starts.
+    # --proxy-headers: take the visitor's IP from X-Forwarded-For, for rate limits.
+    startCommand: uv run --no-sync alembic upgrade head && uv run --no-sync python -m scripts.seed_reference && uv run --no-sync uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips='*'
     # Deploy a commit on main only after its CI checks pass.
     autoDeployTrigger: checksPass
     # No healthCheckPath on purpose: the health route queries the database, and frequent checks
@@ -20,9 +28,30 @@ services:
         value: 3.14.8
       - key: UV_VERSION
         value: 0.12.23
+      # Marks the session cookie Secure (https only).
+      - key: APP_ENV
+        value: production
       # Neon's pooled connection string (the host contains -pooler).
       - key: DATABASE_URL
         sync: false
       # Neon's direct connection string, used only by migrations.
       - key: MIGRATION_DATABASE_URL
+        sync: false
+      # Photos go to a private Backblaze B2 bucket (M3). The API refuses to start in production
+      # with local storage, since Render's disk is wiped on every deploy.
+      - key: STORAGE_BACKEND
+        value: s3
+      # The rest come from the Backblaze account, so they're set in the dashboard. Bucket names
+      # are shared by every Backblaze account, so even the name can't be fixed here.
+      # s3.<region>.backblazeb2.com
+      - key: S3_ENDPOINT_URL
+        sync: false
+      # The <region> part of the endpoint, such as eu-central-003.
+      - key: S3_REGION
+        sync: false
+      - key: S3_BUCKET
+        sync: false
+      - key: S3_ACCESS_KEY_ID
+        sync: false
+      - key: S3_SECRET_ACCESS_KEY
         sync: false

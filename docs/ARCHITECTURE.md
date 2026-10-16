@@ -13,7 +13,7 @@ Next.js on Vercel  ---- /api/* proxied ---->  FastAPI on Render
                                              v        v         v
                                         Postgres   Object     External services
                                         (Neon)     storage    (weather, AI, product sources)
-                                                   (R2)
+                                                   (B2)
 ```
 
 Inside the backend, the code is one deployable service split into modules. No microservices.
@@ -82,9 +82,9 @@ upload -> validate (type by content, size limit) -> strip metadata -> resize
        -> store via StorageAdapter -> save keys in item_images
 ```
 
-- `StorageAdapter` has two implementations: local folder for development, S3-compatible for Cloudflare R2 in production.
+- `StorageAdapter` has two implementations: local folder for development, S3-compatible for Backblaze B2 in production.
 - Render's free instances have no permanent disk, so local storage would lose every photo on redeploy. Production must use object storage from M3.
-- Photos are private. The API returns short-lived signed URLs, or streams the image after an ownership check. Do not make the bucket public.
+- Photos are private. The API streams each image after an ownership check, with a one-year private browser cache, since a stored file never changes. Do not make the bucket public.
 - Strip EXIF data on upload; phone photos carry location.
 
 ## Caching the engine's work

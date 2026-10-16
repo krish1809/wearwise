@@ -15,7 +15,8 @@ It should feel light and calm, and equally at home showing a sherwani, a hoodie,
 | `paper` | `#F4F5F3` | Page background |
 | `surface` | `#FFFFFF` | Cards, sheets, inputs |
 | `tile` | `#E8EAE7` | Behind every garment photo |
-| `line` | `#D9DCD8` | Dividers and input borders (decorative; never the only cue) |
+| `line` | `#D9DCD8` | Dividers and card edges (decorative; never the only cue) |
+| `line-strong` | `#858A91` | Borders of inputs and selects: 3.5:1 on `surface`, 3.2:1 on `paper` |
 | `ink` | `#1B1D20` | Text, primary buttons |
 | `ink-soft` | `#5A5F66` | Secondary text |
 | `indigo` | `#2C3A82` | Links, selected states, focus ring, active tab |

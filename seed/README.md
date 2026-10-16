@@ -1,10 +1,10 @@
 # Seed data
 
-Reference data loaded into the database by a seed script (written in M2 and M3). The app reads these from tables, never from these files at runtime.
+Reference data loaded into the database by `backend/scripts/seed_reference.py` (run by `make migrate` and on every deploy). The app reads these from tables, never from these files at runtime.
 
 | File | Contents | First used |
 |---|---|---|
-| `taxonomy.json` | 16 slots, 89 categories with default formality, warmth, and wears-before-wash; outfit templates; lists of patterns, fabrics, fits, seasons, statuses | M3 |
+| `taxonomy.json` | 16 slots, 89 categories with default formality, warmth, and wears-before-wash; outfit templates; lists of patterns, fabrics, fits, sizing systems, seasons, statuses | M2 (sections, fits, sizing systems, category groups), M3 (slots, categories, patterns, fabrics, seasons, statuses), M4 (outfit templates) |
 | `colors.json` | 28 colour families with a representative hex and a neutrality value | M2 |
 | `occasions.json` | 12 occasions with formality ranges | M2 |
 | `style_profiles.json` | 12 style profiles with the colours, fabrics, fits, and categories that signal each | M2 |

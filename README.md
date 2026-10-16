@@ -8,7 +8,7 @@ It is not a store. There is no checkout. When WearWise points to a product, you 
 
 ## Status
 
-Milestone M0 (foundations) is live at https://wearwise-rouge.vercel.app: the web app, the API, and the database talk to each other in production, and every merge to `main` deploys once CI passes. There are no user features yet; M1 adds the design system and accounts. See [`docs/PROGRESS.md`](docs/PROGRESS.md).
+Live at https://wearwise-rouge.vercel.app. Milestone M1 adds the design system and accounts: register, log in and out, a styled app shell, and deleting your account. M2 adds a skippable six-step setup (sizes, measurements, occasions, style, colours, budget), Settings to change or clear every answer, and brand size notes. M3 adds the wardrobe: add items with a photo (the colour is suggested from it), search, filter, sort, edit, archive, matching sets, and categories of your own. M4 adds the Outfit Studio (build an outfit slot by slot, with finishing touches), saved outfits (favourite, duplicate, swap a piece), and a wear log (“I wore this today”, wear counts, and wears since washing). See [`docs/PROGRESS.md`](docs/PROGRESS.md).
 
 <!-- At each release, replace this section with the live URL, a screenshot, and what works. -->
 
@@ -29,7 +29,7 @@ Details: [`docs/ENGINE.md`](docs/ENGINE.md), [`docs/SHOPPING.md`](docs/SHOPPING.
 
 ## Stack
 
-Next.js, TypeScript, and Tailwind on the frontend. FastAPI, SQLAlchemy, and PostgreSQL on the backend. Images in S3-compatible object storage. Deployed on Vercel, Render, Neon, and Cloudflare R2.
+Next.js, TypeScript, and Tailwind on the frontend. FastAPI, SQLAlchemy, and PostgreSQL on the backend. Images in S3-compatible object storage. Deployed on Vercel, Render, Neon, and Backblaze B2.
 
 Why: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/DECISIONS.md`](docs/DECISIONS.md).
 
@@ -60,7 +60,9 @@ Run `make` to list them all.
 | `make format` | Fix formatting and auto-fixable lint |
 | `make typecheck` | mypy for the backend, TypeScript for the frontend |
 | `make migration m="add users"` | Create a migration from changed models |
-| `make migrate` | Apply migrations |
+| `make migrate` | Apply migrations, then load the reference data in `seed/` |
+| `make seed` | Load the reference data in `seed/` again (safe to repeat) |
+| `make demo` | Fill the demo account (`demo@example.com`) with a wardrobe of generic staples |
 | `make api-types` | Regenerate the frontend's API types after changing a route |
 | `make check` | Everything CI runs |
 

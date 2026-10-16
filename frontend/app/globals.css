@@ -1,1 +1,156 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+
+/*
+  Design tokens from docs/DESIGN_SYSTEM.md. Colours are CSS variables, so a dark theme stays
+  possible later; v1 is light only. Components use these names (bg-paper, text-ink-soft,
+  outline-indigo) and nothing else, so the palette can't drift.
+*/
+@theme {
+  --color-*: initial;
+  --color-paper: #f4f5f3;
+  --color-surface: #ffffff;
+  --color-tile: #e8eae7;
+  --color-line: #d9dcd8;
+  /* Borders of inputs and selects: 3.5:1 on white, 3.2:1 on paper, so the box is visible. */
+  --color-line-strong: #858a91;
+  --color-ink: #1b1d20;
+  --color-ink-soft: #5a5f66;
+  --color-indigo: #2c3a82;
+  --color-buy: #1f7a4d;
+  --color-consider: #8a5a00;
+  --color-skip: #b3261e;
+  --color-white: #ffffff;
+
+  /* Instrument Sans for text and UI; Bricolage Grotesque for titles and big numbers. */
+  --font-sans:
+    var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display:
+    var(--font-bricolage-grotesque), ui-sans-serif, system-ui, sans-serif;
+
+  /* The type scale: 12, 14, 16, 20, 28, 40 px. Text at 1.5 line height, display at 1.15. */
+  --text-*: initial;
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1.5;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.5;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5;
+  --text-lg: 1.25rem;
+  --text-lg--line-height: 1.5;
+  --text-xl: 1.75rem;
+  --text-xl--line-height: 1.15;
+  --text-2xl: 2.5rem;
+  --text-2xl--line-height: 1.15;
+
+  /* Radius by role uses Tailwind's defaults: rounded-lg (8px) for inputs and buttons,
+     rounded-xl (12px) for cards and photo tiles, rounded-full for chips. */
+
+  /* The one shadow, for floating layers only: dialogs, menus, sheets, toasts. */
+  --shadow-*: initial;
+  --shadow-float:
+    0 12px 32px -8px rgb(27 29 32 / 0.2), 0 2px 6px rgb(27 29 32 / 0.08);
+}
+
+/* State variants used by the Radix-based components (they set data-state on elements). */
+@custom-variant data-open {
+  &:where([data-state="open"]),
+  &:where([data-open]:not([data-open="false"])) {
+    @slot;
+  }
+}
+@custom-variant data-closed {
+  &:where([data-state="closed"]),
+  &:where([data-closed]:not([data-closed="false"])) {
+    @slot;
+  }
+}
+@custom-variant data-checked {
+  &:where([data-state="checked"]),
+  &:where([data-checked]:not([data-checked="false"])) {
+    @slot;
+  }
+}
+@custom-variant data-unchecked {
+  &:where([data-state="unchecked"]),
+  &:where([data-unchecked]:not([data-unchecked="false"])) {
+    @slot;
+  }
+}
+@custom-variant data-active {
+  &:where([data-state="active"]),
+  &:where([data-active]:not([data-active="false"])) {
+    @slot;
+  }
+}
+@custom-variant data-disabled {
+  &:where([data-disabled="true"]),
+  &:where([data-disabled]:not([data-disabled="false"])) {
+    @slot;
+  }
+}
+
+/*
+  The style guide shows hover, focus, and pressed states without a mouse: an element with
+  data-preview="hover" (or "focus", "active") also gets that state's styles. Only the style
+  guide sets the attribute.
+*/
+@custom-variant hover {
+  @media (hover: hover) {
+    &:hover {
+      @slot;
+    }
+  }
+  &[data-preview~="hover"] {
+    @slot;
+  }
+}
+@custom-variant focus-visible {
+  &:focus-visible {
+    @slot;
+  }
+  &[data-preview~="focus"] {
+    @slot;
+  }
+}
+@custom-variant active {
+  &:active {
+    @slot;
+  }
+  &[data-preview~="active"] {
+    @slot;
+  }
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+
+  body {
+    @apply bg-paper font-sans text-base text-ink;
+  }
+
+  *,
+  ::before,
+  ::after {
+    border-color: var(--color-line);
+  }
+
+  /* Anything focusable that a component doesn't style itself still gets the indigo ring. */
+  :focus-visible {
+    outline: 2px solid var(--color-indigo);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

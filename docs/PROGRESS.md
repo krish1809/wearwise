@@ -4,11 +4,61 @@ The running state of the project, updated at the end of every slice. Keep it sho
 
 ## Now
 
-- **Last updated:** 2026-10-12
-- **Current milestone:** M1 Design system, app shell, auth
-- **Current slice:** not started.
-- **Next action:** plan M1 against the M1 section of `docs/ROADMAP.md`. It starts with design tokens and components, which the owner approves from screenshots before auth is built.
-- **Overall:** 1 of 12 milestones done. v1.0 is M0 to M5.
+- **Last updated:** 2026-10-15
+- **Current milestone:** M4 Outfit Studio and wear log, committed and pushed on branch `m4-outfits`, which also carries M1 to M3. Nothing is merged yet; production is still at M0. Photo storage moved from Cloudflare R2 to Backblaze B2 before the first deploy (D33).
+- **Current slice:** none open.
+- **Next action (owner):**
+  1. Commit the Backblaze change on `m4-outfits` (the files are staged) and push the branch.
+  2. Set up Backblaze B2 and add its five settings in Render (`docs/DEPLOYMENT.md`, step 4). Production won't start without photo storage, so this comes before merging.
+  3. Open one pull request from `m4-outfits` into `main`. It carries M1 to M4, since each branch was built on the last. Merge it with a merge commit once CI passes.
+  4. Check the live site against M1 to M4's "Done when" lists, then add your own 25 to 30 items.
+
+M1 slices:
+
+| # | Slice | State |
+|---|---|---|
+| 1 | Design tokens and fonts (`frontend/app/globals.css`, `frontend/app/layout.tsx`) | done |
+| 2 | Components in `frontend/components/ui/` and the development-only `/styleguide` page | done |
+| 3 | Design review at 375 px and 1440 px | approved 2026-10-12, with a stronger input border (D20) |
+| 4 | Auth backend: users and sessions, register, log in, log out, current user, rate limits | done |
+| 5 | Register and log-in pages; protected pages redirect to log in | done |
+| 6 | App shell: sidebar, phone tab bar, avatar menu | done |
+| 7 | Landing page | done |
+| 8 | Account deletion with typed confirmation | done |
+
+M2 slices:
+
+| # | Slice | State |
+|---|---|---|
+| 1 | Reference tables and the seed script; `GET /api/v1/reference` | done |
+| 2 | Profile, brand notes, onboarding finish and reminder routes; name editing | done |
+| 3 | Shared section forms; units and money helpers | done |
+| 4 | Onboarding: six steps with Back, Skip, Continue, and Skip all | done |
+| 5 | Settings tabs (Profile, Style, Budget, Brands, Account) and the Home reminder | done |
+| 6 | Browser walkthrough at 375 px and 1440 px | done |
+
+M3 slices:
+
+| # | Slice | State |
+|---|---|---|
+| 1 | Categories (seeded and custom) and the rest of the taxonomy lists in the database | done |
+| 2 | Items API: create with category defaults, edit, archive, delete, status, matching sets, filtered and searched pages | done |
+| 3 | Photos: storage adapter (folder, R2, memory), checks, EXIF removal, resizing, dominant colour | done |
+| 4 | Wardrobe grid: search, filter rail and sheet, removable chips, sort, load more | done |
+| 5 | Add, edit, and item pages; custom categories page | done |
+| 6 | Demo wardrobe script; browser walkthrough; docs | done (your own 25 to 30 items: after deploy) |
+
+M4 slices:
+
+| # | Slice | State |
+|---|---|---|
+| 1 | Outfit templates from the seed; template rules in the engine; slot roles | done |
+| 2 | Outfits API: save, check, edit and swap, favourite, duplicate, delete; removed pieces | done |
+| 3 | Wear log API: log an outfit or loose items, edit, delete; recounted wears since wash | done |
+| 4 | Outfit board, studio, finishing touches | done |
+| 5 | Outfits list and page, wear log pages, item wear details, Home's Today card | done |
+| 6 | Browser walkthrough at 375 px and 1440 px; docs | done |
+- **Overall:** 1 of 12 milestones released (M0); M1 to M4 built, waiting to merge. v1.0 is M0 to M5.
 
 Live:
 
@@ -52,7 +102,7 @@ Planning and reference material, committed and pushed to `github.com/krish1809/w
 | Design | Colour and type tokens, spacing, the outfit board, component list, navigation, writing rules | `docs/DESIGN_SYSTEM.md` |
 | Hosting | Vercel, Render, Neon, R2; environments; migrations; release checklist | `docs/DEPLOYMENT.md` |
 | Decisions | D1 to D17 | `docs/DECISIONS.md` |
-| Seed data | 16 slots, 89 categories, 3 outfit templates; 28 colour families; 12 occasions; 12 style profiles; 66 archetypes. Not loaded anywhere yet: the seed script is written in M2 and M3. | `seed/` |
+| Seed data | 16 slots, 89 categories, 3 outfit templates; 28 colour families; 12 occasions; 12 style profiles; 66 archetypes; 3 sizing systems (added in M2). M2 loads colours, occasions, style profiles, category groups, sections, fits, and sizing systems; M3 loads the rest. | `seed/` |
 | Config | Every environment variable up to M10, `.gitignore`, pull request template | `.env.example`, `.github/` |
 
 M0 code, merged in pull request #1 and deployed:
@@ -76,10 +126,10 @@ M0 code, merged in pull request #1 and deployed:
 | # | Milestone | You can now... | Status | Released | Notes |
 |---|---|---|---|---|---|
 | M0 | Foundations | open a live URL that talks to the API and database | done | 2026-10-12 | https://wearwise-rouge.vercel.app |
-| M1 | Design system, shell, auth | register, log in, and move around a styled, empty app | not started | | |
-| M2 | Onboarding and profile | set (or skip) sizes, style, budget; edit them later | not started | | |
-| M3 | Wardrobe | add, find, edit everything you own, with photos | not started | | |
-| M4 | Outfit Studio and wear log | build and save outfits; log what you wore | not started | | |
+| M1 | Design system, shell, auth | register, log in, and move around a styled, empty app | built, not merged | | |
+| M2 | Onboarding and profile | set (or skip) sizes, style, budget; edit them later | built, not merged | | |
+| M3 | Wardrobe | add, find, edit everything you own, with photos | built, not merged | | |
+| M4 | Outfit Studio and wear log | build and save outfits; log what you wore | built, not merged | | |
 | M5 | Outfit engine (v1.0) | get ranked outfit suggestions with reasons | not started | | v1.0 release |
 | M6 | My Week | plan seven days with weather, laundry, events, packing | not started | | |
 | M7 | Insights | see cost per wear, versatility, orphans, coverage | not started | | |
@@ -93,7 +143,7 @@ M0 code, merged in pull request #1 and deployed:
 - [x] GitHub repo created and the docs pushed (checked 2026-10-11: local `main` matches `origin/main`)
 - [ ] 25 to 30 photos of your own items taken (needed by M3)
 - [x] Accounts: Vercel, Render, Neon (set up 2026-10-12)
-- [ ] Cloudflare account (needed by M3 for R2 photo storage)
+- [ ] Backblaze account (needed by M3 for B2 photo storage; replaces Cloudflare, D33)
 - [ ] Optional: applied for an affiliate or product API (only matters in M9)
 
 **Local tools (checked 2026-10-11):** uv 0.12.23 (it installs Python 3.14 for the backend), Node 22.23.0, pnpm 10.34.6, Docker 29.8.0 with Compose v5.5.1, make 4.3, gh 2.45.0.
@@ -101,6 +151,55 @@ M0 code, merged in pull request #1 and deployed:
 ## Log
 
 Add an entry per slice, newest first.
+
+### 2026-10-15, photo storage: Backblaze B2 instead of Cloudflare R2
+
+- Built: `S3_REGION` (required with S3 storage; Backblaze signs every request for the account's region), and an endpoint pasted without `https://` gets it added. The S3 adapter sends checksum headers only where the protocol requires them, and deletes files one request at a time, eight at once, instead of the bulk delete. The API now streams every photo with a one-year private browser cache instead of redirecting to a ten-minute signed link, so each device downloads each photo about once, and Backblaze's free downloads (three times what's stored) go far; a storage outage now gives a 503 with a reason instead of a server error. The bucket's name moved from `render.yaml` to Render's dashboard, since Backblaze bucket names are shared by every account. Deploy steps rewritten for Backblaze.
+- Checked: ruff, mypy, 163 backend tests (9 new: the adapter's requests caught before they leave, showing the endpoint, the region in the signature, no checksum headers, one delete per file, failures logged; the endpoint fix; the region named when missing; the year-long cache; the 503), TypeScript, ESLint, Prettier, 86 frontend tests, API types regenerated. With the checksum setting removed, the new test fails on the `x-amz-sdk-checksum-algorithm` header that Backblaze has been reported to refuse.
+- Left: Backblaze set up, then merge; the first upload on the live site is the real check against Backblaze.
+- Decided: D33.
+
+### 2026-10-15, M4 slices 1 to 6: Outfit Studio and wear log
+
+- Built: `outfit_templates` (seeded and cross-checked), `outfits`, `outfit_items`, `wear_logs`, `wear_log_items`, `items.last_washed_on`, and `vocabulary_terms.role` (slot kinds from the seed) in one migration. Template rules as plain functions (`app/engine/outfits.py`). API: outfits (list with favourite, occasion, and item filters; check; save; view; edit and swap; duplicate; delete) and the wear log (list by item, outfit, or day; log an outfit or loose items; edit; delete). Wear counts, last worn, and wears since washing on item pages. Frontend: Outfits in the navigation; the flat-lay outfit board with its swatch strip; the studio (pick by slot, live "still needed" line, finishing touches, name, occasion, favourite); outfit pages ("I wore this today", another day, favourite, duplicate, edit, delete, when you wore it); the wear log (by day, edit, delete) and logging loose items; the item page's wear card and outfits; Home's Today card.
+- Checked: `make check` passes (ruff, mypy on 82 files, 154 backend tests, TypeScript, 86 frontend tests, build). The migration applies, rolls back, and reapplies with no drift. Tests cover the template rules (separates, one-piece, saree, crowded slots, misplaced pieces, the empty start), saving and checking outfits, swapping, duplicating, removed pieces after an item is deleted, the wear log (double taps, future days, edits and deletes recounting, washing, history after outfits and items change), and ownership for both. A browser walkthrough at 1440 px and 375 px: empty outfits, the studio slot by slot with its "still needed" line, a finishing touch, save, "I wore this today" (then disabled), favourite, duplicate, swap the shoes, favourites filter, the item page's wear card and outfits, deleting an item an outfit uses (shown as removed), the wear log (edit a note, log loose items for yesterday, delete), and Home's Today card; no console errors. Fixed while testing: the best-fit rule pointing an empty outfit at one-piece; slot buttons whose spoken names ran together ("Choosetop"); outfit cards that read every piece aloud before the outfit's name; a hydration mismatch on a full page load, because the shell had fetched the user before the page hydrated (the user is now exposed only after hydration).
+- Left: merging M1 to M3, then M4.
+- Decided: D30 (outfits and templates), D31 (wear log).
+
+### 2026-10-13, M3 slices 1 to 6: wardrobe
+
+- Built: `categories` (89 seeded, plus custom ones per person), `items`, and `item_images` tables in one migration; the seed now loads slots, patterns, fabrics, seasons, statuses, the formality scale, and categories. API: categories (list, add, delete when unused), photos (upload, view), items (list with search, filters, sort, and cursor pages; add; view; edit; archive and restore; delete; matching sets). Photos are shrunk in the browser, then checked, cleaned of metadata, resized, and stored by the API, with the dominant colour mapped to a colour family (`app/engine/color.py`). Storage is a folder locally and Cloudflare R2 in production; the API refuses to start in production without R2. Frontend: Wardrobe in the navigation; a photo-first grid with search, filters (a rail on desktop, a bottom sheet on phones), colour swatches, removable chips, sort, and "Load more"; add and edit forms (photo, suggested colour, category filtered by the sections you shop, "More details"); item page with status, archive, delete, and matching sets; your own categories. `make demo` fills a demo account from `seed/archetypes.json`. A favicon, which also removes a 404 on every page.
+- Checked: `make check` passes (ruff, mypy on 70 files, 117 backend tests, TypeScript, 71 frontend tests, build). The migration applies, rolls back, and reapplies with no drift. Tests cover CRUD, every filter and their combination, search, all three sorts across pages, ownership (another account gets 404 for items, photos, and categories), the upload checks (not a photo, GIF, oversized, metadata removed, rotation applied), cleanup of unsaved photos, deletion of files with items and accounts, and the demo script refusing real accounts. A browser walkthrough at 1440 px and 375 px: empty wardrobe, add an item from a phone-style photo (upright, colour suggested as navy), the section filter and "show all", status change, two items without photos, filter by colour, search and back, matching set, edit, archive and restore, delete, a non-photo refused with its reason, a custom category; no console errors. Fixed from the screenshots: colour filters as swatches in a compact grid, filter groups that fold, a rail that scrolls on its own, only the suggested colour shown until "Other colours". Fixed from the build: the shell's navigation now waits in Suspense for the address on pages like `/wardrobe/[id]`.
+- Left: R2 set up and the owner's own 25 to 30 items after deploy.
+- Decided: D26 (photo pipeline), D27 (dominant colour), D28 (items), D29 (demo accounts).
+
+### 2026-10-13, M2 slices 1 to 6: onboarding and profile
+
+- Built: reference tables (`color_families`, `occasions`, `style_profiles`, `category_groups`, `vocabulary_terms`) loaded from `seed/` by `scripts/seed_reference.py`, which `make migrate`, CI, the tests, and Render's start command run; `render.yaml` now deploys on changes to `seed/` too. `profiles` and `brand_notes` tables; `GET /api/v1/reference`, `GET`/`PATCH /api/v1/profile`, `POST /api/v1/onboarding/finish`, `POST /api/v1/onboarding/reminder/dismiss`, brand-note routes, and `PATCH /api/v1/account` for the name. Frontend: six onboarding steps (what you shop and city; sizes and fit; measurements in cm or inches; occasions; styles and colours; budget) with Back, Skip, Continue, and Skip all, resuming where the person stopped; register goes to onboarding, and log in does until it's finished or skipped; Settings in tabs, where every section can be saved or cleared (with Undo); brand notes; Home offers once to finish a skipped setup.
+- Checked: `make check` passes (ruff, mypy on 53 files, 70 backend tests, TypeScript, 53 frontend tests, build). The migration applies, rolls back, and reapplies, and `alembic check` finds no drift. The seed restores edited and deleted rows and changes nothing on a second run. Tests cover the M2 "Done when" list: skipping everything leaves a working empty profile; every answer can be changed and cleared; cm and inches convert both ways and untouched values are saved exactly; user A can't see user B's profile, and B gets 404 for A's brand notes. A browser walkthrough at 1440 px and 375 px: register, all six steps (saving, skipping, switching units), Settings shows the answers, clear and undo, brand notes with a duplicate refused, name change, a second account skips everything and dismisses the reminder, the first logs back in to Home. Fixed from the screenshots: size fields grouped under a clear heading, settings tabs on one line at 360 px, toasts above the phone tab bar.
+- Left: the production check for M1 and M2 after merging.
+- Decided: D23 (reference data), D24 (profile shape), D25 (brand notes).
+
+### 2026-10-12, M1 slices 5 to 8: sign-in pages, app shell, landing page, account deletion
+
+- Built: the password rule (12 characters or more, nothing else) and its tests; log-in and register pages with checks in the form and the API's messages; `proxy.ts` sends anyone without a session cookie to log in and back; the app shell (sidebar on desktop, tab bar on phones, avatar menu with log out, skip link); Home; Settings with account details and deletion behind a typed email; the landing page; `POST /api/v1/account/delete`; an expired session's cookie is now cleared by the API.
+- Checked: `make check` passes (ruff, mypy on 39 files, 37 backend tests, TypeScript, 30 frontend tests, build); API types regenerate unchanged. A browser run at 1440 px and 375 px: a logged-in page redirects to log in and back; register, home, settings, log out, wrong password, log in, delete account, old login refused. Keyboard order on desktop: skip link, wordmark, Home, Settings, account menu. No instant-navigation warnings from Next.js.
+- Left: the production check after merging.
+- Decided: D22 (the shell draws first; pages wait for the user).
+
+### 2026-10-12, M1 slice 4: auth backend
+
+- Built: `users`, `sessions`, and `rate_limit_hits` tables and their migration; register, log in, log out, and current-user routes under `/api/v1/auth`; Argon2id hashing; session tokens stored only as hashes in an httpOnly cookie; a `current_user` dependency; the `X-Requested-With` check on state-changing requests; rate limits counted in Postgres; one error shape for every failure; the frontend client sends the header.
+- Checked: ruff and mypy clean (35 files); 24 backend tests pass; the 4 sign-up tests fail with `password_problem is waiting to be written`. The migration applies, rolls back, and reapplies.
+- Left: the owner's password rule and its tests; then slices 5 to 8.
+- Decided: D20 (stronger input border), D21 (sessions and sign-in).
+
+### 2026-10-12, M1 slices 1 to 3: design tokens, components, style guide
+
+- Built: colour, type, radius, and shadow tokens with Tailwind's defaults switched off; Bricolage Grotesque and Instrument Sans through `next/font`; 19 components (button, input, field, native select, checkbox, radio, switch, filter and removable chips, tabs, card, photo tile, dialog, bottom sheet, toast, tooltip, skeleton, empty and error states, load more, avatar menu); a development-only `/styleguide` that shows hover, focus, and pressed states through `data-preview`, and opens overlays with `?open=`.
+- Checked: frontend lint, types, and 17 tests pass; the production build passes and `/styleguide` is a 404 there. Screenshots at 375 px and 1440 px, including every overlay, with no element wider than the screen. The review found and fixed: title-case labels, buttons stretched to full width, a clipped focus ring on tabs, blank pre-filled selects, a menu touching the screen edge.
+- Left: the owner's approval of the look, then slice 4.
+- Decided: D18 (shadcn on Radix, restyled, tokens as the only palette) and D19 (native selects).
 
 ### 2026-10-12, M0 slice 6: first deploy (M0 done)
 
@@ -152,5 +251,11 @@ After each milestone, three lines: the hardest problem, the decision you made an
 
 Things that are deliberately not handled yet. Move them into the README at M11.
 
-- On Render's free plan, the first request after 15 idle minutes takes about a minute while the backend wakes. The home page says so and keeps checking.
+- On Render's free plan, the first request after 15 idle minutes takes about a minute while the backend wakes. The landing and log-in pages wake it early, and every waiting screen says so.
+- No password reset by email yet: it needs an email provider. Until then, a forgotten password means a new account. Planned for M11 at the latest.
+- The email address can't be changed yet: doing it safely needs the password again. The name can be changed in Settings.
+- Weather isn't used yet: the city is saved for M6.
+- Photos in Backblaze B2 aren't backed up. For a personal project that's acceptable.
+- iPhone HEIC photos upload from Safari, which can read them; other browsers may not.
+- Settings still sits in the main navigation while it has only two neighbours; it moves to the avatar menu alone as Outfits and My Week arrive (D22).
 - The `make` commands assume Linux or macOS. On Windows, use WSL.
