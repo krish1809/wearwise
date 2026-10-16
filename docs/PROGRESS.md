@@ -4,14 +4,14 @@ The running state of the project, updated at the end of every slice. Keep it sho
 
 ## Now
 
-- **Last updated:** 2026-10-15
-- **Current milestone:** M4 Outfit Studio and wear log, committed and pushed on branch `m4-outfits`, which also carries M1 to M3. Nothing is merged yet; production is still at M0. Photo storage moved from Cloudflare R2 to Backblaze B2 before the first deploy (D33).
+- **Last updated:** 2026-10-16
+- **Current milestone:** M1 to M4 released on 2026-10-16 (pull request #3). Photos are stored in Backblaze B2 (D33). M5 is next.
 - **Current slice:** none open.
 - **Next action (owner):**
-  1. Commit the Backblaze change on `m4-outfits` (the files are staged) and push the branch.
-  2. Set up Backblaze B2 and add its five settings in Render (`docs/DEPLOYMENT.md`, step 4). Production won't start without photo storage, so this comes before merging.
-  3. Open one pull request from `m4-outfits` into `main`. It carries M1 to M4, since each branch was built on the last. Merge it with a merge commit once CI passes.
-  4. Check the live site against M1 to M4's "Done when" lists, then add your own 25 to 30 items.
+  1. Walk through M1 to M4's "Done when" lists on the live site, on your phone and on a computer.
+  2. Add your own 25 to 30 items with photos (the last open item from M3).
+  3. Commit this file on `m4-wrap-up` and merge it.
+  4. Ask for M5 (the outfit engine and ranked suggestions, which completes v1.0).
 
 M1 slices:
 
@@ -58,7 +58,7 @@ M4 slices:
 | 4 | Outfit board, studio, finishing touches | done |
 | 5 | Outfits list and page, wear log pages, item wear details, Home's Today card | done |
 | 6 | Browser walkthrough at 375 px and 1440 px; docs | done |
-- **Overall:** 1 of 12 milestones released (M0); M1 to M4 built, waiting to merge. v1.0 is M0 to M5.
+- **Overall:** 5 of 12 milestones released (M0 to M4). v1.0 is M0 to M5.
 
 Live:
 
@@ -151,6 +151,12 @@ M0 code, merged in pull request #1 and deployed:
 ## Log
 
 Add an entry per slice, newest first.
+
+### 2026-10-16, M1 to M4 deployed
+
+- Done: Backblaze B2 set up (EU Central, private bucket, "keep only the last version", a key for that bucket alone) and its five settings added in Render. Pull request #3 merged `m4-outfits` into `main` with a merge commit; CI passed (backend, frontend, API types); Vercel and Render deployed it.
+- Checked on the live site, through Vercel as a browser would: the log-in and register pages load, and logged-in pages redirect to log in. A throwaway account registered and logged in; the reference data was loaded; a test photo uploaded to Backblaze in about 6 seconds with "navy" suggested; the photo and its thumbnail came back from Backblaze as WebP in under half a second, with the one-year browser cache; deleting the account removed it and logged it out.
+- Left: the owner's walkthrough of the "Done when" lists, and their own 25 to 30 items.
 
 ### 2026-10-15, photo storage: Backblaze B2 instead of Cloudflare R2
 
