@@ -7,7 +7,7 @@ between versions.
 
 from dataclasses import dataclass, field
 
-ENGINE_VERSION = "1.1"
+ENGINE_VERSION = "1.2"
 
 
 def _pair_weights() -> dict[frozenset[str], float]:
@@ -210,6 +210,12 @@ class EngineConfig:
     # the week earns this much.
     plan_repeat_penalty: float = 0.03
     plan_variety_bonus: float = 0.01
+
+    # The wardrobe graph (section 11): a good outfit scores at least this; an item in fewer
+    # good outfits than orphan_below is an orphan; two items pair when P reaches pair_edge.
+    versatility_min_score: float = 0.7
+    orphan_below: int = 2
+    pair_edge: float = 0.65
 
     # Packing (section 13): a day counts as covered by an outfit scoring at least this much.
     packing_min_score: float = 0.65

@@ -4601,6 +4601,38 @@
           }
         }
       }
+    },
+    "/api/v1/insights": {
+      "get": {
+        "tags": [
+          "insights"
+        ],
+        "summary": "Get Insights",
+        "description": "Every number here is counted from the person's own rows; nothing is estimated.",
+        "operationId": "get_insights",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InsightsOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -4954,6 +4986,34 @@
         ],
         "title": "CategoryOut"
       },
+      "CellOut": {
+        "properties": {
+          "occasion_id": {
+            "type": "string",
+            "title": "Occasion Id"
+          },
+          "season": {
+            "type": "string",
+            "title": "Season"
+          },
+          "outfits": {
+            "type": "integer",
+            "title": "Outfits"
+          },
+          "capped": {
+            "type": "boolean",
+            "title": "Capped"
+          }
+        },
+        "type": "object",
+        "required": [
+          "occasion_id",
+          "season",
+          "outfits",
+          "capped"
+        ],
+        "title": "CellOut"
+      },
       "CheckRequest": {
         "properties": {
           "item_ids": {
@@ -5007,6 +5067,70 @@
           "neutrality"
         ],
         "title": "ColorFamilyOut"
+      },
+      "CostOut": {
+        "properties": {
+          "item": {
+            "$ref": "#/components/schemas/ItemBrief"
+          },
+          "price": {
+            "type": "integer",
+            "title": "Price"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency"
+          },
+          "wears": {
+            "type": "integer",
+            "title": "Wears"
+          },
+          "per_wear": {
+            "type": "integer",
+            "title": "Per Wear"
+          }
+        },
+        "type": "object",
+        "required": [
+          "item",
+          "price",
+          "currency",
+          "wears",
+          "per_wear"
+        ],
+        "title": "CostOut"
+      },
+      "CoverageOut": {
+        "properties": {
+          "occasion_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Occasion Ids"
+          },
+          "seasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Seasons"
+          },
+          "cells": {
+            "items": {
+              "$ref": "#/components/schemas/CellOut"
+            },
+            "type": "array",
+            "title": "Cells"
+          }
+        },
+        "type": "object",
+        "required": [
+          "occasion_ids",
+          "seasons",
+          "cells"
+        ],
+        "title": "CoverageOut"
       },
       "DayChange": {
         "properties": {
@@ -5101,6 +5225,42 @@
           "rain_chance"
         ],
         "title": "DayWeatherOut"
+      },
+      "DeclutterOut": {
+        "properties": {
+          "item": {
+            "$ref": "#/components/schemas/ItemBrief"
+          },
+          "last_worn_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Worn On"
+          },
+          "added_on": {
+            "type": "string",
+            "format": "date",
+            "title": "Added On"
+          },
+          "outfits": {
+            "type": "integer",
+            "title": "Outfits"
+          }
+        },
+        "type": "object",
+        "required": [
+          "item",
+          "last_worn_on",
+          "added_on",
+          "outfits"
+        ],
+        "title": "DeclutterOut"
       },
       "DeleteAccountRequest": {
         "properties": {
@@ -5416,6 +5576,168 @@
           "database"
         ],
         "title": "HealthResponse"
+      },
+      "InsightsOut": {
+        "properties": {
+          "items": {
+            "type": "integer",
+            "title": "Items"
+          },
+          "logs": {
+            "type": "integer",
+            "title": "Logs"
+          },
+          "days_logged_30": {
+            "type": "integer",
+            "title": "Days Logged 30"
+          },
+          "needed_logs": {
+            "type": "integer",
+            "title": "Needed Logs"
+          },
+          "enough": {
+            "type": "boolean",
+            "title": "Enough"
+          },
+          "most_worn": {
+            "items": {
+              "$ref": "#/components/schemas/WornOut"
+            },
+            "type": "array",
+            "title": "Most Worn"
+          },
+          "least_worn": {
+            "items": {
+              "$ref": "#/components/schemas/WornOut"
+            },
+            "type": "array",
+            "title": "Least Worn"
+          },
+          "by_month": {
+            "items": {
+              "$ref": "#/components/schemas/MonthOut"
+            },
+            "type": "array",
+            "title": "By Month"
+          },
+          "by_group": {
+            "items": {
+              "$ref": "#/components/schemas/TallyOut"
+            },
+            "type": "array",
+            "title": "By Group"
+          },
+          "by_color": {
+            "items": {
+              "$ref": "#/components/schemas/TallyOut"
+            },
+            "type": "array",
+            "title": "By Color"
+          },
+          "cheapest": {
+            "items": {
+              "$ref": "#/components/schemas/CostOut"
+            },
+            "type": "array",
+            "title": "Cheapest"
+          },
+          "dearest": {
+            "items": {
+              "$ref": "#/components/schemas/CostOut"
+            },
+            "type": "array",
+            "title": "Dearest"
+          },
+          "needs_price": {
+            "items": {
+              "$ref": "#/components/schemas/ItemBrief"
+            },
+            "type": "array",
+            "title": "Needs Price"
+          },
+          "versatile": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/VersatileOut"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Versatile"
+          },
+          "orphans": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/OrphanOut"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Orphans"
+          },
+          "coverage": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CoverageOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "style": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StyleOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "declutter": {
+            "items": {
+              "$ref": "#/components/schemas/DeclutterOut"
+            },
+            "type": "array",
+            "title": "Declutter"
+          },
+          "engine_version": {
+            "type": "string",
+            "title": "Engine Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "logs",
+          "days_logged_30",
+          "needed_logs",
+          "enough",
+          "most_worn",
+          "least_worn",
+          "by_month",
+          "by_group",
+          "by_color",
+          "cheapest",
+          "dearest",
+          "needs_price",
+          "versatile",
+          "orphans",
+          "coverage",
+          "style",
+          "declutter",
+          "engine_version"
+        ],
+        "title": "InsightsOut"
       },
       "ItemBrief": {
         "properties": {
@@ -6750,6 +7072,24 @@
         ],
         "title": "MissingOut"
       },
+      "MonthOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "days": {
+            "type": "integer",
+            "title": "Days"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "days"
+        ],
+        "title": "MonthOut"
+      },
       "OccasionOut": {
         "properties": {
           "id": {
@@ -6827,6 +7167,28 @@
           "score"
         ],
         "title": "OptionOut"
+      },
+      "OrphanOut": {
+        "properties": {
+          "item": {
+            "$ref": "#/components/schemas/ItemBrief"
+          },
+          "outfits": {
+            "type": "integer",
+            "title": "Outfits"
+          },
+          "rescue": {
+            "type": "string",
+            "title": "Rescue"
+          }
+        },
+        "type": "object",
+        "required": [
+          "item",
+          "outfits",
+          "rescue"
+        ],
+        "title": "OrphanOut"
       },
       "OutfitCheck": {
         "properties": {
@@ -8220,6 +8582,45 @@
         ],
         "title": "SetLink"
       },
+      "ShareOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "share": {
+            "type": "number",
+            "title": "Share"
+          },
+          "hex": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hex"
+          },
+          "chosen": {
+            "type": "boolean",
+            "title": "Chosen",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "share"
+        ],
+        "title": "ShareOut"
+      },
       "SizeChoice": {
         "properties": {
           "label": {
@@ -8304,6 +8705,43 @@
           "role"
         ],
         "title": "SlotTerm"
+      },
+      "StyleOut": {
+        "properties": {
+          "wears": {
+            "type": "integer",
+            "title": "Wears"
+          },
+          "palette": {
+            "items": {
+              "$ref": "#/components/schemas/ShareOut"
+            },
+            "type": "array",
+            "title": "Palette"
+          },
+          "formality": {
+            "items": {
+              "$ref": "#/components/schemas/ShareOut"
+            },
+            "type": "array",
+            "title": "Formality"
+          },
+          "styles": {
+            "items": {
+              "$ref": "#/components/schemas/ShareOut"
+            },
+            "type": "array",
+            "title": "Styles"
+          }
+        },
+        "type": "object",
+        "required": [
+          "wears",
+          "palette",
+          "formality",
+          "styles"
+        ],
+        "title": "StyleOut"
       },
       "StyleProfileOut": {
         "properties": {
@@ -8598,6 +9036,40 @@
           "engine_version"
         ],
         "title": "SuggestionsOut"
+      },
+      "TallyOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "wears": {
+            "type": "integer",
+            "title": "Wears"
+          },
+          "hex": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hex"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "wears"
+        ],
+        "title": "TallyOut"
       },
       "Term": {
         "properties": {
@@ -8955,6 +9427,23 @@
         ],
         "title": "ValidationError"
       },
+      "VersatileOut": {
+        "properties": {
+          "item": {
+            "$ref": "#/components/schemas/ItemBrief"
+          },
+          "outfits": {
+            "type": "integer",
+            "title": "Outfits"
+          }
+        },
+        "type": "object",
+        "required": [
+          "item",
+          "outfits"
+        ],
+        "title": "VersatileOut"
+      },
       "WearIn": {
         "properties": {
           "worn_on": {
@@ -9296,6 +9785,36 @@
           "engine_version"
         ],
         "title": "WeekOut"
+      },
+      "WornOut": {
+        "properties": {
+          "item": {
+            "$ref": "#/components/schemas/ItemBrief"
+          },
+          "wears": {
+            "type": "integer",
+            "title": "Wears"
+          },
+          "last_worn_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Worn On"
+          }
+        },
+        "type": "object",
+        "required": [
+          "item",
+          "wears",
+          "last_worn_on"
+        ],
+        "title": "WornOut"
       },
       "WornPiece": {
         "properties": {

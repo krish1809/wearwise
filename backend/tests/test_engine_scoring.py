@@ -265,3 +265,14 @@ def test_the_cold_is_hard_on_bare_legs_and_open_toes() -> None:
     assert [item.slot for item in s.cold_risks(bare)] == ["bottom", "footwear"]
     assert s.weather(bare) == pytest.approx(1 - 2 * 0.2)
     assert s.weather(covered) == 1.0
+
+
+def test_a_plain_middling_piece_needs_a_colour_or_category_the_style_is_known_by() -> None:
+    s = scorer(style=STYLES["minimal"])
+    # Solid and smart casual fit Minimal's pattern and formality, but orange and polo don't
+    # appear in its colours or categories.
+    orange_polo = make("polo", "orange", formality=3)
+    navy_shirt = make("casual_shirt", "navy", formality=3)
+
+    assert not s.matches_style(orange_polo)
+    assert s.matches_style(navy_shirt)

@@ -130,7 +130,9 @@ def run(
         occasion=engine_occasion(occasion) if occasion else None,
         season=season,
         weather=weather,
-        style=_style(db.get_one(StyleProfile, request.style_id)) if request.style_id else None,
+        style=engine_style(db.get_one(StyleProfile, request.style_id))
+        if request.style_id
+        else None,
         anchor_ids=tuple(str(anchor) for anchor in request.anchor_ids),
         exclude_ids=frozenset(str(item_id) for item_id in request.exclude_ids),
         count=request.count,
@@ -289,7 +291,7 @@ def engine_occasion(row: Occasion) -> EngineOccasion:
     )
 
 
-def _style(row: StyleProfile) -> Style:
+def engine_style(row: StyleProfile) -> Style:
     signals = row.signals
     return Style(
         id=row.id,
@@ -312,7 +314,7 @@ def _profile_styles(db: Session, profile: Profile | None) -> tuple[Style, ...]:
             select(StyleProfile).where(StyleProfile.id.in_(profile.style_profile_ids))
         )
     }
-    return tuple(_style(rows[id_]) for id_ in profile.style_profile_ids if id_ in rows)
+    return tuple(engine_style(rows[id_]) for id_ in profile.style_profile_ids if id_ in rows)
 
 
 def _recent_outfits(

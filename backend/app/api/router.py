@@ -8,6 +8,7 @@ from app.api import (
     brand_notes,
     categories,
     health,
+    insights,
     items,
     outfits,
     photos,
@@ -38,3 +39,4 @@ api_router.include_router(suggestions.router)
 api_router.include_router(wear_logs.router)
 api_router.include_router(plan.router)
 api_router.include_router(trips.router)
+api_router.include_router(insights.router)

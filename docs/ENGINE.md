@@ -167,7 +167,7 @@ Score = 0.50*B + 0.15*O + 0.10*W + 0.10*R + 0.10*U + 0.05*S
 
 **U, user preference.** The mean, over core items, of a like-rate estimated from feedback for that item's colour family and category: `(likes + 1) / (likes + dislikes + 2)`. Preferred colours and the preferred fit from the profile add a small bonus.
 
-**S, style.** The share of core items that match the requested style's signals from `seed/style_profiles.json`. If no style is requested, use the profile's styles; if none, 0.5.
+**S, style.** The share of core items that match the requested style's signals from `seed/style_profiles.json`. If no style is requested, use the profile's styles; if none, 0.5. (An item that isn't tagged with the style also needs one of its colours or categories: D42.)
 
 ## 8. Generation, accessories, diversity, reasons
 
@@ -220,7 +220,7 @@ Items are nodes. Two items in different slots are connected if `P >= 0.65`.
 
 "Distinct" means after the diversity step, so ten outfits that differ only in the watch count once.
 
-These measures describe the wardrobe, not today. Compute them over every item that isn't archived or retired (ignore laundry and packed status), with rotation fixed at 1 and weather taken from the season, so the numbers don't shift from day to day. Cache all three per `wardrobe_version`.
+These measures describe the wardrobe, not today. Compute them over every item that isn't archived or retired (ignore laundry and packed status), with rotation fixed at 1 and weather taken from the season, so the numbers don't shift from day to day. Cache all three per `wardrobe_version`. (Built as: distinct core pieces, so an accessory never makes a new outfit; an accessory's versatility is the good outfits it finishes; occasions from onboarding and the usual week; a one-sentence rescue for each orphan; cached per wardrobe version, engine version, occasions, and reactions: D43.)
 
 ## 12. Weekly planner (M6)
 

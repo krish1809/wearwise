@@ -89,6 +89,12 @@ TEXTS: dict[str, str] = {
     # Packing (packing.py).
     "packing.no_good_outfit": "Nothing you have makes a good enough outfit for this day.",
     "packing.not_enough": "The packed pieces run out of clean wears by this day.",
+    # Insights (insights.py): why an item is stranded.
+    "rescue.slot": "Nothing you have for the {slot} suits it; a plain {color} one would.",
+    "rescue.partners": "What it pairs with doesn't go together; a plain {color} one for the "
+    "{slot} would.",
+    "rescue.occasions": "It's dressier or more casual than any occasion you dress for.",
+    "rescue.accessory": "It finishes few of your good outfits so far.",
     # Notes on the whole result.
     "note.only_one": "This is the only outfit your available pieces make.",
     "note.few": "Only {count} different outfits work with what's available.",

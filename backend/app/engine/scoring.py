@@ -312,20 +312,7 @@ class Scorer:
         return found
 
     def fits_style(self, item: EngineItem, style: Style) -> bool:
-        if style.id in item.style_tags:
-            return True
-        checks = [
-            item.color_family in style.colors,
-            item.pattern in style.patterns,
-            item.category_id in style.categories,
-            abs(item.formality - style.formality_center)
-            <= self.config.style_signal_formality_steps,
-        ]
-        if item.fabric:
-            checks.append(item.fabric in style.fabrics)
-        if item.fit:
-            checks.append(item.fit in style.fits)
-        return sum(checks) / len(checks) >= self.config.style_match_share
+        return fits_style(item, style, self.config)
 
     def style(self, core: Sequence[EngineItem]) -> float:
         if not self.styles:
@@ -397,6 +384,28 @@ class Scorer:
 
     def _is_core_slot(self, slot: str) -> bool:
         return self.slot_kinds.get(slot) == "core"
+
+
+def fits_style(item: EngineItem, style: Style, config: EngineConfig) -> bool:
+    """Whether an item matches a style: tagged with it, or with a colour or category the
+    style is known by, and fitting at least half of its signals (colour, pattern, category,
+    formality, and fabric and fit when known). The distinctive signal is needed because a
+    solid pattern and a middling formality alone fit nearly every style (D42)."""
+    if style.id in item.style_tags:
+        return True
+    if item.color_family not in style.colors and item.category_id not in style.categories:
+        return False
+    checks = [
+        item.color_family in style.colors,
+        item.pattern in style.patterns,
+        item.category_id in style.categories,
+        abs(item.formality - style.formality_center) <= config.style_signal_formality_steps,
+    ]
+    if item.fabric:
+        checks.append(item.fabric in style.fabrics)
+    if item.fit:
+        checks.append(item.fit in style.fits)
+    return sum(checks) / len(checks) >= config.style_match_share
 
 
 @dataclass(frozen=True)

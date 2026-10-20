@@ -40,10 +40,33 @@ function planDay(pieces: unknown[] = []) {
   };
 }
 
+const NO_INSIGHTS = {
+  items: 0,
+  logs: 0,
+  days_logged_30: 0,
+  needed_logs: 5,
+  enough: false,
+  most_worn: [],
+  least_worn: [],
+  by_month: [],
+  by_group: [],
+  by_color: [],
+  cheapest: [],
+  dearest: [],
+  needs_price: [],
+  versatile: null,
+  orphans: null,
+  coverage: null,
+  style: null,
+  declutter: [],
+  engine_version: "1.1",
+};
+
 function showHome(
   profile: Profile,
   todaysLogs: unknown[] = [],
   today = planDay(),
+  insights: unknown = NO_INSIGHTS,
 ) {
   vi.spyOn(api, "GET").mockImplementation(async (path) => {
     if (path === "/api/v1/profile") return apiAnswer(200, profile) as never;
@@ -51,6 +74,7 @@ function showHome(
     if (path === "/api/v1/wear-logs") {
       return apiAnswer(200, { logs: todaysLogs, next_cursor: null }) as never;
     }
+    if (path === "/api/v1/insights") return apiAnswer(200, insights) as never;
     if (path === "/api/v1/plan") {
       return apiAnswer(200, {
         start: today.day,
@@ -171,4 +195,21 @@ it("says what was worn today", async () => {
       "You wore Navy casual shirt, olive chinos and brown loafers.",
     ),
   ).toBeDefined();
+});
+
+it("shares one fact from the insights", async () => {
+  showHome(makeProfile(), [], planDay(), {
+    ...NO_INSIGHTS,
+    items: 3,
+    needs_price: [{ id: "a" }, { id: "b" }],
+  });
+
+  expect(
+    await screen.findByText(
+      "2 worn pieces have no price, so there's no cost per wear yet.",
+    ),
+  ).toBeDefined();
+  expect(
+    screen.getByRole("link", { name: "See all insights" }).getAttribute("href"),
+  ).toBe("/insights");
 });

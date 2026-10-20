@@ -1,7 +1,7 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { CalendarDays, House, Layers, Settings, Shirt } from "lucide-react";
+import { CalendarDays, ChartColumn, House, Layers, Shirt } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Suspense, useEffect } from "react";
@@ -22,7 +22,7 @@ const NAV = [
   { href: "/wardrobe", label: "Wardrobe", icon: Shirt },
   { href: "/outfits", label: "Outfits", icon: Layers },
   { href: "/week", label: "My Week", icon: CalendarDays },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/insights", label: "Insights", icon: ChartColumn },
 ] as const;
 
 function isActive(pathname: string | null, href: string): boolean {

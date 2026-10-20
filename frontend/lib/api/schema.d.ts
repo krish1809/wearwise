@@ -973,6 +973,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/insights": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Insights
+         * @description Every number here is counted from the person's own rows; nothing is estimated.
+         */
+        get: operations["get_insights"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1089,6 +1109,17 @@ export interface components {
             /** Custom */
             custom: boolean;
         };
+        /** CellOut */
+        CellOut: {
+            /** Occasion Id */
+            occasion_id: string;
+            /** Season */
+            season: string;
+            /** Outfits */
+            outfits: number;
+            /** Capped */
+            capped: boolean;
+        };
         /** CheckRequest */
         CheckRequest: {
             /** Item Ids */
@@ -1104,6 +1135,27 @@ export interface components {
             hex: string | null;
             /** Neutrality */
             neutrality: number;
+        };
+        /** CostOut */
+        CostOut: {
+            item: components["schemas"]["ItemBrief"];
+            /** Price */
+            price: number;
+            /** Currency */
+            currency: string;
+            /** Wears */
+            wears: number;
+            /** Per Wear */
+            per_wear: number;
+        };
+        /** CoverageOut */
+        CoverageOut: {
+            /** Occasion Ids */
+            occasion_ids: string[];
+            /** Seasons */
+            seasons: string[];
+            /** Cells */
+            cells: components["schemas"]["CellOut"][];
         };
         /**
          * DayChange
@@ -1134,6 +1186,19 @@ export interface components {
             feels_like: number | null;
             /** Rain Chance */
             rain_chance: number | null;
+        };
+        /** DeclutterOut */
+        DeclutterOut: {
+            item: components["schemas"]["ItemBrief"];
+            /** Last Worn On */
+            last_worn_on: string | null;
+            /**
+             * Added On
+             * Format: date
+             */
+            added_on: string;
+            /** Outfits */
+            outfits: number;
         };
         /** DeleteAccountRequest */
         DeleteAccountRequest: {
@@ -1240,6 +1305,45 @@ export interface components {
              * @enum {string}
              */
             database: "ok" | "error";
+        };
+        /** InsightsOut */
+        InsightsOut: {
+            /** Items */
+            items: number;
+            /** Logs */
+            logs: number;
+            /** Days Logged 30 */
+            days_logged_30: number;
+            /** Needed Logs */
+            needed_logs: number;
+            /** Enough */
+            enough: boolean;
+            /** Most Worn */
+            most_worn: components["schemas"]["WornOut"][];
+            /** Least Worn */
+            least_worn: components["schemas"]["WornOut"][];
+            /** By Month */
+            by_month: components["schemas"]["MonthOut"][];
+            /** By Group */
+            by_group: components["schemas"]["TallyOut"][];
+            /** By Color */
+            by_color: components["schemas"]["TallyOut"][];
+            /** Cheapest */
+            cheapest: components["schemas"]["CostOut"][];
+            /** Dearest */
+            dearest: components["schemas"]["CostOut"][];
+            /** Needs Price */
+            needs_price: components["schemas"]["ItemBrief"][];
+            /** Versatile */
+            versatile: components["schemas"]["VersatileOut"][] | null;
+            /** Orphans */
+            orphans: components["schemas"]["OrphanOut"][] | null;
+            coverage: components["schemas"]["CoverageOut"] | null;
+            style: components["schemas"]["StyleOut"] | null;
+            /** Declutter */
+            declutter: components["schemas"]["DeclutterOut"][];
+            /** Engine Version */
+            engine_version: string;
         };
         /** ItemBrief */
         ItemBrief: {
@@ -1572,6 +1676,13 @@ export interface components {
             /** Text */
             text: string;
         };
+        /** MonthOut */
+        MonthOut: {
+            /** Month */
+            month: string;
+            /** Days */
+            days: number;
+        };
         /** OccasionOut */
         OccasionOut: {
             /** Id */
@@ -1595,6 +1706,14 @@ export interface components {
             reasons: components["schemas"]["ReasonOut"][];
             /** Score */
             score: number;
+        };
+        /** OrphanOut */
+        OrphanOut: {
+            item: components["schemas"]["ItemBrief"];
+            /** Outfits */
+            outfits: number;
+            /** Rescue */
+            rescue: string;
         };
         /** OutfitCheck */
         OutfitCheck: {
@@ -1974,6 +2093,22 @@ export interface components {
              */
             item_id: string;
         };
+        /** ShareOut */
+        ShareOut: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Share */
+            share: number;
+            /** Hex */
+            hex?: string | null;
+            /**
+             * Chosen
+             * @default false
+             */
+            chosen: boolean;
+        };
         /** SizeChoice */
         SizeChoice: {
             /** Label */
@@ -1995,6 +2130,17 @@ export interface components {
             name: string;
             /** Role */
             role: string;
+        };
+        /** StyleOut */
+        StyleOut: {
+            /** Wears */
+            wears: number;
+            /** Palette */
+            palette: components["schemas"]["ShareOut"][];
+            /** Formality */
+            formality: components["schemas"]["ShareOut"][];
+            /** Styles */
+            styles: components["schemas"]["ShareOut"][];
         };
         /** StyleProfileOut */
         StyleProfileOut: {
@@ -2081,6 +2227,17 @@ export interface components {
             season: string;
             /** Engine Version */
             engine_version: string;
+        };
+        /** TallyOut */
+        TallyOut: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Wears */
+            wears: number;
+            /** Hex */
+            hex?: string | null;
         };
         /** Term */
         Term: {
@@ -2222,6 +2379,12 @@ export interface components {
             /** Context */
             ctx?: Record<string, never>;
         };
+        /** VersatileOut */
+        VersatileOut: {
+            item: components["schemas"]["ItemBrief"];
+            /** Outfits */
+            outfits: number;
+        };
         /** WearIn */
         WearIn: {
             /**
@@ -2325,6 +2488,14 @@ export interface components {
             laundry_weekday: number | null;
             /** Engine Version */
             engine_version: string;
+        };
+        /** WornOut */
+        WornOut: {
+            item: components["schemas"]["ItemBrief"];
+            /** Wears */
+            wears: number;
+            /** Last Worn On */
+            last_worn_on: string | null;
         };
         /** WornPiece */
         WornPiece: {
@@ -5730,6 +5901,35 @@ export interface operations {
             };
             /** @description Unprocessable Content */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_insights: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InsightsOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };

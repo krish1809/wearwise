@@ -705,3 +705,36 @@ def score_outfit(
         components=breakdown.components,
         reasons=explain(breakdown, core, scorer, wardrobe.color_names, wardrobe.group_names),
     )
+
+
+@dataclass(frozen=True)
+class CoreOutfit:
+    """A core outfit and its score, without accessories or reasons: for counting."""
+
+    core_ids: tuple[str, ...]
+    template_id: str
+    score: float
+
+
+def good_cores(
+    wardrobe: Wardrobe,
+    context: Context,
+    threshold: float,
+    config: EngineConfig = DEFAULT,
+    pair_cache: dict[tuple[str, str], PairScore] | None = None,
+) -> list[CoreOutfit]:
+    """Every distinct core outfit for the context scoring at least `threshold`, best first.
+    Large wardrobes go through the beam search, spread across the wardrobe, so the count is
+    of the outfits it finds rather than every possible one."""
+    owned = sorted(
+        (item for item in wardrobe.items if item.owner_id == context.user_id),
+        key=lambda item: item.id,
+    )
+    pairs = PairScores(config, pair_cache)
+    run = _run(wardrobe, context, config, pairs, owned, (), _level(context, ()), spread=True)
+    found = [
+        CoreOutfit(draft.key, draft.template.id, draft.score)
+        for draft in run.candidates
+        if draft.score >= threshold
+    ]
+    return sorted(found, key=lambda outfit: (-outfit.score, outfit.core_ids))
