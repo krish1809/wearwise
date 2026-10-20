@@ -19,12 +19,13 @@ from sqlalchemy.orm import Session
 from app.adapters.weather import WeatherProvider
 from app.engine import feedback as learning
 from app.engine.config import DEFAULT, ENGINE_VERSION
-from app.engine.generate import season_for, suggest
+from app.engine.generate import score_outfit, season_for, suggest
 from app.engine.pairs import PairScore
 from app.engine.types import (
     Context,
     EngineItem,
     Preferences,
+    ScoredOutfit,
     Style,
     Suggestions,
     Wardrobe,
@@ -161,6 +162,24 @@ def run(
         rows.append(row)
     db.flush()
     return Result(engine=result, rows=rows, season=season)
+
+
+def score_chosen(
+    db: Session, user: User, item_ids: list[uuid.UUID], occasion_id: str | None, day: date
+) -> ScoredOutfit | None:
+    """The engine's score and reasons for pieces the person put together (the studio's live
+    score); None unless they make a whole outfit. The season stands in for the weather, so
+    the score doesn't wait on a forecast."""
+    profile = db.scalar(select(Profile).where(Profile.user_id == user.id))
+    wardrobe = load_wardrobe(db, user, day)
+    occasion = db.get(Occasion, occasion_id) if occasion_id else None
+    context = replace(
+        base_context(db, user, profile, wardrobe, day),
+        occasion=engine_occasion(occasion) if occasion else None,
+    )
+    return score_outfit(
+        wardrobe, context, [str(i) for i in item_ids], DEFAULT, pair_cache_for(user)
+    )
 
 
 def base_context(

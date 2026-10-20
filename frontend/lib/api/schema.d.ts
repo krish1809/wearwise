@@ -411,6 +411,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/items/colours": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Colours
+         * @description Every item in the wardrobe (not archived), placed by colour with the engine's own
+         *     colour rules.
+         */
+        get: operations["colours"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/items/{item_id}": {
         parameters: {
             query?: never;
@@ -553,6 +574,27 @@ export interface paths {
          * @description Which template these items fill, and what's still needed. Changes nothing.
          */
         post: operations["check"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/outfits/remix": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Remix
+         * @description The good outfits a handful of your own pieces make on their own, per occasion, this
+         *     season. Scored like the coverage map; changes nothing.
+         */
+        post: operations["remix"];
         delete?: never;
         options?: never;
         head?: never;
@@ -993,6 +1035,51 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/insights/coverage/{occasion_id}/{season}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Coverage Cell
+         * @description One square of the coverage map, opened: its good outfits, or what's missing.
+         */
+        get: operations["coverage_cell"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/insights/challenge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Challenge
+         * @description Wear what you own: progress counted from the wear log since the challenge began.
+         */
+        get: operations["get_challenge"];
+        put?: never;
+        /**
+         * Start Challenge
+         * @description Start the challenge from today (or start it again).
+         */
+        post: operations["start_challenge"];
+        /** Stop Challenge */
+        delete: operations["stop_challenge"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/candidates": {
         parameters: {
             query?: never;
@@ -1264,14 +1351,196 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/candidates/{candidate_id}/try": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Try Candidate
+         * @description Put the candidate with pieces you own and see how that outfit scores, as if you'd
+         *     bought it. Nothing is saved.
+         */
+        post: operations["try_candidate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ai Status
+         * @description Whether the stylist and photo tagging can be used now, and why not if they can't.
+         */
+        get: operations["ai_status"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/photos/{photo_id}/tag": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Tag Photo
+         * @description Suggest a category, colours, pattern, fabric, and fit from an uploaded photo. Only
+         *     the image is sent. Nothing is saved: the form shows the suggestions to check.
+         */
+        post: operations["tag_photo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/chat/threads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Threads */
+        get: operations["list_threads"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/chat/threads/{thread_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Thread */
+        get: operations["get_thread"];
+        put?: never;
+        post?: never;
+        /** Delete Thread */
+        delete: operations["delete_thread"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/chat/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send Message
+         * @description Ask the stylist. It answers from tool results only; anything it proposes to change
+         *     waits for the person to confirm.
+         */
+        post: operations["send_message"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/chat/actions/{action_id}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirm Action
+         * @description Do what the stylist proposed, through the same code as the app's own buttons.
+         */
+        post: operations["confirm_action"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/chat/actions/{action_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel Action */
+        post: operations["cancel_action"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AIStatusOut */
+        AIStatusOut: {
+            /** Available */
+            available: boolean;
+            /** Reason */
+            reason: string | null;
+        };
         /** AccountUpdate */
         AccountUpdate: {
             /** Name */
             name?: string | null;
+        };
+        /** ActionOut */
+        ActionOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Status */
+            status: string;
+            /** Summary */
+            summary: string;
+            /** Items */
+            items: components["schemas"]["ItemBrief"][];
+            /** Result */
+            result: {
+                [key: string]: string;
+            };
         };
         /** AnalysisOut */
         AnalysisOut: {
@@ -1409,6 +1678,8 @@ export interface components {
             status?: string | null;
             /** Notes */
             notes?: string | null;
+            /** Remind On */
+            remind_on?: string | null;
             /** Photo Id */
             photo_id?: string | null;
             /** Image Url */
@@ -1488,6 +1759,10 @@ export interface components {
             status: string;
             /** Notes */
             notes: string | null;
+            /** Remind On */
+            remind_on: string | null;
+            /** Reminder Due */
+            reminder_due: boolean;
             /** Item Id */
             item_id: string | null;
             photo: components["schemas"]["PhotoRef"] | null;
@@ -1542,6 +1817,8 @@ export interface components {
             status?: string | null;
             /** Notes */
             notes?: string | null;
+            /** Remind On */
+            remind_on?: string | null;
             /** Photo Id */
             photo_id?: string | null;
             /** Image Url */
@@ -1577,6 +1854,27 @@ export interface components {
             cost: number | null;
             /** Stage */
             stage: number;
+        };
+        /** CardOut */
+        CardOut: {
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "outfit" | "item" | "candidate" | "staple" | "action";
+            /**
+             * Items
+             * @default []
+             */
+            items: components["schemas"]["ItemBrief"][];
+            /**
+             * Removed
+             * @default false
+             */
+            removed: boolean;
+            candidate?: components["schemas"]["CandidateOut"] | null;
+            staple?: components["schemas"]["StapleCardOut"] | null;
+            action?: components["schemas"]["ActionOut"] | null;
         };
         /** CatalogProductOut */
         CatalogProductOut: {
@@ -1662,6 +1960,21 @@ export interface components {
             /** Custom */
             custom: boolean;
         };
+        /** CellDetailOut */
+        CellDetailOut: {
+            /** Occasion Id */
+            occasion_id: string;
+            /** Season */
+            season: string;
+            /** Outfits */
+            outfits: components["schemas"]["CellOutfitOut"][];
+            /** Missing */
+            missing: string[];
+            /** Closest */
+            closest: components["schemas"]["CellOutfitOut"][];
+            /** Staples */
+            staples: components["schemas"]["StapleOut"][];
+        };
         /** CellOut */
         CellOut: {
             /** Occasion Id */
@@ -1673,10 +1986,52 @@ export interface components {
             /** Capped */
             capped: boolean;
         };
+        /** CellOutfitOut */
+        CellOutfitOut: {
+            /** Items */
+            items: components["schemas"]["ItemBrief"][];
+            /** Score */
+            score: number;
+        };
+        /** ChallengeOut */
+        ChallengeOut: {
+            /**
+             * Started On
+             * Format: date
+             */
+            started_on: string;
+            /**
+             * Ends On
+             * Format: date
+             */
+            ends_on: string;
+            /** Day */
+            day: number;
+            /** Days */
+            days: number;
+            /** Finished */
+            finished: boolean;
+            /** Total */
+            total: number;
+            /** Worn */
+            worn: number;
+            /** Unworn */
+            unworn: components["schemas"]["ItemBrief"][];
+            /** Unworn Count */
+            unworn_count: number;
+        };
+        /** ChallengeStatus */
+        ChallengeStatus: {
+            challenge: components["schemas"]["ChallengeOut"] | null;
+            /** Days */
+            days: number;
+        };
         /** CheckRequest */
         CheckRequest: {
             /** Item Ids */
             item_ids: string[];
+            /** Occasion Id */
+            occasion_id?: string | null;
         };
         /** ColorFamilyOut */
         ColorFamilyOut: {
@@ -1697,6 +2052,33 @@ export interface components {
             title: string;
             /** Text */
             text: string;
+        };
+        /**
+         * ColourPoint
+         * @description An item's colour as the engine sees it, for the colour map.
+         */
+        ColourPoint: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Display Name */
+            display_name: string;
+            /** Color Primary */
+            color_primary: string;
+            /** Hex */
+            hex: string | null;
+            /** Lightness */
+            lightness: number;
+            /** Chroma */
+            chroma: number;
+            /** Hue */
+            hue: number;
+            /** Neutral */
+            neutral: boolean;
+            /** Known */
+            known: boolean;
         };
         /** CompareOut */
         CompareOut: {
@@ -2397,6 +2779,25 @@ export interface components {
             /** Inseam */
             inseam?: number | null;
         };
+        /** MessageOut */
+        MessageOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Role */
+            role: string;
+            /** Text */
+            text: string;
+            /** Cards */
+            cards: components["schemas"]["CardOut"][];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
         /** MissingOut */
         MissingOut: {
             /** Slot */
@@ -2467,6 +2868,15 @@ export interface components {
             optional_slots: string[];
             /** Message */
             message: string | null;
+            /** Score */
+            score?: number | null;
+            /** Good */
+            good?: boolean | null;
+            /**
+             * Reasons
+             * @default []
+             */
+            reasons: components["schemas"]["ReasonOut"][];
         };
         /** OutfitCreate */
         OutfitCreate: {
@@ -2844,6 +3254,40 @@ export interface components {
             /** Name */
             name?: string | null;
         };
+        /** RemixGroupOut */
+        RemixGroupOut: {
+            /** Occasion Id */
+            occasion_id: string;
+            /** Occasion Name */
+            occasion_name: string;
+            /** Outfits */
+            outfits: components["schemas"]["RemixOutfitOut"][];
+            /** Count */
+            count: number;
+        };
+        /** RemixOut */
+        RemixOut: {
+            /** Season */
+            season: string;
+            /** Groups */
+            groups: components["schemas"]["RemixGroupOut"][];
+            /** Total */
+            total: number;
+            /** Needs Occasions */
+            needs_occasions: boolean;
+        };
+        /** RemixOutfitOut */
+        RemixOutfitOut: {
+            /** Items */
+            items: components["schemas"]["ItemBrief"][];
+            /** Score */
+            score: number;
+        };
+        /** RemixRequest */
+        RemixRequest: {
+            /** Item Ids */
+            item_ids: string[];
+        };
         /** SaveIn */
         SaveIn: {
             /** Name */
@@ -2861,6 +3305,19 @@ export interface components {
             shop: string;
             /** Url */
             url: string;
+        };
+        /** SendRequest */
+        SendRequest: {
+            /** Thread Id */
+            thread_id?: string | null;
+            /** Text */
+            text: string;
+        };
+        /** SentOut */
+        SentOut: {
+            thread: components["schemas"]["ThreadOut"];
+            /** Messages */
+            messages: components["schemas"]["MessageOut"][];
         };
         /** SetLink */
         SetLink: {
@@ -2942,6 +3399,17 @@ export interface components {
         SplitRequest: {
             /** Budget */
             budget: number;
+        };
+        /** StapleCardOut */
+        StapleCardOut: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Hex */
+            hex: string | null;
+            /** Slot */
+            slot: string;
         };
         /** StapleOut */
         StapleOut: {
@@ -3070,6 +3538,16 @@ export interface components {
             /** Engine Version */
             engine_version: string;
         };
+        /**
+         * TaggedOut
+         * @description Suggestions from the photo, to be checked: only ids from the app's own lists.
+         */
+        TaggedOut: {
+            /** Fields */
+            fields: {
+                [key: string]: string;
+            };
+        };
         /** TallyOut */
         TallyOut: {
             /** Id */
@@ -3087,6 +3565,38 @@ export interface components {
             id: string;
             /** Name */
             name: string;
+        };
+        /** ThreadDetailOut */
+        ThreadDetailOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Title */
+            title: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Messages */
+            messages: components["schemas"]["MessageOut"][];
+        };
+        /** ThreadOut */
+        ThreadOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Title */
+            title: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
         };
         /** TripDayOut */
         TripDayOut: {
@@ -3191,6 +3701,29 @@ export interface components {
             end_date: string;
             /** Item Count */
             item_count: number;
+        };
+        /**
+         * TryOut
+         * @description The candidate with pieces the person owns: whole or not, and if whole, its score.
+         */
+        TryOut: {
+            /** Complete */
+            complete: boolean;
+            /** Message */
+            message: string | null;
+            /** Score */
+            score: number | null;
+            /** Good */
+            good: boolean | null;
+            /** Reasons */
+            reasons: components["schemas"]["VerdictReasonOut"][];
+        };
+        /** TryRequest */
+        TryRequest: {
+            /** Item Ids */
+            item_ids: string[];
+            /** Occasion Id */
+            occasion_id?: string | null;
         };
         /** UserOut */
         UserOut: {
@@ -4578,6 +5111,35 @@ export interface operations {
             };
         };
     };
+    colours: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ColourPoint"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     get_item: {
         parameters: {
             query?: never;
@@ -5165,6 +5727,57 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OutfitCheck"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    remix: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RemixRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RemixOut"];
                 };
             };
             /** @description Unauthorized */
@@ -6793,6 +7406,159 @@ export interface operations {
             };
         };
     };
+    coverage_cell: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                occasion_id: string;
+                season: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CellDetailOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_challenge: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChallengeStatus"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    start_challenge: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChallengeStatus"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    stop_challenge: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     list_candidates: {
         parameters: {
             query?: never;
@@ -7703,6 +8469,510 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    try_candidate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                candidate_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TryRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TryOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    ai_status: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AIStatusOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    tag_photo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                photo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaggedOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_threads: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ThreadOut"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_thread: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                thread_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ThreadDetailOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_thread: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                thread_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    send_message: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SentOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    confirm_action: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                action_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActionOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_action: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                action_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActionOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

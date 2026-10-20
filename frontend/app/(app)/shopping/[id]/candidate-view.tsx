@@ -10,7 +10,9 @@ import { OutfitBoard } from "@/components/outfits/outfit-board";
 import { ReasonList } from "@/components/outfits/reason-list";
 import { OwnedRow } from "@/components/shopping/piece-row";
 import { ShopPanel } from "@/components/shopping/shop-panel";
+import { TryOn } from "@/components/shopping/try-on";
 import { VerdictBadge } from "@/components/shopping/verdict-badge";
+import { WAITING, WaitPicker } from "@/components/shopping/wait-picker";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
@@ -157,6 +159,9 @@ function Details({
           ) : (
             <>
               <StatusPicker candidate={candidate} />
+              {WAITING.includes(candidate.status) && (
+                <WaitPicker candidate={candidate} />
+              )}
               <div className="flex flex-wrap gap-3">
                 <PurchaseDialog candidate={candidate} />
                 <Button asChild variant="secondary">
@@ -307,9 +312,15 @@ function StatusPicker({ candidate }: { candidate: Candidate }) {
   const update = useUpdateCandidate(candidate.id);
   const open = STATUSES.filter((status) => status.id !== "purchased");
 
-  async function choose(status: string) {
+  async function choose(status: string, undoable = true) {
+    const before = candidate.status;
     try {
       await update.mutateAsync({ status });
+      if (status === "skipped" && undoable) {
+        toast.success("Skipped", {
+          action: { label: "Undo", onClick: () => void choose(before, false) },
+        });
+      }
     } catch (error) {
       toast.error(problemFrom(error).message);
     }
@@ -403,6 +414,16 @@ function AnalysisPanel({
       </Card>
 
       {core && <Coverage analysis={analysis} reference={reference} />}
+
+      {core && (
+        <TryOn
+          candidate={candidate}
+          reference={reference}
+          occasionIds={[
+            ...new Set(analysis.cells.map((cell) => cell.occasion_id)),
+          ]}
+        />
+      )}
 
       {analysis.examples.length > 0 && (
         <section

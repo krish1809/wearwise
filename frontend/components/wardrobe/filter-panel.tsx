@@ -208,7 +208,7 @@ function ColourSwatch({
           aria-hidden
           className={cn(
             "size-5",
-            isLight(colour.hex) ? "text-ink" : "text-white",
+            isLight(colour.hex) ? "text-on-light" : "text-white",
           )}
         />
       )}

@@ -189,3 +189,87 @@ it("explains instead of offering actions once a piece has gone", () => {
   expect(screen.getByText(/deleted or archived since/)).toBeDefined();
   expect(screen.queryByRole("button", { name: "Save outfit" })).toBeNull();
 });
+
+function swipe(target: HTMLElement, dx: number, dy = 0, pointerType = "touch") {
+  fireEvent.pointerDown(target, {
+    pointerType,
+    pointerId: 1,
+    clientX: 100,
+    clientY: 100,
+  });
+  fireEvent.pointerMove(target, {
+    pointerType,
+    pointerId: 1,
+    clientX: 100 + dx,
+    clientY: 100 + dy,
+  });
+  fireEvent.pointerUp(target, { pointerType, pointerId: 1 });
+}
+
+function board(): HTMLElement {
+  return screen.getByRole("group", { name: /swipe right to like/ });
+}
+
+it("a swipe sends exactly what the buttons send", async () => {
+  const post = vi
+    .spyOn(api, "POST")
+    .mockResolvedValue(apiAnswer(200, makeSuggestion()) as never);
+
+  // The buttons: Like, then Dislike with no reason given.
+  renderWithQueries(<Harness initial={makeSuggestion()} />);
+  fireEvent.click(screen.getByRole("button", { name: /^Like / }));
+  await waitFor(() => expect(post).toHaveBeenCalledTimes(1));
+  fireEvent.click(screen.getByRole("button", { name: /^Dislike / }));
+  const dialog = await screen.findByRole("dialog");
+  fireEvent.click(within(dialog).getByRole("button", { name: "Dislike" }));
+  await waitFor(() => expect(post).toHaveBeenCalledTimes(2));
+  cleanup();
+
+  // The same two by swiping.
+  renderWithQueries(<Harness initial={makeSuggestion()} />);
+  swipe(board(), 150);
+  await waitFor(() => expect(post).toHaveBeenCalledTimes(3));
+  swipe(board(), -150);
+  await waitFor(() => expect(post).toHaveBeenCalledTimes(4));
+
+  expect(sentBody(post, 2)).toEqual(sentBody(post, 0));
+  expect(sentBody(post, 3)).toEqual(sentBody(post, 1));
+  expect(sentBody(post, 2)).toEqual({ verdict: "like" });
+  expect(sentBody(post, 3)).toEqual({
+    verdict: "dislike",
+    reason: null,
+    item_id: null,
+  });
+});
+
+it("an accidental swipe can be undone", async () => {
+  vi.spyOn(api, "POST").mockResolvedValue(
+    apiAnswer(200, makeSuggestion({ rating: "dislike" })) as never,
+  );
+  const remove = vi
+    .spyOn(api, "DELETE")
+    .mockResolvedValue(apiAnswer(200, makeSuggestion()) as never);
+  const { Toaster } = await import("@/components/ui/toast");
+  renderWithQueries(
+    <>
+      <Harness initial={makeSuggestion()} />
+      <Toaster />
+    </>,
+  );
+
+  swipe(board(), -150);
+  fireEvent.click(await screen.findByRole("button", { name: "Undo" }));
+
+  await waitFor(() => expect(remove).toHaveBeenCalledOnce());
+});
+
+it("scrolling, short moves, and a mouse don't rate anything", () => {
+  const post = vi.spyOn(api, "POST");
+  renderWithQueries(<Harness initial={makeSuggestion()} />);
+
+  swipe(board(), 40, 300);
+  swipe(board(), 60);
+  swipe(board(), 200, 0, "mouse");
+
+  expect(post).not.toHaveBeenCalled();
+});

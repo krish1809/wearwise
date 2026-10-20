@@ -9,6 +9,8 @@ import {
   SwatchStrip,
   type BoardPiece,
 } from "@/components/outfits/outfit-board";
+import { dragged, PieceTray } from "@/components/outfits/piece-tray";
+import { ScoreMeter } from "@/components/outfits/score-meter";
 import { SlotPicker } from "@/components/outfits/slot-picker";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -21,6 +23,7 @@ import { ItemPhoto } from "@/components/wardrobe/item-photo";
 import { type ApiProblem, problemFrom } from "@/lib/api/errors";
 import { type NewOutfit, type Outfit, useOutfitCheck } from "@/lib/outfits";
 import type { Reference } from "@/lib/profile";
+import { cn } from "@/lib/utils";
 import type { PhotoRef } from "@/lib/wardrobe";
 
 /** What the studio needs to know about a chosen item. */
@@ -72,7 +75,12 @@ export function OutfitStudio({
   const favoriteId = useId();
 
   const ids = Object.values(chosen).map((item) => item.id);
-  const check = useOutfitCheck(ids);
+  const check = useOutfitCheck(ids, occasion);
+  const [dropping, setDropping] = useState(false);
+
+  function add(item: ChosenItem) {
+    setChosen((current) => ({ ...current, [item.slot]: item }));
+  }
   const slots = useMemo(
     () => reference.slots.map((slot, position) => ({ ...slot, position })),
     [reference],
@@ -135,7 +143,28 @@ export function OutfitStudio({
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
       <div className="flex flex-col gap-3 lg:sticky lg:top-24 lg:self-start">
-        <OutfitBoard pieces={pieces} slots={slots} familyHex={familyHex} />
+        <div
+          data-testid="board-drop"
+          onDragOver={(event) => {
+            if (!dragged.current) return;
+            event.preventDefault();
+            event.dataTransfer.dropEffect = "copy";
+            setDropping(true);
+          }}
+          onDragLeave={() => setDropping(false)}
+          onDrop={(event) => {
+            event.preventDefault();
+            setDropping(false);
+            if (dragged.current) add(dragged.current);
+            dragged.current = null;
+          }}
+          className={cn(
+            "rounded-xl outline-2 outline-offset-4 outline-transparent motion-safe:transition-[outline-color]",
+            dropping && "outline-indigo outline-dashed",
+          )}
+        >
+          <OutfitBoard pieces={pieces} slots={slots} familyHex={familyHex} />
+        </div>
         <SwatchStrip pieces={pieces} familyHex={familyHex} />
         <p role="status" className="flex items-start gap-2 text-ink-soft">
           {check.data?.complete && (
@@ -146,6 +175,13 @@ export function OutfitStudio({
           )}
           {status}
         </p>
+        {check.data?.complete && check.data.score != null && (
+          <ScoreMeter
+            score={check.data.score}
+            good={Boolean(check.data.good)}
+            reasons={check.data.reasons}
+          />
+        )}
         <CompleteOutfit
           itemIds={ids}
           occasionId={occasion || null}
@@ -176,6 +212,13 @@ export function OutfitStudio({
         }}
       >
         {problem && <Alert tone="error">{problem.message}</Alert>}
+
+        <PieceTray
+          slots={core}
+          chosenIds={ids}
+          familyHex={familyHex}
+          onAdd={add}
+        />
 
         <section
           aria-labelledby="pieces-heading"

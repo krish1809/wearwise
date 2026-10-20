@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 
 import { api } from "@/lib/api/client";
 import { ApiRequestError, readApiError } from "@/lib/api/errors";
@@ -273,4 +278,27 @@ export function priceMayHaveChanged(
 ): boolean {
   if (!checkedAt) return false;
   return now.getTime() - new Date(checkedAt).getTime() > 24 * 60 * 60 * 1000;
+}
+
+export type TryResult = components["schemas"]["TryOut"];
+
+/** The candidate with pieces you own, scored as if you'd bought it. */
+export function useTry(
+  candidateId: string,
+  itemIds: string[],
+  occasionId: string | null,
+) {
+  const sorted = [...itemIds].sort();
+  return useQuery({
+    queryKey: ["candidate", candidateId, "try", sorted, occasionId],
+    enabled: sorted.length > 0,
+    placeholderData: keepPreviousData,
+    queryFn: () =>
+      ok(
+        api.POST("/api/v1/candidates/{candidate_id}/try", {
+          params: { path: { candidate_id: candidateId } },
+          body: { item_ids: sorted, occasion_id: occasionId },
+        }),
+      ),
+  });
 }

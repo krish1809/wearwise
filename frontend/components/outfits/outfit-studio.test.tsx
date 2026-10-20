@@ -156,7 +156,10 @@ it("saves the chosen pieces with the details", async () => {
       undefined,
     ),
   );
-  expect(sentBody(vi.mocked(api.POST), 0)).toEqual({ item_ids: [] });
+  expect(sentBody(vi.mocked(api.POST), 0)).toEqual({
+    item_ids: [],
+    occasion_id: null,
+  });
 });
 
 it("completes the outfit from a suggestion and saves it as that suggestion", async () => {
@@ -252,4 +255,107 @@ it("completes the outfit from a suggestion and saves it as that suggestion", asy
     expect.objectContaining({ item_ids: ["shirt", "chinos", "loafers"] }),
     "sug-7",
   );
+});
+
+function lastChecked(): string[] {
+  const calls = vi.mocked(api.POST).mock.calls;
+  return [
+    ...(
+      sentBody(vi.mocked(api.POST), calls.length - 1) as { item_ids: string[] }
+    ).item_ids,
+  ];
+}
+
+it("dragging a piece onto the board does what pressing it does", async () => {
+  open();
+  const piece = await screen.findByRole("button", {
+    name: "Add: Navy casual shirt",
+  });
+  const board = screen.getByTestId("board-drop");
+  const data = { setData: vi.fn(), effectAllowed: "", dropEffect: "" };
+
+  fireEvent.dragStart(piece, { dataTransfer: data });
+  fireEvent.dragOver(board, { dataTransfer: data });
+  fireEvent.drop(board, { dataTransfer: data });
+
+  expect(
+    await screen.findByRole("button", {
+      name: "In the outfit: Navy casual shirt",
+    }),
+  ).toBeDefined();
+  await waitFor(() => expect(lastChecked()).toEqual(["shirt"]));
+  const dragged = lastChecked();
+  cleanup();
+  vi.restoreAllMocks();
+
+  open();
+  fireEvent.click(
+    await screen.findByRole("button", { name: "Add: Navy casual shirt" }),
+  );
+
+  expect(
+    await screen.findByRole("button", {
+      name: "In the outfit: Navy casual shirt",
+    }),
+  ).toBeDefined();
+  await waitFor(() => expect(lastChecked()).toEqual(dragged));
+});
+
+it("shows the live score with its reasons once the outfit is whole", async () => {
+  vi.spyOn(api, "GET").mockImplementation(async (_path, init) => {
+    const slot = (init as { params: { query: { slot: string[] } } }).params
+      .query.slot[0];
+    return apiAnswer(200, {
+      items: BY_SLOT[slot] ?? [],
+      next_cursor: null,
+      total: 1,
+    }) as never;
+  });
+  vi.spyOn(api, "POST").mockImplementation((async (
+    _path: string,
+    init?: { body?: { item_ids: string[] } },
+  ) => {
+    const found = check(init?.body?.item_ids ?? []);
+    return apiAnswer(
+      200,
+      found.complete
+        ? {
+            ...found,
+            score: 0.82,
+            good: true,
+            reasons: [
+              {
+                code: "formality.match",
+                kind: "positive",
+                text: "Every piece sits at the same level of dress.",
+              },
+            ],
+          }
+        : found,
+    );
+  }) as never);
+  renderWithQueries(
+    <OutfitStudio reference={REFERENCE} saving={false} onSave={vi.fn()} />,
+  );
+
+  for (const name of ["Navy casual shirt"]) {
+    fireEvent.click(
+      await screen.findByRole("button", { name: `Add: ${name}` }),
+    );
+  }
+  fireEvent.click(screen.getByRole("button", { name: "Bottom" }));
+  fireEvent.click(
+    await screen.findByRole("button", { name: "Add: Olive chinos" }),
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Footwear" }));
+  fireEvent.click(
+    await screen.findByRole("button", { name: "Add: Brown loafers" }),
+  );
+
+  const meter = await screen.findByRole("meter", { name: "Outfit score" });
+  expect(meter.getAttribute("aria-valuenow")).toBe("82");
+  expect(screen.getByText("A good outfit")).toBeDefined();
+  expect(
+    screen.getByText("Every piece sits at the same level of dress."),
+  ).toBeDefined();
 });

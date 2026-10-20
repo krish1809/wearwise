@@ -10,11 +10,13 @@ import {
   Layers,
   Shirt,
   ShoppingBag,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
+import { QuickJump } from "@/components/quick-jump";
 import { AvatarMenu } from "@/components/ui/avatar-menu";
 import {
   BottomSheet,
@@ -29,6 +31,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/toast";
 import { api } from "@/lib/api/client";
 import { type User, useCurrentUser } from "@/lib/auth";
+import { useAIStatus } from "@/lib/stylist";
 import { useSlow } from "@/lib/hooks";
 import { cn, focusRing } from "@/lib/utils";
 
@@ -41,11 +44,21 @@ const NAV = [
   { href: "/shopping", label: "Shopping", icon: ShoppingBag },
   { href: "/insights", label: "Insights", icon: ChartColumn },
   { href: "/guide", label: "Style Guide", icon: BookOpen },
+  { href: "/stylist", label: "Stylist", icon: Sparkles },
 ] as const;
+type NavEntry = (typeof NAV)[number];
 
 // The phone's tab bar has room for four; the rest are under More.
 const TABS = NAV.slice(0, 4);
 const MORE = NAV.slice(4);
+
+/** The stylist shows only where it's switched on (it's off until a key is set). */
+function useNav(): { all: NavEntry[]; more: NavEntry[] } {
+  const status = useAIStatus();
+  const aiOn = status.data !== undefined && status.data.reason !== "off";
+  const keep = (entry: NavEntry) => entry.href !== "/stylist" || aiOn;
+  return { all: NAV.filter(keep), more: MORE.filter(keep) };
+}
 
 function isActive(pathname: string | null, href: string): boolean {
   if (pathname === null) return false;
@@ -201,12 +214,13 @@ function Wordmark({ className }: { className?: string }) {
 }
 
 function Sidebar({ pathname }: { pathname: string | null }) {
+  const { all } = useNav();
   return (
     <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-line px-4 py-5 lg:flex">
       <Wordmark className="self-start px-3 py-1" />
       <nav aria-label="Main" className="mt-8">
         <ul className="flex flex-col gap-1">
-          {NAV.map(({ href, label, icon: Icon }) => (
+          {all.map(({ href, label, icon: Icon }) => (
             <li key={href}>
               <Link
                 href={href}
@@ -247,8 +261,9 @@ function TopBar({ user }: { user: User | undefined }) {
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-line bg-paper px-4 sm:px-6 lg:justify-end lg:px-10">
       <Wordmark className="lg:hidden" />
+      {user && <QuickJump />}
       {user?.is_demo && (
-        <span className="mr-3 ml-auto rounded-full bg-consider/15 px-3 py-1 text-sm font-medium text-ink">
+        <span className="mr-3 rounded-full bg-consider/15 px-3 py-1 text-sm font-medium text-ink">
           Demo account
         </span>
       )}
@@ -268,7 +283,8 @@ function TopBar({ user }: { user: User | undefined }) {
 
 function TabBar({ pathname }: { pathname: string | null }) {
   const [open, setOpen] = useState(false);
-  const inMore = MORE.some(({ href }) => isActive(pathname, href));
+  const { more } = useNav();
+  const inMore = more.some(({ href }) => isActive(pathname, href));
   const tab = cn(
     "flex min-h-16 w-full flex-col items-center justify-center gap-1 text-xs font-medium text-ink-soft",
     "hover:text-ink aria-[current=page]:text-indigo",
@@ -311,7 +327,7 @@ function TabBar({ pathname }: { pathname: string | null }) {
                 <BottomSheetTitle>More</BottomSheetTitle>
               </BottomSheetHeader>
               <ul className="flex flex-col gap-1 p-4">
-                {MORE.map(({ href, label, icon: Icon }) => (
+                {more.map(({ href, label, icon: Icon }) => (
                   <li key={href}>
                     <Link
                       href={href}

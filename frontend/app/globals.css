@@ -2,9 +2,10 @@
 @import "tw-animate-css";
 
 /*
-  Design tokens from docs/DESIGN_SYSTEM.md. Colours are CSS variables, so a dark theme stays
-  possible later; v1 is light only. Components use these names (bg-paper, text-ink-soft,
-  outline-indigo) and nothing else, so the palette can't drift.
+  Design tokens from docs/DESIGN_SYSTEM.md. Colours are CSS variables: the light values are
+  here, and the dark theme below redefines them, so components use these names (bg-paper,
+  text-ink-soft, outline-indigo) and nothing else, and both themes come from one place.
+  Contrast for every text and background pair is checked by app/theme.test.ts.
 */
 @theme {
   --color-*: initial;
@@ -20,6 +21,10 @@
   --color-buy: #1f7a4d;
   --color-consider: #8a5a00;
   --color-skip: #b3261e;
+  /* Text and icons on ink, indigo, or verdict fills (buttons, checked boxes, tooltips). */
+  --color-on-ink: #ffffff;
+  /* Marks drawn on a garment's own colour (a light swatch): the same in both themes. */
+  --color-on-light: #1b1d20;
   --color-white: #ffffff;
 
   /* Instrument Sans for text and UI; Bricolage Grotesque for titles and big numbers. */
@@ -64,6 +69,27 @@
       transform: none;
     }
   }
+}
+
+/*
+  The dark theme: the same roles, lightness turned around. The page sets data-theme on <html>
+  from the person's choice (System, Light, or Dark) before it first paints.
+*/
+:root[data-theme="dark"] {
+  --color-paper: #121417;
+  --color-surface: #1c1f23;
+  --color-tile: #272b31;
+  --color-line: #343941;
+  --color-line-strong: #7d8590;
+  --color-ink: #eceef1;
+  --color-ink-soft: #a7aeb8;
+  --color-indigo: #aab7ff;
+  --color-buy: #5fcc95;
+  --color-consider: #e3b458;
+  --color-skip: #ff9086;
+  --color-on-ink: #121417;
+  --shadow-float: 0 12px 32px -8px rgb(0 0 0 / 0.6), 0 2px 6px rgb(0 0 0 / 0.4);
+  color-scheme: dark;
 }
 
 /* State variants used by the Radix-based components (they set data-state on elements). */

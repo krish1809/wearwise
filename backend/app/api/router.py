@@ -17,6 +17,7 @@ from app.api import (
     profile,
     reference,
     shopping,
+    stylist,
     suggestions,
     trips,
     wear_logs,
@@ -42,3 +43,4 @@ api_router.include_router(plan.router)
 api_router.include_router(trips.router)
 api_router.include_router(insights.router)
 api_router.include_router(shopping.router)
+api_router.include_router(stylist.router)

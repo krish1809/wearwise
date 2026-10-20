@@ -1662,6 +1662,42 @@
         }
       }
     },
+    "/api/v1/items/colours": {
+      "get": {
+        "tags": [
+          "items"
+        ],
+        "summary": "Colours",
+        "description": "Every item in the wardrobe (not archived), placed by colour with the engine's own\ncolour rules.",
+        "operationId": "colours",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ColourPoint"
+                  },
+                  "type": "array",
+                  "title": "Response Colours"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/items/{item_id}": {
       "get": {
         "tags": [
@@ -2456,6 +2492,68 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OutfitCheck"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/outfits/remix": {
+      "post": {
+        "tags": [
+          "outfits"
+        ],
+        "summary": "Remix",
+        "description": "The good outfits a handful of your own pieces make on their own, per occasion, this\nseason. Scored like the coverage map; changes nothing.",
+        "operationId": "remix",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RemixRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RemixOut"
                 }
               }
             }
@@ -4634,6 +4732,182 @@
         }
       }
     },
+    "/api/v1/insights/coverage/{occasion_id}/{season}": {
+      "get": {
+        "tags": [
+          "insights"
+        ],
+        "summary": "Coverage Cell",
+        "description": "One square of the coverage map, opened: its good outfits, or what's missing.",
+        "operationId": "coverage_cell",
+        "parameters": [
+          {
+            "name": "occasion_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Occasion Id"
+            }
+          },
+          {
+            "name": "season",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Season"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CellDetailOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/insights/challenge": {
+      "get": {
+        "tags": [
+          "insights"
+        ],
+        "summary": "Get Challenge",
+        "description": "Wear what you own: progress counted from the wear log since the challenge began.",
+        "operationId": "get_challenge",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChallengeStatus"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "insights"
+        ],
+        "summary": "Start Challenge",
+        "description": "Start the challenge from today (or start it again).",
+        "operationId": "start_challenge",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChallengeStatus"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "insights"
+        ],
+        "summary": "Stop Challenge",
+        "operationId": "stop_challenge",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/candidates": {
       "get": {
         "tags": [
@@ -5771,10 +6045,656 @@
           }
         }
       }
+    },
+    "/api/v1/candidates/{candidate_id}/try": {
+      "post": {
+        "tags": [
+          "shopping"
+        ],
+        "summary": "Try Candidate",
+        "description": "Put the candidate with pieces you own and see how that outfit scores, as if you'd\nbought it. Nothing is saved.",
+        "operationId": "try_candidate",
+        "parameters": [
+          {
+            "name": "candidate_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Candidate Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TryRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TryOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/v1/ai/status": {
+      "get": {
+        "tags": [
+          "stylist"
+        ],
+        "summary": "Ai Status",
+        "description": "Whether the stylist and photo tagging can be used now, and why not if they can't.",
+        "operationId": "ai_status",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIStatusOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/photos/{photo_id}/tag": {
+      "post": {
+        "tags": [
+          "stylist"
+        ],
+        "summary": "Tag Photo",
+        "description": "Suggest a category, colours, pattern, fabric, and fit from an uploaded photo. Only\nthe image is sent. Nothing is saved: the form shows the suggestions to check.",
+        "operationId": "tag_photo",
+        "parameters": [
+          {
+            "name": "photo_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Photo Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaggedOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/chat/threads": {
+      "get": {
+        "tags": [
+          "stylist"
+        ],
+        "summary": "List Threads",
+        "operationId": "list_threads",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ThreadOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Threads"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/chat/threads/{thread_id}": {
+      "get": {
+        "tags": [
+          "stylist"
+        ],
+        "summary": "Get Thread",
+        "operationId": "get_thread",
+        "parameters": [
+          {
+            "name": "thread_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Thread Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThreadDetailOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "stylist"
+        ],
+        "summary": "Delete Thread",
+        "operationId": "delete_thread",
+        "parameters": [
+          {
+            "name": "thread_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Thread Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/chat/messages": {
+      "post": {
+        "tags": [
+          "stylist"
+        ],
+        "summary": "Send Message",
+        "description": "Ask the stylist. It answers from tool results only; anything it proposes to change\nwaits for the person to confirm.",
+        "operationId": "send_message",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SentOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/chat/actions/{action_id}/confirm": {
+      "post": {
+        "tags": [
+          "stylist"
+        ],
+        "summary": "Confirm Action",
+        "description": "Do what the stylist proposed, through the same code as the app's own buttons.",
+        "operationId": "confirm_action",
+        "parameters": [
+          {
+            "name": "action_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Action Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/chat/actions/{action_id}/cancel": {
+      "post": {
+        "tags": [
+          "stylist"
+        ],
+        "summary": "Cancel Action",
+        "operationId": "cancel_action",
+        "parameters": [
+          {
+            "name": "action_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Action Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "AIStatusOut": {
+        "properties": {
+          "available": {
+            "type": "boolean",
+            "title": "Available"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "available",
+          "reason"
+        ],
+        "title": "AIStatusOut"
+      },
       "AccountUpdate": {
         "properties": {
           "name": {
@@ -5792,6 +6712,51 @@
         "additionalProperties": false,
         "type": "object",
         "title": "AccountUpdate"
+      },
+      "ActionOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ItemBrief"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "result": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Result"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "status",
+          "summary",
+          "items",
+          "result"
+        ],
+        "title": "ActionOut"
       },
       "AnalysisOut": {
         "properties": {
@@ -6324,6 +7289,18 @@
             ],
             "title": "Notes"
           },
+          "remind_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remind On"
+          },
           "photo_id": {
             "anyOf": [
               {
@@ -6603,6 +7580,22 @@
             ],
             "title": "Notes"
           },
+          "remind_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remind On"
+          },
+          "reminder_due": {
+            "type": "boolean",
+            "title": "Reminder Due"
+          },
           "item_id": {
             "anyOf": [
               {
@@ -6675,6 +7668,8 @@
           "seasons",
           "status",
           "notes",
+          "remind_on",
+          "reminder_due",
           "item_id",
           "photo",
           "verdict",
@@ -6868,6 +7863,18 @@
             ],
             "title": "Notes"
           },
+          "remind_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remind On"
+          },
           "photo_id": {
             "anyOf": [
               {
@@ -7022,6 +8029,69 @@
           "stage"
         ],
         "title": "CapsuleStepOut"
+      },
+      "CardOut": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "outfit",
+              "item",
+              "candidate",
+              "staple",
+              "action"
+            ],
+            "title": "Type"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ItemBrief"
+            },
+            "type": "array",
+            "title": "Items",
+            "default": []
+          },
+          "removed": {
+            "type": "boolean",
+            "title": "Removed",
+            "default": false
+          },
+          "candidate": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CandidateOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "staple": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StapleCardOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "action": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ActionOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "title": "CardOut"
       },
       "CatalogProductOut": {
         "properties": {
@@ -7292,6 +8362,56 @@
         ],
         "title": "CategoryOut"
       },
+      "CellDetailOut": {
+        "properties": {
+          "occasion_id": {
+            "type": "string",
+            "title": "Occasion Id"
+          },
+          "season": {
+            "type": "string",
+            "title": "Season"
+          },
+          "outfits": {
+            "items": {
+              "$ref": "#/components/schemas/CellOutfitOut"
+            },
+            "type": "array",
+            "title": "Outfits"
+          },
+          "missing": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing"
+          },
+          "closest": {
+            "items": {
+              "$ref": "#/components/schemas/CellOutfitOut"
+            },
+            "type": "array",
+            "title": "Closest"
+          },
+          "staples": {
+            "items": {
+              "$ref": "#/components/schemas/StapleOut"
+            },
+            "type": "array",
+            "title": "Staples"
+          }
+        },
+        "type": "object",
+        "required": [
+          "occasion_id",
+          "season",
+          "outfits",
+          "missing",
+          "closest",
+          "staples"
+        ],
+        "title": "CellDetailOut"
+      },
       "CellOut": {
         "properties": {
           "occasion_id": {
@@ -7320,6 +8440,109 @@
         ],
         "title": "CellOut"
       },
+      "CellOutfitOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ItemBrief"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "score": {
+            "type": "number",
+            "title": "Score"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "score"
+        ],
+        "title": "CellOutfitOut"
+      },
+      "ChallengeOut": {
+        "properties": {
+          "started_on": {
+            "type": "string",
+            "format": "date",
+            "title": "Started On"
+          },
+          "ends_on": {
+            "type": "string",
+            "format": "date",
+            "title": "Ends On"
+          },
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "days": {
+            "type": "integer",
+            "title": "Days"
+          },
+          "finished": {
+            "type": "boolean",
+            "title": "Finished"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "worn": {
+            "type": "integer",
+            "title": "Worn"
+          },
+          "unworn": {
+            "items": {
+              "$ref": "#/components/schemas/ItemBrief"
+            },
+            "type": "array",
+            "title": "Unworn"
+          },
+          "unworn_count": {
+            "type": "integer",
+            "title": "Unworn Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "started_on",
+          "ends_on",
+          "day",
+          "days",
+          "finished",
+          "total",
+          "worn",
+          "unworn",
+          "unworn_count"
+        ],
+        "title": "ChallengeOut"
+      },
+      "ChallengeStatus": {
+        "properties": {
+          "challenge": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ChallengeOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "days": {
+            "type": "integer",
+            "title": "Days"
+          }
+        },
+        "type": "object",
+        "required": [
+          "challenge",
+          "days"
+        ],
+        "title": "ChallengeStatus"
+      },
       "CheckRequest": {
         "properties": {
           "item_ids": {
@@ -7330,6 +8553,17 @@
             "type": "array",
             "maxItems": 20,
             "title": "Item Ids"
+          },
+          "occasion_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Occasion Id"
           }
         },
         "additionalProperties": false,
@@ -7396,6 +8630,68 @@
           "text"
         ],
         "title": "ColourBasicOut"
+      },
+      "ColourPoint": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          },
+          "color_primary": {
+            "type": "string",
+            "title": "Color Primary"
+          },
+          "hex": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hex"
+          },
+          "lightness": {
+            "type": "number",
+            "title": "Lightness"
+          },
+          "chroma": {
+            "type": "number",
+            "title": "Chroma"
+          },
+          "hue": {
+            "type": "number",
+            "title": "Hue"
+          },
+          "neutral": {
+            "type": "boolean",
+            "title": "Neutral"
+          },
+          "known": {
+            "type": "boolean",
+            "title": "Known"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "display_name",
+          "color_primary",
+          "hex",
+          "lightness",
+          "chroma",
+          "hue",
+          "neutral",
+          "known"
+        ],
+        "title": "ColourPoint",
+        "description": "An item's colour as the engine sees it, for the colour map."
       },
       "CompareOut": {
         "properties": {
@@ -9912,6 +11208,44 @@
         "title": "Measurements",
         "description": "Body measurements in cm. The app converts to inches for display only."
       },
+      "MessageOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "cards": {
+            "items": {
+              "$ref": "#/components/schemas/CardOut"
+            },
+            "type": "array",
+            "title": "Cards"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "role",
+          "text",
+          "cards",
+          "created_at"
+        ],
+        "title": "MessageOut"
+      },
       "MissingOut": {
         "properties": {
           "slot": {
@@ -10132,6 +11466,36 @@
               }
             ],
             "title": "Message"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "good": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Good"
+          },
+          "reasons": {
+            "items": {
+              "$ref": "#/components/schemas/ReasonOut"
+            },
+            "type": "array",
+            "title": "Reasons",
+            "default": []
           }
         },
         "type": "object",
@@ -11498,6 +12862,109 @@
         ],
         "title": "RegisterRequest"
       },
+      "RemixGroupOut": {
+        "properties": {
+          "occasion_id": {
+            "type": "string",
+            "title": "Occasion Id"
+          },
+          "occasion_name": {
+            "type": "string",
+            "title": "Occasion Name"
+          },
+          "outfits": {
+            "items": {
+              "$ref": "#/components/schemas/RemixOutfitOut"
+            },
+            "type": "array",
+            "title": "Outfits"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "occasion_id",
+          "occasion_name",
+          "outfits",
+          "count"
+        ],
+        "title": "RemixGroupOut"
+      },
+      "RemixOut": {
+        "properties": {
+          "season": {
+            "type": "string",
+            "title": "Season"
+          },
+          "groups": {
+            "items": {
+              "$ref": "#/components/schemas/RemixGroupOut"
+            },
+            "type": "array",
+            "title": "Groups"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "needs_occasions": {
+            "type": "boolean",
+            "title": "Needs Occasions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "season",
+          "groups",
+          "total",
+          "needs_occasions"
+        ],
+        "title": "RemixOut"
+      },
+      "RemixOutfitOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ItemBrief"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "score": {
+            "type": "number",
+            "title": "Score"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "score"
+        ],
+        "title": "RemixOutfitOut"
+      },
+      "RemixRequest": {
+        "properties": {
+          "item_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 10,
+            "minItems": 2,
+            "title": "Item Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "item_ids"
+        ],
+        "title": "RemixRequest"
+      },
       "SaveIn": {
         "properties": {
           "name": {
@@ -11560,6 +13027,52 @@
           "url"
         ],
         "title": "SearchLinkOut"
+      },
+      "SendRequest": {
+        "properties": {
+          "thread_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thread Id"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "SendRequest"
+      },
+      "SentOut": {
+        "properties": {
+          "thread": {
+            "$ref": "#/components/schemas/ThreadOut"
+          },
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/MessageOut"
+            },
+            "type": "array",
+            "title": "Messages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "thread",
+          "messages"
+        ],
+        "title": "SentOut"
       },
       "SetLink": {
         "properties": {
@@ -11818,6 +13331,41 @@
           "budget"
         ],
         "title": "SplitRequest"
+      },
+      "StapleCardOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "hex": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hex"
+          },
+          "slot": {
+            "type": "string",
+            "title": "Slot"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "hex",
+          "slot"
+        ],
+        "title": "StapleCardOut"
       },
       "StapleOut": {
         "properties": {
@@ -12257,6 +13805,23 @@
         ],
         "title": "SuggestionsOut"
       },
+      "TaggedOut": {
+        "properties": {
+          "fields": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Fields"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fields"
+        ],
+        "title": "TaggedOut",
+        "description": "Suggestions from the photo, to be checked: only ids from the app's own lists."
+      },
       "TallyOut": {
         "properties": {
           "id": {
@@ -12308,6 +13873,64 @@
           "name"
         ],
         "title": "Term"
+      },
+      "ThreadDetailOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/MessageOut"
+            },
+            "type": "array",
+            "title": "Messages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "updated_at",
+          "messages"
+        ],
+        "title": "ThreadDetailOut"
+      },
+      "ThreadOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "updated_at"
+        ],
+        "title": "ThreadOut"
       },
       "TripDayOut": {
         "properties": {
@@ -12565,6 +14188,94 @@
           "item_count"
         ],
         "title": "TripSummary"
+      },
+      "TryOut": {
+        "properties": {
+          "complete": {
+            "type": "boolean",
+            "title": "Complete"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "good": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Good"
+          },
+          "reasons": {
+            "items": {
+              "$ref": "#/components/schemas/VerdictReasonOut"
+            },
+            "type": "array",
+            "title": "Reasons"
+          }
+        },
+        "type": "object",
+        "required": [
+          "complete",
+          "message",
+          "score",
+          "good",
+          "reasons"
+        ],
+        "title": "TryOut",
+        "description": "The candidate with pieces the person owns: whole or not, and if whole, its score."
+      },
+      "TryRequest": {
+        "properties": {
+          "item_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "title": "Item Ids"
+          },
+          "occasion_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Occasion Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "item_ids"
+        ],
+        "title": "TryRequest"
       },
       "UserOut": {
         "properties": {

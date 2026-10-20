@@ -12,7 +12,7 @@ import hashlib
 import json
 import uuid
 from collections import OrderedDict
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import UTC, date, datetime
 from threading import Lock
 from typing import Any
@@ -21,8 +21,11 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.engine import shopping as engine
+from app.engine import types as engine_types
 from app.engine.config import DEFAULT, ENGINE_VERSION
+from app.engine.generate import score_outfit
 from app.engine.insights import Measures, steady
+from app.engine.outfits import Piece, check_outfit
 from app.engine.types import Context, EngineItem, Wardrobe
 from app.engine.types import Occasion as EngineOccasion
 from app.models import (
@@ -324,6 +327,8 @@ def update(db: Session, user: User, candidate: Candidate, changes: dict[str, Any
         candidate.price_checked_at = datetime.now(UTC) if changes["price"] is not None else None
     for name, value in changes.items():
         setattr(candidate, name, value)
+    if candidate.status not in STILL_WANTED:
+        candidate.remind_on = None
     keys: list[str] = []
     if replacing_photo:
         for old in _photos(db, candidate):
@@ -333,6 +338,15 @@ def update(db: Session, user: User, candidate: Candidate, changes: dict[str, Any
             new_photo.candidate_id = candidate.id
     db.flush()
     return keys
+
+
+def reminder_due(candidate: Candidate, today: date) -> bool:
+    """Whether to ask "Still want it?": the reminder day has come and it's still wanted."""
+    return (
+        candidate.remind_on is not None
+        and candidate.remind_on <= today
+        and candidate.status in STILL_WANTED
+    )
 
 
 def delete(db: Session, candidate: Candidate) -> list[str]:
@@ -374,6 +388,7 @@ def purchase(db: Session, user: User, candidate: Candidate, fields: dict[str, An
         image.candidate_id = None
         image.item_id = item.id
     candidate.status = "purchased"
+    candidate.remind_on = None
     candidate.item_id = item.id
     db.flush()
     return item
@@ -633,6 +648,37 @@ def split(db: Session, s: Setting, budget: int) -> SplitPlan | None:
         s.pairs(),
     )
     return SplitPlan(found, priced, unpriced)
+
+
+def try_on(
+    db: Session,
+    s: Setting,
+    candidate: Candidate,
+    item_ids: list[uuid.UUID],
+    occasion: Occasion | None,
+) -> tuple[engine_types.ScoredOutfit | None, str | None]:
+    """Score the candidate with pieces the person owns, as if it were theirs, for an
+    occasion (or the pieces' own level of dress): the outfit's score and reasons, or what's
+    still needed to make a whole outfit."""
+    names = ItemNames(db, s.user)
+    item = candidate_item(s, candidate, names.display_name(candidate))
+    owned = {i.id: i for i in s.wardrobe.items if i.owner_id == str(s.user.id)}
+    chosen = [owned[str(i)] for i in item_ids if str(i) in owned]
+    if len(chosen) != len(item_ids):
+        return None, "Some of those pieces aren't in your wardrobe."
+    pieces = [item, *[p for p in chosen if p.slot != item.slot]]
+    check = check_outfit(
+        [Piece(key=p.id, slot=p.slot, category_id=p.category_id) for p in pieces],
+        s.wardrobe.templates,
+    )
+    if not check.complete:
+        slot_names = s.wardrobe.slot_names
+        needed = ", ".join(slot_names.get(slot, slot).lower() for slot in check.missing)
+        return None, f"Still needed: {needed}." if needed else "These don't make one outfit."
+    wardrobe = replace(s.wardrobe, items=(*s.wardrobe.items, item))
+    context = replace(s.base, occasion=suggestions.engine_occasion(occasion) if occasion else None)
+    scored = score_outfit(wardrobe, context, [p.id for p in pieces], DEFAULT, s.pairs())
+    return scored, None
 
 
 def without_cache() -> None:

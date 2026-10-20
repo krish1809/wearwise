@@ -16,6 +16,8 @@ class AIProvider(Protocol):
 
 **Choosing a provider at M10.** Compare current price, free allowance, and data terms on the providers' own pricing pages; they change often. One thing to check in particular: some free tiers allow the provider to use submitted content to improve their products. Wardrobe photos are personal, so either use a tier that doesn't, or state it plainly on the privacy page and make auto-tagging opt-in.
 
+(Chosen in M10: Anthropic's API with Claude Haiku 5.5 for chat and images, called over HTTPS without an SDK; off until a key is set; tagging runs only when the person asks: D47.)
+
 ## 2. Auto-tagging
 
 **Flow**
@@ -93,6 +95,8 @@ After the model replies, the server:
 
 Prose is harder to check than IDs, so the system prompt requires the model to refer to wardrobe items only through cards, never by describing an item in free text.
 
+(Built as: the model answers through a `reply` tool carrying text and cards; ids seen are stored per reply for later turns; text may contain no ids at all; write tools are named `propose_*`: D47.)
+
 ### System prompt, in outline
 
 - You are WearWise's stylist. You help one user with their own wardrobe.
@@ -139,6 +143,8 @@ A scripted set run in CI with the fake provider for plumbing, and run manually a
 | Request to view another account's items | Refused; no tool call with foreign IDs is possible |
 | Write action | Nothing is saved until the confirm endpoint is called |
 | Provider down | Chat shows "unavailable"; all other pages work |
+
+(Built as: the plumbing rows run in CI with scripted turns (`tests/test_stylist.py`); `make eval-stylist` runs the questions against the real model by hand: D47.)
 
 ## 5. Cost and abuse controls
 

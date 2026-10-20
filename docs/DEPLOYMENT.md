@@ -73,7 +73,7 @@ Any S3-compatible service works with the same five settings. Cloudflare R2, for 
 | Backend | `localhost:8000` | Render |
 | Database | Postgres in Docker | Neon |
 | Images | `./.storage` folder | Backblaze B2 bucket |
-| AI | Fake provider by default | Real provider |
+| AI | Off by default; `AI_PROVIDER=fake` for a test round trip | Off until `AI_PROVIDER=anthropic` and its key, models, and prices are set (D47); the fake is refused |
 | Email | Printed to the console | Real provider |
 
 Vercel also builds a preview for every pull request. Point previews at the production backend only for read-only checks, or give them their own Neon branch.

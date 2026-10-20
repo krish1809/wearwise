@@ -2,6 +2,7 @@
 
 from app.models.app_meta import AppMeta
 from app.models.base import Base
+from app.models.chat import AIUsage, ChatAction, ChatMessage, ChatThread
 from app.models.item import Item, ItemImage
 from app.models.outfit import Outfit, OutfitItem, WearLog, WearLogItem
 from app.models.planning import Event, PlanDay, Trip, TripItem, WeatherForecast
@@ -24,6 +25,7 @@ from app.models.user import User
 from app.models.user_session import UserSession
 
 __all__ = [
+    "AIUsage",
     "AppMeta",
     "Archetype",
     "Base",
@@ -32,6 +34,9 @@ __all__ = [
     "CatalogProduct",
     "Category",
     "CategoryGroup",
+    "ChatAction",
+    "ChatMessage",
+    "ChatThread",
     "ColorFamily",
     "Event",
     "GuideEntry",

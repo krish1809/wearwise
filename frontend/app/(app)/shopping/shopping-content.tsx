@@ -8,6 +8,7 @@ import { useState } from "react";
 import { PieceRow } from "@/components/shopping/piece-row";
 import { StapleList } from "@/components/shopping/staple-list";
 import { VerdictBadge } from "@/components/shopping/verdict-badge";
+import { StillWant } from "@/components/shopping/wait-picker";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
@@ -159,6 +160,7 @@ function List({ reference }: { reference: Reference }) {
     return <Skeleton aria-busy="true" className="h-40" />;
   }
   const rows = candidates.data.candidates;
+  const due = rows.filter((row) => row.reminder_due);
   const toggle = (id: string) =>
     setChosen((current) =>
       current.includes(id)
@@ -203,6 +205,25 @@ function List({ reference }: { reference: Reference }) {
         </EmptyState>
       ) : (
         <>
+          {due.length > 0 && (
+            <div className="flex flex-col gap-2 rounded-xl border border-indigo/40 p-3">
+              <h3 className="font-medium">Still want it?</h3>
+              <ul className="flex flex-col gap-4">
+                {due.map((row) => (
+                  <li key={row.id} className="flex flex-col gap-2">
+                    <PieceRow
+                      name={row.display_name}
+                      photo={row.photo}
+                      imageUrl={row.image_url}
+                      hex={row.color_hex ?? familyHex.get(row.color_primary)}
+                      href={`/shopping/${row.id}`}
+                    />
+                    <StillWant candidate={row} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           {rows.length >= 2 && (
             <p className="text-sm text-ink-soft">
               Tick two to {MAX_COMPARE} to compare them side by side.
@@ -299,6 +320,11 @@ function CandidateRow({
               {priceMayHaveChanged(candidate.price_checked_at) && (
                 <span className="block text-consider">May have changed</span>
               )}
+            </span>
+          )}
+          {candidate.remind_on && !candidate.reminder_due && (
+            <span className="text-sm text-ink-soft">
+              Asking again {dayPhrase(candidate.remind_on)}
             </span>
           )}
         </span>

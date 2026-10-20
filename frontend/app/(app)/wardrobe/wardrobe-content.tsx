@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, Search, Shirt, SlidersHorizontal } from "lucide-react";
+import { Palette, Plus, Search, Shirt, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -176,12 +176,20 @@ function Wardrobe({
             </p>
           )}
         </div>
-        <Button asChild className="hidden lg:inline-flex">
-          <Link href="/wardrobe/new">
-            <Plus aria-hidden />
-            Add item
-          </Link>
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild variant="secondary">
+            <Link href="/wardrobe/colours">
+              <Palette aria-hidden />
+              Colour map
+            </Link>
+          </Button>
+          <Button asChild className="hidden lg:inline-flex">
+            <Link href="/wardrobe/new">
+              <Plus aria-hidden />
+              Add item
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -371,7 +379,7 @@ function Wardrobe({
         aria-label="Add item"
         className={cn(
           // Above the phone tab bar, as the design system places it.
-          "fixed right-4 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-30 grid size-14 place-content-center rounded-full bg-ink text-white shadow-float transition-colors hover:bg-ink/85 lg:hidden",
+          "fixed right-4 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-30 grid size-14 place-content-center rounded-full bg-ink text-on-ink shadow-float transition-colors hover:bg-ink/85 lg:hidden",
           focusRing,
         )}
       >

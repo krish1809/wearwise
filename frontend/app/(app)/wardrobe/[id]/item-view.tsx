@@ -185,10 +185,17 @@ function ItemDetails({
     }
   }
 
-  async function toggleArchive() {
+  async function toggleArchive(archived = !item.archived) {
     try {
-      await archive.mutateAsync(!item.archived);
-      toast.success(item.archived ? "Back in your wardrobe" : "Archived");
+      await archive.mutateAsync(archived);
+      if (archived) {
+        // Archiving hides it everywhere, so it can be taken back straight away.
+        toast.success("Archived", {
+          action: { label: "Undo", onClick: () => void toggleArchive(false) },
+        });
+      } else {
+        toast.success("Back in your wardrobe");
+      }
     } catch (error) {
       toast.error(problemFrom(error).message);
     }

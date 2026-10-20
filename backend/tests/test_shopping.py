@@ -1,18 +1,20 @@
 """Shopping: candidates, analysis, buying, gaps, the capsule, the budget split, the guide."""
 
 from collections.abc import Iterator
+from datetime import timedelta
 from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
 from photo_support import photo_bytes
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 from wardrobe_support import add_item
 
 from app.adapters.storage import MemoryStorage
 from app.models import Candidate
 from app.services import insights, shopping
+from app.services.wear import today
 
 CANDIDATES = "/api/v1/candidates"
 
@@ -337,3 +339,54 @@ def test_deleting_the_account_removes_candidates_and_their_photos(
     assert response.status_code == 204, response.text
     assert db.scalar(select(Candidate)) is None
     assert storage.files == {}
+
+
+def test_trying_a_candidate_with_pieces_you_own(sam: TestClient, ana: TestClient) -> None:
+    college(sam)
+    owned = wardrobe(sam)
+    found = candidate(sam, "chinos", "olive", fabric="cotton")
+    url = f"{CANDIDATES}/{found['id']}/try"
+
+    part = sam.post(url, json={"item_ids": [owned["white"]["id"]]})
+    whole = sam.post(
+        url,
+        json={"item_ids": [owned["white"]["id"], owned["loafers"]["id"]], "occasion_id": "college"},
+    )
+    theirs = ana.post(url, json={"item_ids": []})
+
+    assert part.json()["complete"] is False and "footwear" in part.json()["message"]
+    result = whole.json()
+    assert result["complete"] is True and 0 < result["score"] <= 1
+    assert result["good"] is (result["score"] >= 0.7) and result["reasons"]
+    assert theirs.status_code == 404
+
+
+def test_waiting_before_buying_asks_again_on_the_day(
+    sam: TestClient, ana: TestClient, db: Session
+) -> None:
+    found = candidate(sam, "chinos", "olive")
+    url = f"{CANDIDATES}/{found['id']}"
+    week = (today() + timedelta(days=7)).isoformat()
+
+    waiting = sam.patch(url, json={"remind_on": week})
+    past = sam.patch(url, json={"remind_on": today().isoformat()})
+    too_far = sam.patch(url, json={"remind_on": (today() + timedelta(days=400)).isoformat()})
+    theirs = ana.patch(url, json={"remind_on": week})
+
+    assert waiting.status_code == 200
+    assert (waiting.json()["remind_on"], waiting.json()["reminder_due"]) == (week, False)
+    assert past.status_code == 422 and too_far.status_code == 422
+    assert theirs.status_code == 404
+
+    # The day comes (set here directly: the API only takes days still to come).
+    db.execute(update(Candidate).where(Candidate.id == found["id"]).values(remind_on=today()))
+    db.flush()
+    assert [c["reminder_due"] for c in sam.get(CANDIDATES).json()["candidates"]] == [True]
+
+    # Skipping it ends the reminder; so does keeping it (clearing the day).
+    skipped = sam.patch(url, json={"status": "skipped"}).json()
+    assert (skipped["remind_on"], skipped["reminder_due"]) == (None, False)
+    again = candidate(sam, "loafers", "brown")
+    sam.patch(f"{CANDIDATES}/{again['id']}", json={"remind_on": week})
+    kept = sam.patch(f"{CANDIDATES}/{again['id']}", json={"remind_on": None}).json()
+    assert (kept["remind_on"], kept["status"]) == (None, "considering")

@@ -53,3 +53,28 @@ def test_production_refuses_local_photo_storage(monkeypatch: pytest.MonkeyPatch)
 
     with pytest.raises(ConfigError, match="STORAGE_BACKEND must be s3 in production"):
         load_settings(env_file=None)
+
+
+def test_the_scripted_stylist_is_refused_in_production(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("APP_ENV", "production")
+    monkeypatch.setenv("STORAGE_BACKEND", "s3")
+    for name in (
+        "S3_ENDPOINT_URL",
+        "S3_REGION",
+        "S3_BUCKET",
+        "S3_ACCESS_KEY_ID",
+        "S3_SECRET_ACCESS_KEY",
+    ):
+        monkeypatch.setenv(name, "x")
+    monkeypatch.setenv("AI_PROVIDER", "fake")
+
+    with pytest.raises(ConfigError, match="AI_PROVIDER=fake isn't allowed in production"):
+        load_settings(env_file=None)
+
+
+def test_the_real_stylist_needs_its_key_models_and_prices(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("AI_PROVIDER", "anthropic")
+    monkeypatch.setenv("AI_API_KEY", "key")
+
+    with pytest.raises(ConfigError, match="AI_MODEL_CHAT"):
+        load_settings(env_file=None)

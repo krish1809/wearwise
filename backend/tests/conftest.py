@@ -21,6 +21,7 @@ from sqlalchemy.engine import make_url
 from sqlalchemy.orm import Session
 
 if TYPE_CHECKING:
+    from app.adapters.ai.fake import FakeAI
     from app.adapters.products import FakePageReader
     from app.adapters.storage import MemoryStorage
     from app.adapters.weather import FakeWeather
@@ -116,9 +117,22 @@ def pages() -> FakePageReader:
 
 
 @pytest.fixture
+def ai() -> FakeAI:
+    """Scripted replies: tests put turns in `ai.turns` and tags in `ai.tags`."""
+    from app.adapters.ai.fake import FakeAI
+
+    return FakeAI()
+
+
+@pytest.fixture
 def app(
-    db: Session, storage: MemoryStorage, weather: FakeWeather, pages: FakePageReader
+    db: Session,
+    storage: MemoryStorage,
+    weather: FakeWeather,
+    pages: FakePageReader,
+    ai: FakeAI,
 ) -> Iterator[FastAPI]:
+    from app.adapters.ai import get_ai
     from app.adapters.products import get_page_reader
     from app.adapters.storage import get_storage
     from app.adapters.weather import get_weather
@@ -130,6 +144,7 @@ def app(
     application.dependency_overrides[get_storage] = lambda: storage
     application.dependency_overrides[get_weather] = lambda: weather
     application.dependency_overrides[get_page_reader] = lambda: pages
+    application.dependency_overrides[get_ai] = lambda: ai
     yield application
     application.dependency_overrides.clear()
 

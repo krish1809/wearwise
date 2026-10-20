@@ -245,3 +245,54 @@ def test_deleting_the_account_removes_outfits_and_the_wear_log(
 
     assert db.scalar(select(func.count()).select_from(Outfit)) == 0
     assert db.scalar(select(func.count()).select_from(WearLog)) == 0
+
+
+def test_the_check_scores_a_whole_outfit_live(sam: TestClient) -> None:
+    sam.patch("/api/v1/profile", json={"occasion_ids": ["college"]})
+    shirt = add_item(sam, "casual_shirt", "white", fabric="cotton")
+    chinos = add_item(sam, "chinos", "navy", fabric="cotton")
+    loafers = add_item(sam, "loafers", "brown", fabric="leather")
+
+    part = sam.post("/api/v1/outfits/check", json={"item_ids": [shirt["id"], chinos["id"]]})
+    whole = sam.post(
+        "/api/v1/outfits/check",
+        json={"item_ids": [shirt["id"], chinos["id"], loafers["id"]], "occasion_id": "college"},
+    )
+
+    assert part.json()["score"] is None and part.json()["reasons"] == []
+    found = whole.json()
+    assert 0 < found["score"] <= 1
+    assert found["good"] is (found["score"] >= 0.7)
+    assert found["reasons"] and all(r["text"] for r in found["reasons"])
+
+
+def test_remix_finds_good_outfits_from_only_the_chosen_pieces(
+    sam: TestClient, ana: TestClient
+) -> None:
+    sam.patch("/api/v1/profile", json={"occasion_ids": ["college"]})
+    shirt = add_item(sam, "casual_shirt", "white", fabric="cotton")
+    chinos = add_item(sam, "chinos", "navy", fabric="cotton")
+    loafers = add_item(sam, "loafers", "brown", fabric="leather")
+    # Not chosen, so never used.
+    add_item(sam, "chinos", "olive", fabric="cotton")
+    ids = [shirt["id"], chinos["id"], loafers["id"]]
+
+    found = sam.post(f"{OUTFITS}/remix", json={"item_ids": ids}).json()
+
+    assert found["needs_occasions"] is False
+    [group] = found["groups"]
+    assert (group["occasion_id"], group["count"], found["total"]) == ("college", 1, 1)
+    assert {i["id"] for i in group["outfits"][0]["items"]} == set(ids)
+    assert group["outfits"][0]["score"] >= 0.7
+    # Too few, too many, or someone else's pieces.
+    assert sam.post(f"{OUTFITS}/remix", json={"item_ids": ids[:1]}).status_code == 422
+    assert sam.post(f"{OUTFITS}/remix", json={"item_ids": ids * 4}).status_code == 422
+    assert ana.post(f"{OUTFITS}/remix", json={"item_ids": ids}).status_code == 422
+
+
+def test_remix_needs_occasions(sam: TestClient) -> None:
+    ids = [add_item(sam, "casual_shirt", "white")["id"], add_item(sam, "chinos", "navy")["id"]]
+
+    found = sam.post(f"{OUTFITS}/remix", json={"item_ids": ids}).json()
+
+    assert (found["needs_occasions"], found["groups"]) == (True, [])

@@ -12,9 +12,11 @@ from app.api.deps import CurrentUser, SessionDep
 from app.api.errors import ApiError, error_responses
 from app.api.fields import ShortText
 from app.api.item_views import ItemBrief, Names, briefs, slot_order
+from app.engine.config import DEFAULT
 from app.engine.outfits import Piece, check_outfit
 from app.models import Outfit, OutfitItem, User
-from app.services import outfits, wear
+from app.services import insights, outfits, suggestions, wear
+from app.services import profile as profiles
 
 router = APIRouter(prefix="/outfits", tags=["outfits"])
 
@@ -90,6 +92,8 @@ class CheckRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     item_ids: PieceIds
+    # Score it for this occasion; left out, for the level of dress of its own pieces.
+    occasion_id: str | None = None
 
 
 class OutfitCheck(BaseModel):
@@ -108,6 +112,11 @@ class OutfitCheck(BaseModel):
     optional_slots: list[str]
     # What to do next, in one sentence; null when complete.
     message: str | None
+    # When complete: the engine's score (0 to 1), whether that counts as a good outfit, and
+    # why, as suggestions explain theirs.
+    score: float | None = None
+    good: bool | None = None
+    reasons: list[ReasonOut] = []
 
 
 def views(db: Session, user: User, found: list[Outfit]) -> list[OutfitOut]:
@@ -228,7 +237,17 @@ def check(body: CheckRequest, user: CurrentUser, db: SessionDep) -> OutfitCheck:
         raise ApiError(422, "invalid_input", message, fields={"item_ids": message})
     assessment = outfits.assess(db, user, items)
     result = assessment.check
+    scored = (
+        suggestions.score_chosen(db, user, body.item_ids, body.occasion_id, wear.today())
+        if result.complete
+        else None
+    )
     return OutfitCheck(
+        score=scored.score if scored else None,
+        good=scored.score >= DEFAULT.versatility_min_score if scored else None,
+        reasons=[ReasonOut(code=r.code, kind=r.kind, text=r.text) for r in scored.reasons]
+        if scored
+        else [],
         complete=result.complete,
         template_id=result.template_id,
         template_name=assessment.template_name,
@@ -238,6 +257,69 @@ def check(body: CheckRequest, user: CurrentUser, db: SessionDep) -> OutfitCheck:
         crowded=list(result.crowded),
         optional_slots=assessment.optional_slots,
         message=assessment.message,
+    )
+
+
+class RemixRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    item_ids: Annotated[list[uuid.UUID], Field(min_length=2, max_length=insights.REMIX_MAX)]
+
+
+class RemixOutfitOut(BaseModel):
+    items: list[ItemBrief]
+    score: float
+
+
+class RemixGroupOut(BaseModel):
+    occasion_id: str
+    occasion_name: str
+    # Good outfits from only the chosen pieces, best first (at most six).
+    outfits: list[RemixOutfitOut]
+    # How many there are in all for this occasion.
+    count: int
+
+
+class RemixOut(BaseModel):
+    season: str
+    groups: list[RemixGroupOut]
+    # Distinct good outfits across every occasion.
+    total: int
+    # True when the person hasn't chosen any occasions, so there's nothing to score for.
+    needs_occasions: bool
+
+
+@router.post("/remix", response_model=RemixOut, responses=error_responses(401, 403, 422))
+def remix(body: RemixRequest, user: CurrentUser, db: SessionDep) -> RemixOut:
+    """The good outfits a handful of your own pieces make on their own, per occasion, this
+    season. Scored like the coverage map; changes nothing."""
+    ids = list(dict.fromkeys(body.item_ids))
+    items = outfits.owned_items(db, user, ids)
+    if len(items) != len(ids) or any(item.archived_at is not None for item in items):
+        message = "Some of those items aren't in your wardrobe."
+        raise ApiError(422, "invalid_input", message, fields={"item_ids": message})
+    profile = profiles.get_or_create_profile(db, user)
+    if not insights.occasions_for(db, profile):
+        return RemixOut(season="", groups=[], total=0, needs_occasions=True)
+    found = insights.remix(db, user, ids, wear.today())
+    cards = briefs(db, Names(db, user), ids)
+    db.commit()
+    return RemixOut(
+        season=found.season,
+        groups=[
+            RemixGroupOut(
+                occasion_id=occasion.id,
+                occasion_name=occasion.name,
+                outfits=[
+                    RemixOutfitOut(items=[cards[i] for i in core if i in cards], score=score)
+                    for core, score in shown
+                ],
+                count=count,
+            )
+            for occasion, shown, count in found.by_occasion
+        ],
+        total=found.total,
+        needs_occasions=False,
     )
 
 
