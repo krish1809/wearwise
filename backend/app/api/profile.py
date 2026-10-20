@@ -64,6 +64,15 @@ class ProfileOut(BaseModel):
     category_budgets: dict[str, int]
     onboarding_step: int
     onboarding_skipped: bool
+    # The place chosen for `city`, for the forecast.
+    latitude: float | None
+    longitude: float | None
+    # hot, mild, cold, or rainy: used when there's no forecast. Null: go by the season.
+    manual_weather: Literal["hot", "mild", "cold", "rainy"] | None
+    # The usual occasion for each weekday, "0" (Monday) to "6" (Sunday).
+    weekday_occasions: dict[str, str]
+    # 0 (Monday) to 6: the planner counts everything clean again from that day.
+    laundry_weekday: int | None
     # True when Home should offer to finish setting up: onboarding was skipped, and the
     # reminder hasn't been dismissed.
     show_onboarding_reminder: bool
@@ -96,6 +105,12 @@ class ProfileUpdate(BaseModel):
     budget_monthly: Amount | None = None
     category_budgets: dict[str, Amount] | None = None
     onboarding_step: int | None = Field(default=None, ge=0, le=profiles.ONBOARDING_STEPS)
+    # Sent with `city` when a place is chosen from the search.
+    latitude: float | None = Field(default=None, ge=-90, le=90)
+    longitude: float | None = Field(default=None, ge=-180, le=180)
+    manual_weather: Literal["hot", "mild", "cold", "rainy"] | None = None
+    weekday_occasions: dict[str, str] | None = None
+    laundry_weekday: int | None = Field(default=None, ge=0, le=6)
 
 
 class FinishOnboardingRequest(BaseModel):

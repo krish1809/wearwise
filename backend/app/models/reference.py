@@ -96,6 +96,8 @@ class Category(TimestampMixin, Base):
     warmth: Mapped[int]
     # Null when it isn't washed on a schedule (shoes, watches, a leather jacket).
     wears_before_wash: Mapped[int | None]
+    # Weather hints the engine reads: bare_legs (shorts), open_toe (sandals).
+    traits: Mapped[list[str]] = mapped_column(ARRAY(String), server_default="{}")
     position: Mapped[int]
 
 

@@ -95,6 +95,11 @@ export function makeProfile(overrides: Partial<Profile> = {}): Profile {
     category_budgets: {},
     onboarding_step: 0,
     onboarding_skipped: false,
+    latitude: null,
+    longitude: null,
+    manual_weather: null,
+    weekday_occasions: {},
+    laundry_weekday: null,
     show_onboarding_reminder: false,
     ...overrides,
   };

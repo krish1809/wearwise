@@ -20,7 +20,8 @@ LIST_FIELDS = {
     "avoided_colors",
     "occasion_ids",
 }
-OBJECT_FIELDS = {"measurements", "sizes", "category_budgets"}
+OBJECT_FIELDS = {"measurements", "sizes", "category_budgets", "weekday_occasions"}
+WEEKDAYS = {str(day) for day in range(7)}
 
 ONBOARDING_STEPS = 6
 
@@ -60,6 +61,7 @@ def update_profile(db: Session, user: User, changes: dict[str, Any]) -> Profile:
             changes[name] = {}
 
     problems = _unknown_choices(db, changes)
+    _place(changes, problems)
     loved = changes.get("preferred_colors", profile.preferred_colors)
     avoided = changes.get("avoided_colors", profile.avoided_colors)
     if set(loved) & set(avoided):
@@ -121,4 +123,22 @@ def _unknown_choices(db: Session, changes: dict[str, Any]) -> dict[str, str]:
         groups = reference.known_ids(db, CategoryGroup)
         for group in changes["category_budgets"]:
             check(f"category_budgets.{group}", [group], groups)
+    if "weekday_occasions" in changes:
+        occasions = reference.known_ids(db, Occasion)
+        for day, occasion in changes["weekday_occasions"].items():
+            if day not in WEEKDAYS or occasion not in occasions:
+                problems["weekday_occasions"] = UNKNOWN_CHOICE
     return problems
+
+
+def _place(changes: dict[str, Any], problems: dict[str, str]) -> None:
+    """A place comes as a pair of coordinates, rounded to about a kilometre. Clearing the
+    city clears them too."""
+    if "city" in changes and changes["city"] is None:
+        changes["latitude"] = changes["longitude"] = None
+        return
+    given = [name for name in ("latitude", "longitude") if changes.get(name) is not None]
+    if len(given) == 1:
+        problems["city"] = "Choose the place from the search results."
+    for name in given:
+        changes[name] = round(changes[name], 2)

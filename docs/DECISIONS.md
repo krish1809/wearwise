@@ -231,3 +231,27 @@ Next.js runs with `cacheComponents` and `partialPrefetching` on, as create-next-
 **Rejected:** labelling a made-up wardrobe (it would test my taste, not the owner's); showing the engine's scores in the labelling sheet (they would bias the labels).
 **Revisit if:** the owner prefers not to commit item names; they can rename items first, since only attributes are scored.
 
+## D38. The planner's day pools spread across the wardrobe
+
+**Why:** the planner asks the engine for each day's 40 best outfits, but a beam search keeps its 200 best half-built outfits, and after "top and bottom" those were nearly all built on the three or four best tops; a 150-item test week then ran out of clean tops by Tuesday. For the planner's lists only (suggestions are unchanged and still match trying every combination in all 15 trials of D35), the beam caps any one piece at an eighth of its places, and each day's pool gives every piece at most its slot's fair share (the pool size divided by the pieces in that slot, at least 4); if that leaves room, the best of the rest fill it. An accessory that's due a wash (socks, mostly) comes off a planned outfit rather than ruling it out: before this, one pair of socks blocked 30 of a day's 34 outfits. A 150-item week plans in about 0.8 s on a laptop.
+**Rejected:** a bigger pool (more work, still crowded); spreading the beam for suggestions too (it cost 20 of 150 top-ten matches with trying everything).
+**Revisit if:** planned weeks look samey, or planning is slow on the server.
+
+## D39. Weather from Open-Meteo, cached per place per day, with a manual fallback
+
+**Why:** Open-Meteo needs no key and is free for non-commercial use (CC BY 4.0, credited in the footer with GeoNames for place search). The city is chosen from a place search, so the forecast comes from the right Hyderabad; its coordinates are stored rounded to two decimals (about a kilometre) and neighbours share one forecast row. One 16-day fetch per place per UTC day, made after committing the read transaction (no outside call inside a transaction), with a five-second timeout and one retry; a failure is remembered for 30 minutes so pages stay quick during an outage. A day's feels-like temperature is the middle of the forecast's apparent maximum and minimum (a day out, not just its peak). Without a city or a forecast, the person's manual setting stands in (hot 34°, mild 24°, cold 13°, rainy 27° with rain likely), and without that the season (D34). With weather the engine uses the doc's temperature bands, rain from the forecast's chance (50% or more), and in the cold a caution for bare legs and open toes, read from new category traits in the seed (`traits: bare_legs, open_toe`), so no category is named in code. `ENGINE_VERSION` 1.1. No new libraries: the adapter uses Python's own HTTP client.
+**Rejected:** geocoding the typed city silently (wrong town, no way to tell); fetching on every request; a weather API that needs a key.
+**Revisit if:** the app becomes commercial (Open-Meteo's paid plan), or Render's region makes the fetch slow.
+
+## D40. My Week: stored plan days, kept choices, worn from the wear log
+
+**Why:** each day of a plan is a `plan_days` row: the outfit (as suggestions keep it, plain id arrays), its reasons, the occasion it was planned for, the weather snapshot, and a lock. A day's occasion is the one chosen for that day, else an event's, else the weekday's usual one (`profiles.weekday_occasions`), else the first occasion from onboarding. A day planned for a different occasion than it now has is flagged until planned again. Planning again keeps locked days and worn days; the planner simulates their wears, and checks every choice against the locked days later in the week, so a lock can't be broken by an earlier day. Swapping picks from options that keep the whole week within the rules, re-scored by the server, and locks the day. "Worn" is the existence of the day's wear log, logged through the same code as "I wore this today", so deleting the log un-wears the day. An optional laundry weekday counts everything clean again from that day. Laundry done marks items washed (back to available, wears counted afresh).
+**Rejected:** a `status` column for worn (it could disagree with the wear log); planning past days; letting a swap be any outfit the browser sends.
+**Revisit if:** people want more than seven days ahead, or repeat guards by who saw an outfit (stretch in the product spec).
+
+## D41. Trips: a compact packing list that dresses each day for its occasion
+
+**Why:** a trip has a destination from the place search (for its own forecast), dates (up to 14 days), and an occasion per day. The packing follows section 13 of the engine doc, greedy and so "a compact list": add the outfit that dresses the most extra days per new piece, counting only days that can actually be worn within each piece's wears before a wash (no laundry on a trip), then leave out each piece, least useful first, while every day stays dressed. A day counts as dressed by an outfit scoring 0.65 or more within its occasion's level of dress when the wardrobe has one, so a wedding day gets the kurta rather than the casual shirt already packed. Basics are plain counts (socks and underwear, one a day). Marking items packed sets their status, so they leave everyday suggestions; deleting the trip unpacks them.
+**Rejected:** the smallest possible list (an exact set cover is slow and not needed); laundry on the road.
+**Revisit if:** trips get longer than two weeks, or people want to pack for a laundry stop.
+

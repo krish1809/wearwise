@@ -22,6 +22,7 @@ from sqlalchemy.orm import Session
 
 if TYPE_CHECKING:
     from app.adapters.storage import MemoryStorage
+    from app.adapters.weather import FakeWeather
 
 TEST_DATABASE_URL = os.environ.get(
     "TEST_DATABASE_URL", "postgresql+psycopg://wearwise:wearwise@localhost:5433/wearwise_test"
@@ -97,14 +98,25 @@ def storage() -> MemoryStorage:
 
 
 @pytest.fixture
-def app(db: Session, storage: MemoryStorage) -> Iterator[FastAPI]:
+def weather() -> FakeWeather:
+    """A mild fortnight from today and one place, Pune; set `fail` to take the service down."""
+    from app.adapters.weather import FakeWeather
+    from app.services.wear import today
+
+    return FakeWeather.mild(today())
+
+
+@pytest.fixture
+def app(db: Session, storage: MemoryStorage, weather: FakeWeather) -> Iterator[FastAPI]:
     from app.adapters.storage import get_storage
+    from app.adapters.weather import get_weather
     from app.core.db import get_session
     from app.main import create_app
 
     application = create_app()
     application.dependency_overrides[get_session] = lambda: db
     application.dependency_overrides[get_storage] = lambda: storage
+    application.dependency_overrides[get_weather] = lambda: weather
     yield application
     application.dependency_overrides.clear()
 

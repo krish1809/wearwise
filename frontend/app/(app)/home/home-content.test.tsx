@@ -1,7 +1,8 @@
 import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 
-import { makeProfile } from "@/components/profile/test-data";
+import { makeProfile, REFERENCE } from "@/components/profile/test-data";
+import { makeItem } from "@/components/wardrobe/test-data";
 import { api } from "@/lib/api/client";
 import type { Profile } from "@/lib/profile";
 import { apiAnswer, renderWithQueries } from "@/lib/test-utils";
@@ -20,11 +21,43 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-function showHome(profile: Profile, todaysLogs: unknown[] = []) {
+function planDay(pieces: unknown[] = []) {
+  return {
+    day: "2026-10-20",
+    occasion_id: "college",
+    occasion_source: "usual",
+    events: [],
+    weather: { source: "forecast", feels_like: 31.4, rain_chance: 20 },
+    pieces,
+    reasons: [],
+    score: pieces.length ? 0.8 : null,
+    missing: [],
+    locked: false,
+    worn: false,
+    outdated: false,
+    stale: false,
+    unavailable: [],
+  };
+}
+
+function showHome(
+  profile: Profile,
+  todaysLogs: unknown[] = [],
+  today = planDay(),
+) {
   vi.spyOn(api, "GET").mockImplementation(async (path) => {
     if (path === "/api/v1/profile") return apiAnswer(200, profile) as never;
+    if (path === "/api/v1/reference") return apiAnswer(200, REFERENCE) as never;
     if (path === "/api/v1/wear-logs") {
       return apiAnswer(200, { logs: todaysLogs, next_cursor: null }) as never;
+    }
+    if (path === "/api/v1/plan") {
+      return apiAnswer(200, {
+        start: today.day,
+        days: [today],
+        laundry_weekday: null,
+        engine_version: "1.1",
+      }) as never;
     }
     return apiAnswer(200, USER) as never;
   });
@@ -60,8 +93,53 @@ it("nudges to log today's outfit when nothing is logged", async () => {
 
   expect(await screen.findByText(/Nothing logged for today yet/)).toBeDefined();
   expect(
-    screen.getByRole("link", { name: "Choose an outfit" }).getAttribute("href"),
-  ).toBe("/outfits");
+    screen.getByRole("link", { name: "Plan my week" }).getAttribute("href"),
+  ).toBe("/week");
+  expect(
+    screen
+      .getByRole("link", { name: "Suggest an outfit" })
+      .getAttribute("href"),
+  ).toBe("/outfits/suggest");
+  expect(
+    await screen.findByText("Feels like 31°, 20% chance of rain"),
+  ).toBeDefined();
+});
+
+it("shows the outfit planned for today, ready to mark as worn", async () => {
+  const brief = (id: string, slot: string, display_name: string) => {
+    const item = makeItem({ id, slot, display_name });
+    return {
+      slot,
+      core: true,
+      item: {
+        id,
+        display_name,
+        category_id: item.category_id,
+        slot,
+        color_primary: item.color_primary,
+        color_hex: null,
+        status: "available",
+        archived: false,
+        photo: null,
+      },
+    };
+  };
+  showHome(
+    makeProfile(),
+    [],
+    planDay([
+      brief("shirt", "top", "White shirt"),
+      brief("chinos", "bottom", "Beige chinos"),
+      brief("loafers", "footwear", "Brown loafers"),
+    ]),
+  );
+
+  expect(
+    await screen.findByText(
+      "Planned: White shirt, beige chinos and brown loafers.",
+    ),
+  ).toBeDefined();
+  expect(screen.getByRole("button", { name: "I wore this" })).toBeDefined();
 });
 
 it("says what was worn today", async () => {

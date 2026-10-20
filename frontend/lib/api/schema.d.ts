@@ -222,6 +222,47 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/places": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search Places
+         * @description Places matching a name, most likely first. Location data is based on GeoNames.
+         */
+        get: operations["search_places"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/weather": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Weather
+         * @description The weather for the days from `start` (today by default): the forecast for the
+         *     profile's city, else the manual setting, else nothing but the season.
+         */
+        get: operations["get_weather"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/brand-notes": {
         parameters: {
             query?: never;
@@ -668,6 +709,270 @@ export interface paths {
         patch: operations["update_log"];
         trace?: never;
     };
+    "/api/v1/plan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Week
+         * @description Seven days from start (today by default): occasion, weather, and the planned outfit.
+         */
+        get: operations["get_week"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/plan/generate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Generate
+         * @description Plan the seven days from start. Locked days and days already worn stay as they are.
+         */
+        post: operations["generate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/plan/days/{day}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Change Day
+         * @description Lock or unlock the day, choose its occasion, or swap in one of its options.
+         */
+        patch: operations["change_day"];
+        trace?: never;
+    };
+    "/api/v1/plan/days/{day}/options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Day Options
+         * @description Other outfits for the day that keep the rest of the week within the rules.
+         */
+        get: operations["day_options"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/plan/days/{day}/wear": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Wear Day
+         * @description Log the day's outfit in the wear log. Logging it again changes nothing.
+         */
+        post: operations["wear_day"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Events
+         * @description Events from start (today by default) for the given number of days.
+         */
+        get: operations["list_events"];
+        put?: never;
+        /** Create Event */
+        post: operations["create_event"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/events/{event_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Event */
+        delete: operations["delete_event"];
+        options?: never;
+        head?: never;
+        /** Update Event */
+        patch: operations["update_event"];
+        trace?: never;
+    };
+    "/api/v1/laundry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Laundry
+         * @description What's in the laundry, and what's been worn as often as it goes between washes.
+         */
+        get: operations["get_laundry"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/laundry/done": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Laundry Done
+         * @description These are clean: back to available, with their wear counts starting again.
+         */
+        post: operations["laundry_done"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/trips": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Trips
+         * @description Trips, latest first.
+         */
+        get: operations["list_trips"];
+        put?: never;
+        /**
+         * Create Trip
+         * @description Plan a trip: a compact packing list and an outfit for each day.
+         */
+        post: operations["create_trip"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/trips/{trip_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Trip */
+        get: operations["get_trip"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete Trip
+         * @description Delete the trip. Anything still marked packed for it is unpacked.
+         */
+        delete: operations["delete_trip"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/trips/{trip_id}/replan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Replan Trip
+         * @description Plan the packing again from the wardrobe as it is now.
+         */
+        post: operations["replan_trip"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/trips/{trip_id}/packed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark Packed
+         * @description Mark items as packed (they leave everyday suggestions) or unpacked.
+         */
+        post: operations["mark_packed"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -676,6 +981,16 @@ export interface components {
         AccountUpdate: {
             /** Name */
             name?: string | null;
+        };
+        /**
+         * Basics
+         * @description Counted basics to pack alongside, one a day: a plain checklist.
+         */
+        Basics: {
+            /** Socks */
+            socks: number;
+            /** Innerwear */
+            innerwear: number;
         };
         /** Body_upload_photo */
         Body_upload_photo: {
@@ -790,6 +1105,36 @@ export interface components {
             /** Neutrality */
             neutrality: number;
         };
+        /**
+         * DayChange
+         * @description Only the fields sent change. occasion_id null goes back to the usual occasion;
+         *     item_ids swaps in another outfit (from the day's options) and locks the day.
+         */
+        DayChange: {
+            /** Locked */
+            locked?: boolean | null;
+            /** Occasion Id */
+            occasion_id?: string | null;
+            /** Item Ids */
+            item_ids?: string[] | null;
+        };
+        /** DayWeatherOut */
+        DayWeatherOut: {
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "forecast" | "manual" | "season";
+            /** Feels Like */
+            feels_like: number | null;
+            /** Rain Chance */
+            rain_chance: number | null;
+        };
         /** DeleteAccountRequest */
         DeleteAccountRequest: {
             /** Confirm Email */
@@ -810,6 +1155,50 @@ export interface components {
         ErrorResponse: {
             error: components["schemas"]["ErrorDetail"];
         };
+        /** EventChange */
+        EventChange: {
+            /** Day */
+            day?: string | null;
+            /** Title */
+            title?: string | null;
+            /** Occasion Id */
+            occasion_id?: string | null;
+            /** Note */
+            note?: string | null;
+        };
+        /** EventIn */
+        EventIn: {
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /** Title */
+            title: string;
+            /** Occasion Id */
+            occasion_id: string;
+            /** Note */
+            note?: string | null;
+        };
+        /** EventOut */
+        EventOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /** Title */
+            title: string;
+            /** Occasion Id */
+            occasion_id: string;
+            /** Note */
+            note: string | null;
+        };
         /** FeedbackIn */
         FeedbackIn: {
             /**
@@ -826,6 +1215,11 @@ export interface components {
         FinishOnboardingRequest: {
             /** Skipped */
             skipped: boolean;
+        };
+        /** GenerateIn */
+        GenerateIn: {
+            /** Start */
+            start?: string | null;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -1124,6 +1518,26 @@ export interface components {
             /** Color Primary */
             color_primary?: string | null;
         };
+        /** LaundryDone */
+        LaundryDone: {
+            /** Item Ids */
+            item_ids: string[];
+        };
+        /** LaundryItem */
+        LaundryItem: {
+            item: components["schemas"]["ItemBrief"];
+            /** In Laundry */
+            in_laundry: boolean;
+            /** Wears Since Wash */
+            wears_since_wash: number;
+            /** Wears Before Wash */
+            wears_before_wash: number | null;
+        };
+        /** LaundryOut */
+        LaundryOut: {
+            /** Items */
+            items: components["schemas"]["LaundryItem"][];
+        };
         /** LoginRequest */
         LoginRequest: {
             /** Email */
@@ -1170,6 +1584,17 @@ export interface components {
             formality_max: number;
             /** Hint */
             hint: string | null;
+        };
+        /** OptionOut */
+        OptionOut: {
+            /** Item Ids */
+            item_ids: string[];
+            /** Pieces */
+            pieces: components["schemas"]["PlanPiece"][];
+            /** Reasons */
+            reasons: components["schemas"]["ReasonOut"][];
+            /** Score */
+            score: number;
         };
         /** OutfitCheck */
         OutfitCheck: {
@@ -1282,6 +1707,13 @@ export interface components {
             /** Is Favorite */
             is_favorite?: boolean | null;
         };
+        /** PackedIn */
+        PackedIn: {
+            /** Item Ids */
+            item_ids: string[];
+            /** Packed */
+            packed: boolean;
+        };
         /** PhotoOut */
         PhotoOut: {
             /**
@@ -1317,6 +1749,65 @@ export interface components {
             width: number;
             /** Height */
             height: number;
+        };
+        /** PlaceOut */
+        PlaceOut: {
+            /** Label */
+            label: string;
+            /** Name */
+            name: string;
+            /** Region */
+            region: string | null;
+            /** Country */
+            country: string | null;
+            /** Latitude */
+            latitude: number;
+            /** Longitude */
+            longitude: number;
+        };
+        /** PlanDayOut */
+        PlanDayOut: {
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /** Occasion Id */
+            occasion_id: string | null;
+            /**
+             * Occasion Source
+             * @enum {string}
+             */
+            occasion_source: "chosen" | "event" | "usual" | "none";
+            /** Events */
+            events: components["schemas"]["EventOut"][];
+            weather: components["schemas"]["WeatherOut"];
+            /** Pieces */
+            pieces: components["schemas"]["PlanPiece"][];
+            /** Reasons */
+            reasons: components["schemas"]["ReasonOut"][];
+            /** Score */
+            score: number | null;
+            /** Missing */
+            missing: string[];
+            /** Locked */
+            locked: boolean;
+            /** Worn */
+            worn: boolean;
+            /** Outdated */
+            outdated: boolean;
+            /** Stale */
+            stale: boolean;
+            /** Unavailable */
+            unavailable: string[];
+        };
+        /** PlanPiece */
+        PlanPiece: {
+            /** Slot */
+            slot: string;
+            item: components["schemas"]["ItemBrief"];
+            /** Core */
+            core: boolean;
         };
         /** ProfileOut */
         ProfileOut: {
@@ -1355,6 +1846,18 @@ export interface components {
             onboarding_step: number;
             /** Onboarding Skipped */
             onboarding_skipped: boolean;
+            /** Latitude */
+            latitude: number | null;
+            /** Longitude */
+            longitude: number | null;
+            /** Manual Weather */
+            manual_weather: ("hot" | "mild" | "cold" | "rainy") | null;
+            /** Weekday Occasions */
+            weekday_occasions: {
+                [key: string]: string;
+            };
+            /** Laundry Weekday */
+            laundry_weekday: number | null;
             /** Show Onboarding Reminder */
             show_onboarding_reminder: boolean;
         };
@@ -1391,6 +1894,18 @@ export interface components {
             } | null;
             /** Onboarding Step */
             onboarding_step?: number | null;
+            /** Latitude */
+            latitude?: number | null;
+            /** Longitude */
+            longitude?: number | null;
+            /** Manual Weather */
+            manual_weather?: ("hot" | "mild" | "cold" | "rainy") | null;
+            /** Weekday Occasions */
+            weekday_occasions?: {
+                [key: string]: string;
+            } | null;
+            /** Laundry Weekday */
+            laundry_weekday?: number | null;
         };
         /** ReasonOut */
         ReasonOut: {
@@ -1574,6 +2089,110 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** TripDayOut */
+        TripDayOut: {
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /** Occasion Id */
+            occasion_id: string;
+            weather: components["schemas"]["WeatherOut"];
+            /** Pieces */
+            pieces: components["schemas"]["PlanPiece"][];
+            /** Reasons */
+            reasons: components["schemas"]["ReasonOut"][];
+            /** Score */
+            score: number | null;
+            /** Missing */
+            missing: string[];
+        };
+        /** TripIn */
+        TripIn: {
+            /** Destination */
+            destination: string;
+            /** Latitude */
+            latitude?: number | null;
+            /** Longitude */
+            longitude?: number | null;
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /**
+             * End Date
+             * Format: date
+             */
+            end_date: string;
+            /** Occasion Id */
+            occasion_id: string;
+            /** Day Occasions */
+            day_occasions?: {
+                [key: string]: string;
+            } | null;
+        };
+        /** TripItemOut */
+        TripItemOut: {
+            item: components["schemas"]["ItemBrief"];
+            /** Packed */
+            packed: boolean;
+        };
+        /** TripOut */
+        TripOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Destination */
+            destination: string;
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /**
+             * End Date
+             * Format: date
+             */
+            end_date: string;
+            /** Days */
+            days: components["schemas"]["TripDayOut"][];
+            /** Items */
+            items: components["schemas"]["TripItemOut"][];
+            basics: components["schemas"]["Basics"];
+            /** Engine Version */
+            engine_version: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** TripSummary */
+        TripSummary: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Destination */
+            destination: string;
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /**
+             * End Date
+             * Format: date
+             */
+            end_date: string;
+            /** Item Count */
+            item_count: number;
+        };
         /** UserOut */
         UserOut: {
             /**
@@ -1680,6 +2299,32 @@ export interface components {
             occasion_id?: string | null;
             /** Note */
             note?: string | null;
+        };
+        /** WeatherOut */
+        WeatherOut: {
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "forecast" | "manual" | "season";
+            /** Feels Like */
+            feels_like: number | null;
+            /** Rain Chance */
+            rain_chance: number | null;
+        };
+        /** WeekOut */
+        WeekOut: {
+            /**
+             * Start
+             * Format: date
+             */
+            start: string;
+            /** Days */
+            days: components["schemas"]["PlanDayOut"][];
+            /** Laundry Weekday */
+            laundry_weekday: number | null;
+            /** Engine Version */
+            engine_version: string;
         };
         /** WornPiece */
         WornPiece: {
@@ -2190,6 +2835,105 @@ export interface operations {
             };
             /** @description Forbidden */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    search_places: {
+        parameters: {
+            query: {
+                q: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlaceOut"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_weather: {
+        parameters: {
+            query?: {
+                start?: string | null;
+                days?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DayWeatherOut"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -4114,6 +4858,847 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["WearLogOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_week: {
+        parameters: {
+            query?: {
+                start?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WeekOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    generate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GenerateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WeekOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    change_day: {
+        parameters: {
+            query?: {
+                start?: string | null;
+            };
+            header?: never;
+            path: {
+                day: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DayChange"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanDayOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    day_options: {
+        parameters: {
+            query?: {
+                start?: string | null;
+            };
+            header?: never;
+            path: {
+                day: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OptionOut"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    wear_day: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                day: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanDayOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_events: {
+        parameters: {
+            query?: {
+                start?: string | null;
+                days?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventOut"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_event: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EventIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_event: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_event: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EventChange"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_laundry: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LaundryOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    laundry_done: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LaundryDone"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LaundryOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_trips: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TripSummary"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_trip: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TripIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TripOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_trip: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trip_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TripOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_trip: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trip_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    replan_trip: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trip_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TripOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    mark_packed: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trip_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PackedIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TripOut"];
                 };
             };
             /** @description Unauthorized */

@@ -69,7 +69,14 @@ it("saves a step with Continue, moves on with Skip, and goes back with Back", as
 
   expect(await screen.findByText("Step 2 of 6")).toBeDefined();
   expect(patch).toHaveBeenLastCalledWith("/api/v1/profile", {
-    body: { sections: ["menswear"], city: null, onboarding_step: 1 },
+    body: {
+      sections: ["menswear"],
+      city: null,
+      latitude: null,
+      longitude: null,
+      manual_weather: null,
+      onboarding_step: 1,
+    },
   });
 
   click("Skip this step");

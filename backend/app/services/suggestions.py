@@ -8,7 +8,7 @@ depend only on the items, so they are cached per user and wardrobe version in th
 
 import uuid
 from collections import OrderedDict
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from datetime import date, timedelta
 from threading import Lock
 from typing import Any
@@ -16,6 +16,7 @@ from typing import Any
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.adapters.weather import WeatherProvider
 from app.engine import feedback as learning
 from app.engine.config import DEFAULT, ENGINE_VERSION
 from app.engine.generate import season_for, suggest
@@ -47,6 +48,7 @@ from app.models import (
     WearLogItem,
 )
 from app.services import outfits, reference, wear
+from app.services import weather as weather_service
 from app.services.item_names import ItemNames
 
 MAX_ANCHORS = 6
@@ -101,30 +103,39 @@ def kind_for(anchors: int) -> str:
     return "with_item" if anchors == 1 else "complete"
 
 
-def run(db: Session, user: User, request: Request, today: date | None = None) -> Result:
+def run(
+    db: Session,
+    user: User,
+    request: Request,
+    provider: WeatherProvider,
+    today: date | None = None,
+) -> Result:
     """Suggest outfits and keep each one shown, so reactions can refer to it."""
     day = today or wear.today()
     problems = _check(db, user, request)
     if problems:
         raise SuggestInvalid(problems)
+    profile = db.scalar(select(Profile).where(Profile.user_id == user.id))
+    # Today's weather, unless a season was chosen; first, since it may end the transaction.
+    weather = (
+        weather_service.for_days(db, provider, profile, [day])[day].for_engine()
+        if request.season is None
+        else None
+    )
     wardrobe = load_wardrobe(db, user, day)
     occasion = db.get(Occasion, request.occasion_id) if request.occasion_id else None
     season = request.season or season_for(day)
-    profile = db.scalar(select(Profile).where(Profile.user_id == user.id))
-    context = Context(
-        user_id=str(user.id),
-        today=day,
-        occasion=_occasion(occasion) if occasion else None,
+    context = replace(
+        base_context(db, user, profile, wardrobe, day),
+        occasion=engine_occasion(occasion) if occasion else None,
         season=season,
+        weather=weather,
         style=_style(db.get_one(StyleProfile, request.style_id)) if request.style_id else None,
-        profile_styles=_profile_styles(db, profile),
         anchor_ids=tuple(str(anchor) for anchor in request.anchor_ids),
         exclude_ids=frozenset(str(item_id) for item_id in request.exclude_ids),
-        recent_outfits=_recent_outfits(db, user, day, wardrobe),
-        preferences=_preferences(db, user, profile, wardrobe),
         count=request.count,
     )
-    result = suggest(wardrobe, context, DEFAULT, _pair_cache(user))
+    result = suggest(wardrobe, context, DEFAULT, pair_cache_for(user))
     rows = []
     for outfit in result.outfits:
         row = Suggestion(
@@ -148,6 +159,21 @@ def run(db: Session, user: User, request: Request, today: date | None = None) ->
         rows.append(row)
     db.flush()
     return Result(engine=result, rows=rows, season=season)
+
+
+def base_context(
+    db: Session, user: User, profile: Profile | None, wardrobe: Wardrobe, day: date
+) -> Context:
+    """Everything about the person that every request shares: their styles, what they wore
+    lately, and what their reactions taught the engine."""
+    return Context(
+        user_id=str(user.id),
+        today=day,
+        season=season_for(day),
+        profile_styles=_profile_styles(db, profile),
+        recent_outfits=_recent_outfits(db, user, day, wardrobe),
+        preferences=_preferences(db, user, profile, wardrobe),
+    )
 
 
 def _check(db: Session, user: User, request: Request) -> dict[str, str]:
@@ -183,8 +209,8 @@ def load_wardrobe(db: Session, user: User, today: date) -> Wardrobe:
     """The person's items as the engine sees them, with the reference data around them."""
     rows = list(db.scalars(select(Item).where(Item.user_id == user.id, Item.archived_at.is_(None))))
     families = {family.id: family for family in db.scalars(select(ColorFamily))}
-    groups = {
-        category.id: category.group_id
+    categories = {
+        category.id: category
         for category in db.scalars(
             select(Category).where(Category.id.in_({row.category_id for row in rows}))
         )
@@ -201,7 +227,9 @@ def load_wardrobe(db: Session, user: User, today: date) -> Wardrobe:
     }
     names = ItemNames(db, user)
     items = tuple(
-        _engine_item(row, names.display_name(row), families[row.color_primary], groups, last_worn)
+        _engine_item(
+            row, names.display_name(row), families[row.color_primary], categories, last_worn
+        )
         for row in rows
     )
     slots = reference.terms(db, "slot")
@@ -219,16 +247,17 @@ def _engine_item(
     row: Item,
     name: str,
     family: ColorFamily,
-    groups: dict[str, str],
+    categories: dict[str, Category],
     last_worn: dict[uuid.UUID, date],
 ) -> EngineItem:
+    category = categories.get(row.category_id)
     return EngineItem(
         id=str(row.id),
         owner_id=str(row.user_id),
         name=name,
         slot=row.slot,
         category_id=row.category_id,
-        group_id=groups.get(row.category_id, ""),
+        group_id=category.group_id if category else "",
         color_family=row.color_primary,
         color_neutrality=family.neutrality,
         color_hex=row.color_hex or family.hex,
@@ -246,10 +275,11 @@ def _engine_item(
         wears_since_wash=row.wears_since_wash,
         set_id=str(row.set_id) if row.set_id else None,
         last_worn_on=last_worn.get(row.id),
+        traits=frozenset(category.traits) if category else frozenset(),
     )
 
 
-def _occasion(row: Occasion) -> EngineOccasion:
+def engine_occasion(row: Occasion) -> EngineOccasion:
     return EngineOccasion(
         id=row.id,
         name=row.name,
@@ -337,7 +367,7 @@ def _preferences(
     )
 
 
-def _pair_cache(user: User) -> dict[tuple[str, str], PairScore]:
+def pair_cache_for(user: User) -> dict[tuple[str, str], PairScore]:
     key = (user.id, user.wardrobe_version, ENGINE_VERSION)
     with _cache_lock:
         cache = _pair_caches.get(key)

@@ -1,7 +1,7 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { House, Layers, Settings, Shirt } from "lucide-react";
+import { CalendarDays, House, Layers, Settings, Shirt } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Suspense, useEffect } from "react";
@@ -21,6 +21,7 @@ const NAV = [
   { href: "/home", label: "Home", icon: House },
   { href: "/wardrobe", label: "Wardrobe", icon: Shirt },
   { href: "/outfits", label: "Outfits", icon: Layers },
+  { href: "/week", label: "My Week", icon: CalendarDays },
   { href: "/settings", label: "Settings", icon: Settings },
 ] as const;
 
@@ -80,6 +81,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           ) : (
             children
           )}
+          <Credits />
         </main>
       </div>
       <Suspense fallback={<TabBar pathname={null} />}>
@@ -88,6 +90,36 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </WithPathname>
       </Suspense>
     </div>
+  );
+}
+
+/** The weather and place data come with a licence that asks for credit. */
+function Credits() {
+  return (
+    <footer className="mt-16 text-xs text-ink-soft">
+      Weather data by{" "}
+      <a
+        href="https://open-meteo.com/"
+        className={cn("underline underline-offset-2", focusRing)}
+      >
+        Open-Meteo.com
+      </a>{" "}
+      (
+      <a
+        href="https://creativecommons.org/licenses/by/4.0/"
+        className={cn("underline underline-offset-2", focusRing)}
+      >
+        CC BY 4.0
+      </a>
+      ). Place search based on{" "}
+      <a
+        href="https://www.geonames.org/"
+        className={cn("underline underline-offset-2", focusRing)}
+      >
+        GeoNames
+      </a>
+      .
+    </footer>
   );
 }
 

@@ -12,7 +12,7 @@ from fastapi import APIRouter, Response, status
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.orm import Session
 
-from app.api.deps import CurrentUser, SessionDep
+from app.api.deps import CurrentUser, SessionDep, WeatherDep
 from app.api.errors import ApiError, error_responses
 from app.api.fields import NoteText, ShortText
 from app.api.item_views import ItemBrief, Names, briefs
@@ -167,7 +167,9 @@ def _stale() -> ApiError:
 @suggest_router.post(
     "/suggest", response_model=SuggestionsOut, responses=error_responses(401, 403, 422, 429)
 )
-def suggest(body: SuggestRequest, user: CurrentUser, db: SessionDep) -> SuggestionsOut:
+def suggest(
+    body: SuggestRequest, user: CurrentUser, db: SessionDep, provider: WeatherDep
+) -> SuggestionsOut:
     """Ranked, varied outfits from the person's available items, each with its reasons.
     With anchor_item_ids, every outfit includes those pieces."""
     try:
@@ -188,7 +190,7 @@ def suggest(body: SuggestRequest, user: CurrentUser, db: SessionDep) -> Suggesti
         count=body.count,
     )
     try:
-        result = suggestions.run(db, user, request)
+        result = suggestions.run(db, user, request, provider)
     except suggestions.SuggestInvalid as error:
         raise ApiError(422, error.code, error.message, fields=error.fields) from error
     db.commit()

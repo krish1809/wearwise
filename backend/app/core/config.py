@@ -46,6 +46,8 @@ class Settings(BaseSettings):
     s3_access_key_id: str | None = None
     s3_secret_access_key: str | None = None
     max_upload_mb: int = Field(default=8, ge=1, le=25)
+    # Forecasts and place search: Open-Meteo, or canned answers for working offline.
+    weather_provider: Literal["open-meteo", "fake"] = "open-meteo"
 
     @property
     def is_production(self) -> bool:
