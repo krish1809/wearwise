@@ -84,7 +84,8 @@ TEXTS: dict[str, str] = {
     "missing.anchor_due_wash": "The {a} should be washed first.",
     # Planning a week (planner.py).
     "plan.no_occasion": "Choose an occasion for this day.",
-    "plan.blocked": "Everything that fits this day is due a wash or worn too recently by then.",
+    "plan.blocked": "Everything that fits this day is due a wash or worn too recently by then. "
+    "A laundry day in your usual week frees things up.",
     # Packing (packing.py).
     "packing.no_good_outfit": "Nothing you have makes a good enough outfit for this day.",
     "packing.not_enough": "The packed pieces run out of clean wears by this day.",
