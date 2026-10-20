@@ -4601,6 +4601,925 @@
           }
         }
       }
+    },
+    "/api/v1/insights": {
+      "get": {
+        "tags": [
+          "insights"
+        ],
+        "summary": "Get Insights",
+        "description": "Every number here is counted from the person's own rows; nothing is estimated.",
+        "operationId": "get_insights",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InsightsOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/candidates": {
+      "get": {
+        "tags": [
+          "shopping"
+        ],
+        "summary": "List Candidates",
+        "description": "The shopping list, newest first, each with its verdict when one is up to date.",
+        "operationId": "list_candidates",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CandidateList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "shopping"
+        ],
+        "summary": "Create Candidate",
+        "description": "Add something you're thinking of buying. A category and a colour are all it needs.",
+        "operationId": "create_candidate",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CandidateCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CandidateOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/candidates/from-staple": {
+      "post": {
+        "tags": [
+          "shopping"
+        ],
+        "summary": "Add Staple",
+        "description": "Put a staple from your gaps or starter plan on the shopping list.",
+        "operationId": "add_staple",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FromStaple"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CandidateOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/candidates/compare": {
+      "get": {
+        "tags": [
+          "shopping"
+        ],
+        "summary": "Compare",
+        "description": "Two to four candidates side by side, each with its analysis.",
+        "operationId": "compare",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "minItems": 2,
+              "maxItems": 4,
+              "title": "Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompareOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/v1/candidates/{candidate_id}": {
+      "get": {
+        "tags": [
+          "shopping"
+        ],
+        "summary": "Get Candidate",
+        "operationId": "get_candidate",
+        "parameters": [
+          {
+            "name": "candidate_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Candidate Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CandidateOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "shopping"
+        ],
+        "summary": "Update Candidate",
+        "operationId": "update_candidate",
+        "parameters": [
+          {
+            "name": "candidate_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Candidate Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CandidateUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CandidateOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "shopping"
+        ],
+        "summary": "Delete Candidate",
+        "operationId": "delete_candidate",
+        "parameters": [
+          {
+            "name": "candidate_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Candidate Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/candidates/{candidate_id}/analysis": {
+      "get": {
+        "tags": [
+          "shopping"
+        ],
+        "summary": "Analyse",
+        "description": "What it would add: the outfits it makes, where you're short, what it duplicates, and\nthe verdict with its reasons. Worked out again whenever the wardrobe or the settings\nbehind it change.",
+        "operationId": "analyse",
+        "parameters": [
+          {
+            "name": "candidate_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Candidate Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/candidates/{candidate_id}/purchase": {
+      "post": {
+        "tags": [
+          "shopping"
+        ],
+        "summary": "Purchase",
+        "description": "Bought it: it becomes a wardrobe item, with its photo, and suggestions use it.",
+        "operationId": "purchase",
+        "parameters": [
+          {
+            "name": "candidate_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Candidate Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Purchase"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        }
+      }
+    },
+    "/api/v1/shopping/gaps": {
+      "get": {
+        "tags": [
+          "shopping"
+        ],
+        "summary": "Get Gaps",
+        "description": "What would add the most to your wardrobe, most first: a staple, or several that\ntogether make a first good outfit for an occasion you have nothing for.",
+        "operationId": "get_gaps",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GapsOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shopping/capsule": {
+      "post": {
+        "tags": [
+          "shopping"
+        ],
+        "summary": "Plan Capsule",
+        "description": "A staged shopping plan, best first, within the budget: each step the staple that adds\nthe most given the ones before it (or a whole first outfit when no single piece does).",
+        "operationId": "plan_capsule",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapsuleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CapsuleOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shopping/split": {
+      "post": {
+        "tags": [
+          "shopping"
+        ],
+        "summary": "Split Budget",
+        "description": "Which things on your list to buy for the most new outfits within a budget. They're\nweighed together, since a shirt and trousers make outfits neither makes alone.",
+        "operationId": "split_budget",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SplitRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SplitOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/guide": {
+      "get": {
+        "tags": [
+          "shopping"
+        ],
+        "summary": "Guide",
+        "description": "Fabrics, colour basics, and each style with the staples it's built on and which of\nthem you already have.",
+        "operationId": "guide",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuideOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -4622,6 +5541,142 @@
         "additionalProperties": false,
         "type": "object",
         "title": "AccountUpdate"
+      },
+      "AnalysisOut": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "verdict": {
+            "type": "string",
+            "title": "Verdict"
+          },
+          "reasons": {
+            "items": {
+              "$ref": "#/components/schemas/VerdictReasonOut"
+            },
+            "type": "array",
+            "title": "Reasons"
+          },
+          "new_outfits": {
+            "type": "integer",
+            "title": "New Outfits"
+          },
+          "coverage_gain": {
+            "type": "number",
+            "title": "Coverage Gain"
+          },
+          "cells": {
+            "items": {
+              "$ref": "#/components/schemas/CoverageCellOut"
+            },
+            "type": "array",
+            "title": "Cells"
+          },
+          "matches": {
+            "items": {
+              "$ref": "#/components/schemas/MatchOut"
+            },
+            "type": "array",
+            "title": "Matches"
+          },
+          "closest": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ItemBrief"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "redundancy": {
+            "type": "number",
+            "title": "Redundancy"
+          },
+          "rescued": {
+            "items": {
+              "$ref": "#/components/schemas/ItemBrief"
+            },
+            "type": "array",
+            "title": "Rescued"
+          },
+          "examples": {
+            "items": {
+              "$ref": "#/components/schemas/ExampleOut"
+            },
+            "type": "array",
+            "title": "Examples"
+          },
+          "cost_per_new_outfit": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Per New Outfit"
+          },
+          "projected": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProjectedOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "usual_spend": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Usual Spend"
+          },
+          "within_budget": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Within Budget"
+          },
+          "engine_version": {
+            "type": "string",
+            "title": "Engine Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "verdict",
+          "reasons",
+          "new_outfits",
+          "coverage_gain",
+          "cells",
+          "matches",
+          "closest",
+          "redundancy",
+          "rescued",
+          "examples",
+          "cost_per_new_outfit",
+          "projected",
+          "usual_spend",
+          "within_budget",
+          "engine_version"
+        ],
+        "title": "AnalysisOut"
       },
       "Basics": {
         "properties": {
@@ -4817,6 +5872,863 @@
         "title": "BrandNoteUpdate",
         "description": "Only the fields sent are changed. Null clears a note; the brand can't be cleared."
       },
+      "CandidateAnalysed": {
+        "properties": {
+          "candidate": {
+            "$ref": "#/components/schemas/CandidateOut"
+          },
+          "analysis": {
+            "$ref": "#/components/schemas/AnalysisOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "candidate",
+          "analysis"
+        ],
+        "title": "CandidateAnalysed"
+      },
+      "CandidateCreate": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "brand": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brand"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "size_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Size Label"
+          },
+          "color_secondary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color Secondary"
+          },
+          "color_hex": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color Hex"
+          },
+          "pattern": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pattern"
+          },
+          "fabric": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fabric"
+          },
+          "fit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fit"
+          },
+          "formality": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 5.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Formality"
+          },
+          "warmth": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 5.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warmth"
+          },
+          "seasons": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seasons"
+          },
+          "price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price"
+          },
+          "target_price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Price"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "photo_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Photo Id"
+          },
+          "category_id": {
+            "type": "string",
+            "title": "Category Id"
+          },
+          "color_primary": {
+            "type": "string",
+            "title": "Color Primary"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "category_id",
+          "color_primary"
+        ],
+        "title": "CandidateCreate"
+      },
+      "CandidateList": {
+        "properties": {
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/CandidateOut"
+            },
+            "type": "array",
+            "title": "Candidates"
+          },
+          "needs_occasions": {
+            "type": "boolean",
+            "title": "Needs Occasions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "candidates",
+          "needs_occasions"
+        ],
+        "title": "CandidateList"
+      },
+      "CandidateOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "archetype_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Archetype Id"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          },
+          "brand": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brand"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "size_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Size Label"
+          },
+          "price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency"
+          },
+          "price_checked_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Checked At"
+          },
+          "target_price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Price"
+          },
+          "category_id": {
+            "type": "string",
+            "title": "Category Id"
+          },
+          "slot": {
+            "type": "string",
+            "title": "Slot"
+          },
+          "color_primary": {
+            "type": "string",
+            "title": "Color Primary"
+          },
+          "color_secondary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color Secondary"
+          },
+          "color_hex": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color Hex"
+          },
+          "pattern": {
+            "type": "string",
+            "title": "Pattern"
+          },
+          "fabric": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fabric"
+          },
+          "fit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fit"
+          },
+          "formality": {
+            "type": "integer",
+            "title": "Formality"
+          },
+          "warmth": {
+            "type": "integer",
+            "title": "Warmth"
+          },
+          "seasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Seasons"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "item_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item Id"
+          },
+          "photo": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PhotoRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "verdict": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verdict"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "source",
+          "archetype_id",
+          "name",
+          "display_name",
+          "brand",
+          "url",
+          "size_label",
+          "price",
+          "currency",
+          "price_checked_at",
+          "target_price",
+          "category_id",
+          "slot",
+          "color_primary",
+          "color_secondary",
+          "color_hex",
+          "pattern",
+          "fabric",
+          "fit",
+          "formality",
+          "warmth",
+          "seasons",
+          "status",
+          "notes",
+          "item_id",
+          "photo",
+          "verdict",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "CandidateOut"
+      },
+      "CandidateUpdate": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "brand": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brand"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "size_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Size Label"
+          },
+          "color_secondary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color Secondary"
+          },
+          "color_hex": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color Hex"
+          },
+          "pattern": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pattern"
+          },
+          "fabric": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fabric"
+          },
+          "fit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fit"
+          },
+          "formality": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 5.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Formality"
+          },
+          "warmth": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 5.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warmth"
+          },
+          "seasons": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seasons"
+          },
+          "price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price"
+          },
+          "target_price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Price"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "photo_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Photo Id"
+          },
+          "category_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category Id"
+          },
+          "color_primary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color Primary"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "CandidateUpdate",
+        "description": "Only the fields sent are changed; null clears an optional one, and photo_id null\nremoves the photo."
+      },
+      "CapsuleOut": {
+        "properties": {
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/CapsuleStepOut"
+            },
+            "type": "array",
+            "title": "Steps"
+          },
+          "budget": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Budget"
+          },
+          "total": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total"
+          },
+          "unpriced_groups": {
+            "items": {
+              "$ref": "#/components/schemas/GroupOut"
+            },
+            "type": "array",
+            "title": "Unpriced Groups"
+          }
+        },
+        "type": "object",
+        "required": [
+          "steps",
+          "budget",
+          "total",
+          "unpriced_groups"
+        ],
+        "title": "CapsuleOut"
+      },
+      "CapsuleRequest": {
+        "properties": {
+          "budget": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Budget"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "CapsuleRequest"
+      },
+      "CapsuleStepOut": {
+        "properties": {
+          "staples": {
+            "items": {
+              "$ref": "#/components/schemas/StapleOut"
+            },
+            "type": "array",
+            "title": "Staples"
+          },
+          "coverage_gain": {
+            "type": "number",
+            "title": "Coverage Gain"
+          },
+          "cost": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost"
+          },
+          "stage": {
+            "type": "integer",
+            "title": "Stage"
+          }
+        },
+        "type": "object",
+        "required": [
+          "staples",
+          "coverage_gain",
+          "cost",
+          "stage"
+        ],
+        "title": "CapsuleStepOut"
+      },
       "CategoryCreate": {
         "properties": {
           "name": {
@@ -4954,6 +6866,34 @@
         ],
         "title": "CategoryOut"
       },
+      "CellOut": {
+        "properties": {
+          "occasion_id": {
+            "type": "string",
+            "title": "Occasion Id"
+          },
+          "season": {
+            "type": "string",
+            "title": "Season"
+          },
+          "outfits": {
+            "type": "integer",
+            "title": "Outfits"
+          },
+          "capped": {
+            "type": "boolean",
+            "title": "Capped"
+          }
+        },
+        "type": "object",
+        "required": [
+          "occasion_id",
+          "season",
+          "outfits",
+          "capped"
+        ],
+        "title": "CellOut"
+      },
       "CheckRequest": {
         "properties": {
           "item_ids": {
@@ -5007,6 +6947,137 @@
           "neutrality"
         ],
         "title": "ColorFamilyOut"
+      },
+      "ColourBasicOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "text"
+        ],
+        "title": "ColourBasicOut"
+      },
+      "CompareOut": {
+        "properties": {
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/CandidateAnalysed"
+            },
+            "type": "array",
+            "title": "Candidates"
+          }
+        },
+        "type": "object",
+        "required": [
+          "candidates"
+        ],
+        "title": "CompareOut"
+      },
+      "CostOut": {
+        "properties": {
+          "item": {
+            "$ref": "#/components/schemas/ItemBrief"
+          },
+          "price": {
+            "type": "integer",
+            "title": "Price"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency"
+          },
+          "wears": {
+            "type": "integer",
+            "title": "Wears"
+          },
+          "per_wear": {
+            "type": "integer",
+            "title": "Per Wear"
+          }
+        },
+        "type": "object",
+        "required": [
+          "item",
+          "price",
+          "currency",
+          "wears",
+          "per_wear"
+        ],
+        "title": "CostOut"
+      },
+      "CoverageCellOut": {
+        "properties": {
+          "occasion_id": {
+            "type": "string",
+            "title": "Occasion Id"
+          },
+          "season": {
+            "type": "string",
+            "title": "Season"
+          },
+          "before": {
+            "type": "integer",
+            "title": "Before"
+          },
+          "added": {
+            "type": "integer",
+            "title": "Added"
+          }
+        },
+        "type": "object",
+        "required": [
+          "occasion_id",
+          "season",
+          "before",
+          "added"
+        ],
+        "title": "CoverageCellOut"
+      },
+      "CoverageOut": {
+        "properties": {
+          "occasion_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Occasion Ids"
+          },
+          "seasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Seasons"
+          },
+          "cells": {
+            "items": {
+              "$ref": "#/components/schemas/CellOut"
+            },
+            "type": "array",
+            "title": "Cells"
+          }
+        },
+        "type": "object",
+        "required": [
+          "occasion_ids",
+          "seasons",
+          "cells"
+        ],
+        "title": "CoverageOut"
       },
       "DayChange": {
         "properties": {
@@ -5101,6 +7172,42 @@
           "rain_chance"
         ],
         "title": "DayWeatherOut"
+      },
+      "DeclutterOut": {
+        "properties": {
+          "item": {
+            "$ref": "#/components/schemas/ItemBrief"
+          },
+          "last_worn_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Worn On"
+          },
+          "added_on": {
+            "type": "string",
+            "format": "date",
+            "title": "Added On"
+          },
+          "outfits": {
+            "type": "integer",
+            "title": "Outfits"
+          }
+        },
+        "type": "object",
+        "required": [
+          "item",
+          "last_worn_on",
+          "added_on",
+          "outfits"
+        ],
+        "title": "DeclutterOut"
       },
       "DeleteAccountRequest": {
         "properties": {
@@ -5292,6 +7399,103 @@
         ],
         "title": "EventOut"
       },
+      "ExampleOut": {
+        "properties": {
+          "template_id": {
+            "type": "string",
+            "title": "Template Id"
+          },
+          "pieces": {
+            "items": {
+              "$ref": "#/components/schemas/PieceOut"
+            },
+            "type": "array",
+            "title": "Pieces"
+          }
+        },
+        "type": "object",
+        "required": [
+          "template_id",
+          "pieces"
+        ],
+        "title": "ExampleOut"
+      },
+      "FabricOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "feel": {
+            "type": "string",
+            "title": "Feel"
+          },
+          "seasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Seasons"
+          },
+          "care": {
+            "type": "string",
+            "title": "Care"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "watch": {
+            "type": "string",
+            "title": "Watch"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "feel",
+          "seasons",
+          "care",
+          "label",
+          "watch"
+        ],
+        "title": "FabricOut"
+      },
+      "FamilyOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "hex": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hex"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "hex"
+        ],
+        "title": "FamilyOut"
+      },
       "FeedbackIn": {
         "properties": {
           "verdict": {
@@ -5354,6 +7558,108 @@
         ],
         "title": "FinishOnboardingRequest"
       },
+      "FromStaple": {
+        "properties": {
+          "archetype_id": {
+            "type": "string",
+            "title": "Archetype Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "archetype_id"
+        ],
+        "title": "FromStaple"
+      },
+      "GapCellOut": {
+        "properties": {
+          "occasion_id": {
+            "type": "string",
+            "title": "Occasion Id"
+          },
+          "season": {
+            "type": "string",
+            "title": "Season"
+          },
+          "added": {
+            "type": "integer",
+            "title": "Added"
+          }
+        },
+        "type": "object",
+        "required": [
+          "occasion_id",
+          "season",
+          "added"
+        ],
+        "title": "GapCellOut"
+      },
+      "GapOut": {
+        "properties": {
+          "staples": {
+            "items": {
+              "$ref": "#/components/schemas/StapleOut"
+            },
+            "type": "array",
+            "title": "Staples"
+          },
+          "coverage_gain": {
+            "type": "number",
+            "title": "Coverage Gain"
+          },
+          "new_outfits": {
+            "type": "integer",
+            "title": "New Outfits"
+          },
+          "cells": {
+            "items": {
+              "$ref": "#/components/schemas/GapCellOut"
+            },
+            "type": "array",
+            "title": "Cells"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "staples",
+          "coverage_gain",
+          "new_outfits",
+          "cells",
+          "reason"
+        ],
+        "title": "GapOut"
+      },
+      "GapsOut": {
+        "properties": {
+          "needs_occasions": {
+            "type": "boolean",
+            "title": "Needs Occasions"
+          },
+          "gaps": {
+            "items": {
+              "$ref": "#/components/schemas/GapOut"
+            },
+            "type": "array",
+            "title": "Gaps"
+          },
+          "covered": {
+            "type": "boolean",
+            "title": "Covered"
+          }
+        },
+        "type": "object",
+        "required": [
+          "needs_occasions",
+          "gaps",
+          "covered"
+        ],
+        "title": "GapsOut"
+      },
       "GenerateIn": {
         "properties": {
           "start": {
@@ -5372,6 +7678,116 @@
         "additionalProperties": false,
         "type": "object",
         "title": "GenerateIn"
+      },
+      "GroupOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "GroupOut"
+      },
+      "GuideOut": {
+        "properties": {
+          "fabrics": {
+            "items": {
+              "$ref": "#/components/schemas/FabricOut"
+            },
+            "type": "array",
+            "title": "Fabrics"
+          },
+          "colour": {
+            "items": {
+              "$ref": "#/components/schemas/ColourBasicOut"
+            },
+            "type": "array",
+            "title": "Colour"
+          },
+          "neutrals": {
+            "items": {
+              "$ref": "#/components/schemas/FamilyOut"
+            },
+            "type": "array",
+            "title": "Neutrals"
+          },
+          "styles": {
+            "items": {
+              "$ref": "#/components/schemas/GuideStyleOut"
+            },
+            "type": "array",
+            "title": "Styles"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fabrics",
+          "colour",
+          "neutrals",
+          "styles"
+        ],
+        "title": "GuideOut"
+      },
+      "GuideStyleOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "colors": {
+            "items": {
+              "$ref": "#/components/schemas/FamilyOut"
+            },
+            "type": "array",
+            "title": "Colors"
+          },
+          "fabrics": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Fabrics"
+          },
+          "pieces": {
+            "items": {
+              "$ref": "#/components/schemas/StylePieceOut"
+            },
+            "type": "array",
+            "title": "Pieces"
+          },
+          "chosen": {
+            "type": "boolean",
+            "title": "Chosen"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "description",
+          "colors",
+          "fabrics",
+          "pieces",
+          "chosen"
+        ],
+        "title": "GuideStyleOut"
       },
       "HTTPValidationError": {
         "properties": {
@@ -5416,6 +7832,168 @@
           "database"
         ],
         "title": "HealthResponse"
+      },
+      "InsightsOut": {
+        "properties": {
+          "items": {
+            "type": "integer",
+            "title": "Items"
+          },
+          "logs": {
+            "type": "integer",
+            "title": "Logs"
+          },
+          "days_logged_30": {
+            "type": "integer",
+            "title": "Days Logged 30"
+          },
+          "needed_logs": {
+            "type": "integer",
+            "title": "Needed Logs"
+          },
+          "enough": {
+            "type": "boolean",
+            "title": "Enough"
+          },
+          "most_worn": {
+            "items": {
+              "$ref": "#/components/schemas/WornOut"
+            },
+            "type": "array",
+            "title": "Most Worn"
+          },
+          "least_worn": {
+            "items": {
+              "$ref": "#/components/schemas/WornOut"
+            },
+            "type": "array",
+            "title": "Least Worn"
+          },
+          "by_month": {
+            "items": {
+              "$ref": "#/components/schemas/MonthOut"
+            },
+            "type": "array",
+            "title": "By Month"
+          },
+          "by_group": {
+            "items": {
+              "$ref": "#/components/schemas/TallyOut"
+            },
+            "type": "array",
+            "title": "By Group"
+          },
+          "by_color": {
+            "items": {
+              "$ref": "#/components/schemas/TallyOut"
+            },
+            "type": "array",
+            "title": "By Color"
+          },
+          "cheapest": {
+            "items": {
+              "$ref": "#/components/schemas/CostOut"
+            },
+            "type": "array",
+            "title": "Cheapest"
+          },
+          "dearest": {
+            "items": {
+              "$ref": "#/components/schemas/CostOut"
+            },
+            "type": "array",
+            "title": "Dearest"
+          },
+          "needs_price": {
+            "items": {
+              "$ref": "#/components/schemas/ItemBrief"
+            },
+            "type": "array",
+            "title": "Needs Price"
+          },
+          "versatile": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/VersatileOut"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Versatile"
+          },
+          "orphans": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/OrphanOut"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Orphans"
+          },
+          "coverage": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CoverageOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "style": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StyleOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "declutter": {
+            "items": {
+              "$ref": "#/components/schemas/DeclutterOut"
+            },
+            "type": "array",
+            "title": "Declutter"
+          },
+          "engine_version": {
+            "type": "string",
+            "title": "Engine Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "logs",
+          "days_logged_30",
+          "needed_logs",
+          "enough",
+          "most_worn",
+          "least_worn",
+          "by_month",
+          "by_group",
+          "by_color",
+          "cheapest",
+          "dearest",
+          "needs_price",
+          "versatile",
+          "orphans",
+          "coverage",
+          "style",
+          "declutter",
+          "engine_version"
+        ],
+        "title": "InsightsOut"
       },
       "ItemBrief": {
         "properties": {
@@ -6659,6 +9237,23 @@
         ],
         "title": "LoginRequest"
       },
+      "MatchOut": {
+        "properties": {
+          "item": {
+            "$ref": "#/components/schemas/ItemBrief"
+          },
+          "score": {
+            "type": "number",
+            "title": "Score"
+          }
+        },
+        "type": "object",
+        "required": [
+          "item",
+          "score"
+        ],
+        "title": "MatchOut"
+      },
       "Measurements": {
         "properties": {
           "chest": {
@@ -6750,6 +9345,24 @@
         ],
         "title": "MissingOut"
       },
+      "MonthOut": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "days": {
+            "type": "integer",
+            "title": "Days"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "days"
+        ],
+        "title": "MonthOut"
+      },
       "OccasionOut": {
         "properties": {
           "id": {
@@ -6827,6 +9440,28 @@
           "score"
         ],
         "title": "OptionOut"
+      },
+      "OrphanOut": {
+        "properties": {
+          "item": {
+            "$ref": "#/components/schemas/ItemBrief"
+          },
+          "outfits": {
+            "type": "integer",
+            "title": "Outfits"
+          },
+          "rescue": {
+            "type": "string",
+            "title": "Rescue"
+          }
+        },
+        "type": "object",
+        "required": [
+          "item",
+          "outfits",
+          "rescue"
+        ],
+        "title": "OrphanOut"
       },
       "OutfitCheck": {
         "properties": {
@@ -7349,6 +9984,30 @@
           "height"
         ],
         "title": "PhotoRef"
+      },
+      "PieceOut": {
+        "properties": {
+          "item": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ItemBrief"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "candidate": {
+            "type": "boolean",
+            "title": "Candidate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "item",
+          "candidate"
+        ],
+        "title": "PieceOut"
       },
       "PlaceOut": {
         "properties": {
@@ -7994,6 +10653,85 @@
         "title": "ProfileUpdate",
         "description": "Only the fields sent are changed. Null clears a field."
       },
+      "ProjectedOut": {
+        "properties": {
+          "wears_a_year": {
+            "type": "integer",
+            "title": "Wears A Year"
+          },
+          "per_wear": {
+            "type": "integer",
+            "title": "Per Wear"
+          },
+          "similar": {
+            "type": "integer",
+            "title": "Similar"
+          }
+        },
+        "type": "object",
+        "required": [
+          "wears_a_year",
+          "per_wear",
+          "similar"
+        ],
+        "title": "ProjectedOut",
+        "description": "An estimate, always shown as one: the price over the wears a year the person's other\npieces of the same category get."
+      },
+      "Purchase": {
+        "properties": {
+          "price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price"
+          },
+          "purchased_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Purchased On"
+          },
+          "size_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Size Label"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "Purchase"
+      },
+      "PurchaseOut": {
+        "properties": {
+          "item_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Item Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "item_id"
+        ],
+        "title": "PurchaseOut"
+      },
       "ReasonOut": {
         "properties": {
           "code": {
@@ -8220,6 +10958,45 @@
         ],
         "title": "SetLink"
       },
+      "ShareOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "share": {
+            "type": "number",
+            "title": "Share"
+          },
+          "hex": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hex"
+          },
+          "chosen": {
+            "type": "boolean",
+            "title": "Chosen",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "share"
+        ],
+        "title": "ShareOut"
+      },
       "SizeChoice": {
         "properties": {
           "label": {
@@ -8304,6 +11081,216 @@
           "role"
         ],
         "title": "SlotTerm"
+      },
+      "SplitOut": {
+        "properties": {
+          "budget": {
+            "type": "integer",
+            "title": "Budget"
+          },
+          "chosen": {
+            "items": {
+              "$ref": "#/components/schemas/CandidateOut"
+            },
+            "type": "array",
+            "title": "Chosen"
+          },
+          "left": {
+            "items": {
+              "$ref": "#/components/schemas/CandidateOut"
+            },
+            "type": "array",
+            "title": "Left"
+          },
+          "unpriced": {
+            "items": {
+              "$ref": "#/components/schemas/CandidateOut"
+            },
+            "type": "array",
+            "title": "Unpriced"
+          },
+          "coverage_gain": {
+            "type": "number",
+            "title": "Coverage Gain"
+          },
+          "spent": {
+            "type": "integer",
+            "title": "Spent"
+          },
+          "exhaustive": {
+            "type": "boolean",
+            "title": "Exhaustive"
+          }
+        },
+        "type": "object",
+        "required": [
+          "budget",
+          "chosen",
+          "left",
+          "unpriced",
+          "coverage_gain",
+          "spent",
+          "exhaustive"
+        ],
+        "title": "SplitOut"
+      },
+      "SplitRequest": {
+        "properties": {
+          "budget": {
+            "type": "integer",
+            "title": "Budget"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "budget"
+        ],
+        "title": "SplitRequest"
+      },
+      "StapleOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "category_id": {
+            "type": "string",
+            "title": "Category Id"
+          },
+          "slot": {
+            "type": "string",
+            "title": "Slot"
+          },
+          "color": {
+            "type": "string",
+            "title": "Color"
+          },
+          "hex": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hex"
+          },
+          "pattern": {
+            "type": "string",
+            "title": "Pattern"
+          },
+          "fabric": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fabric"
+          },
+          "group_id": {
+            "type": "string",
+            "title": "Group Id"
+          },
+          "usual_spend": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Usual Spend"
+          },
+          "on_list": {
+            "type": "boolean",
+            "title": "On List"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "category_id",
+          "slot",
+          "color",
+          "hex",
+          "pattern",
+          "fabric",
+          "group_id",
+          "usual_spend",
+          "on_list"
+        ],
+        "title": "StapleOut"
+      },
+      "StyleOut": {
+        "properties": {
+          "wears": {
+            "type": "integer",
+            "title": "Wears"
+          },
+          "palette": {
+            "items": {
+              "$ref": "#/components/schemas/ShareOut"
+            },
+            "type": "array",
+            "title": "Palette"
+          },
+          "formality": {
+            "items": {
+              "$ref": "#/components/schemas/ShareOut"
+            },
+            "type": "array",
+            "title": "Formality"
+          },
+          "styles": {
+            "items": {
+              "$ref": "#/components/schemas/ShareOut"
+            },
+            "type": "array",
+            "title": "Styles"
+          }
+        },
+        "type": "object",
+        "required": [
+          "wears",
+          "palette",
+          "formality",
+          "styles"
+        ],
+        "title": "StyleOut"
+      },
+      "StylePieceOut": {
+        "properties": {
+          "staple": {
+            "$ref": "#/components/schemas/StapleOut"
+          },
+          "owned": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ItemBrief"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "staple",
+          "owned"
+        ],
+        "title": "StylePieceOut"
       },
       "StyleProfileOut": {
         "properties": {
@@ -8598,6 +11585,40 @@
           "engine_version"
         ],
         "title": "SuggestionsOut"
+      },
+      "TallyOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "wears": {
+            "type": "integer",
+            "title": "Wears"
+          },
+          "hex": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hex"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "wears"
+        ],
+        "title": "TallyOut"
       },
       "Term": {
         "properties": {
@@ -8955,6 +11976,50 @@
         ],
         "title": "ValidationError"
       },
+      "VerdictReasonOut": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "positive",
+              "caution"
+            ],
+            "title": "Kind"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "kind",
+          "text"
+        ],
+        "title": "VerdictReasonOut"
+      },
+      "VersatileOut": {
+        "properties": {
+          "item": {
+            "$ref": "#/components/schemas/ItemBrief"
+          },
+          "outfits": {
+            "type": "integer",
+            "title": "Outfits"
+          }
+        },
+        "type": "object",
+        "required": [
+          "item",
+          "outfits"
+        ],
+        "title": "VersatileOut"
+      },
       "WearIn": {
         "properties": {
           "worn_on": {
@@ -9296,6 +12361,36 @@
           "engine_version"
         ],
         "title": "WeekOut"
+      },
+      "WornOut": {
+        "properties": {
+          "item": {
+            "$ref": "#/components/schemas/ItemBrief"
+          },
+          "wears": {
+            "type": "integer",
+            "title": "Wears"
+          },
+          "last_worn_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Worn On"
+          }
+        },
+        "type": "object",
+        "required": [
+          "item",
+          "wears",
+          "last_worn_on"
+        ],
+        "title": "WornOut"
       },
       "WornPiece": {
         "properties": {

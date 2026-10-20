@@ -73,10 +73,10 @@ def create_item(db: Session, user: User, fields: dict[str, Any]) -> Item:
     fields = dict(fields)
     photo_id = fields.pop("photo_id", None)
     category = categories.find_category(db, user, fields.get("category_id") or "")
-    problems = _check(db, user, fields)
+    problems = check_fields(db, user, fields)
     if category is None:
         problems["category_id"] = UNKNOWN_CHOICE
-    photo = _usable_photo(db, user, photo_id, problems)
+    photo = usable_photo(db, user, photo_id, problems)
     if problems or category is None:
         raise ItemInvalid(problems)
 
@@ -113,7 +113,7 @@ def update_item(db: Session, user: User, item: Item, changes: dict[str, Any]) ->
     }
     for name in problems:
         del changes[name]
-    problems.update(_check(db, user, changes))
+    problems.update(check_fields(db, user, changes))
     category = None
     if "category_id" in changes:
         category = categories.find_category(db, user, changes["category_id"])
@@ -121,7 +121,7 @@ def update_item(db: Session, user: User, item: Item, changes: dict[str, Any]) ->
             problems["category_id"] = UNKNOWN_CHOICE
     replacing_photo = "photo_id" in changes
     new_photo_id = changes.pop("photo_id", None)
-    new_photo = _usable_photo(db, user, new_photo_id, problems) if new_photo_id else None
+    new_photo = usable_photo(db, user, new_photo_id, problems) if new_photo_id else None
     if problems:
         raise ItemInvalid(problems)
 
@@ -318,7 +318,7 @@ def _after(sort: Sort, values: list[Any]) -> Any:
     return or_(Item.created_at < created, and_(Item.created_at == created, Item.id < item_id))
 
 
-def _check(db: Session, user: User, fields: dict[str, Any]) -> dict[str, str]:
+def check_fields(db: Session, user: User, fields: dict[str, Any]) -> dict[str, str]:
     """Field name -> message for every value that isn't in the reference data."""
     problems: dict[str, str] = {}
 
@@ -341,13 +341,13 @@ def _check(db: Session, user: User, fields: dict[str, Any]) -> dict[str, str]:
     return problems
 
 
-def _usable_photo(
+def usable_photo(
     db: Session, user: User, photo_id: uuid.UUID | None, problems: dict[str, str]
 ) -> ItemImage | None:
     if photo_id is None:
         return None
     photo = photos.find_photo(db, user, photo_id)
-    if photo is None or photo.item_id is not None:
+    if photo is None or photo.item_id is not None or photo.candidate_id is not None:
         problems["photo_id"] = "That photo isn't available. Upload it again."
         return None
     return photo

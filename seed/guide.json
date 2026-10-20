@@ -1,0 +1,150 @@
+{
+  "version": 1,
+  "notes": "Style Guide text: one entry per fabric in taxonomy.json (by id) and the colour basics. General guidance, not product claims. Seasons use taxonomy.json season ids. Edit freely; ids are stable keys.",
+  "fabrics": [
+    {
+      "id": "cotton",
+      "feel": "Soft and breathable, and it soaks up sweat. Crisp when woven, stretchy when knitted.",
+      "seasons": ["summer", "mild"],
+      "care": "Machine wash cool or warm. Hot water and a hot dryer can shrink it. Iron while slightly damp for a crisp finish.",
+      "label": "100% cotton breathes best. Combed or long-staple cotton feels smoother and pills less. For T-shirts, a higher GSM (grams per square metre) means a thicker, longer-lasting fabric.",
+      "watch": "It dries slowly, so heavy cotton can stay damp through a humid monsoon day."
+    },
+    {
+      "id": "linen",
+      "feel": "Cool, dry, and very breathable, with a slightly textured hand. It softens with every wash.",
+      "seasons": ["summer", "mild"],
+      "care": "Wash gently and hang to dry. Iron while damp if you want it crisp; soft creases are part of the look.",
+      "label": "100% linen is the coolest. A linen and cotton blend creases less and costs less.",
+      "watch": "It creases as soon as you sit down. Choose a blend for long days at a desk."
+    },
+    {
+      "id": "denim",
+      "feel": "Sturdy cotton twill. Stiff at first, then it softens and shapes to you.",
+      "seasons": ["winter", "mild"],
+      "care": "Wash inside out in cold water, and not too often, to keep the colour. Dark indigo can stain light fabrics at first.",
+      "label": "One or two per cent elastane (stretch) adds comfort. Raw or selvedge denim is unwashed and fades with wear.",
+      "watch": "Heavy and slow to dry, so it's hard work in the monsoon and hot in summer."
+    },
+    {
+      "id": "wool",
+      "feel": "Warm without being stuffy, springy, and slow to crease or hold odours.",
+      "seasons": ["winter"],
+      "care": "Hand wash in cold water or dry clean, and dry flat. Never tumble dry: heat and agitation shrink it.",
+      "label": "Merino is fine and rarely itchy. In a blend, the share of wool decides how warm it is.",
+      "watch": "Moths like it. Store it clean and folded."
+    },
+    {
+      "id": "knit",
+      "feel": "Made of looped yarn rather than woven threads, so it stretches and drapes: T-shirts, polos, sweaters.",
+      "seasons": ["summer", "monsoon", "winter", "mild"],
+      "care": "Dry sweaters flat so they keep their shape, and fold heavy knits instead of hanging them.",
+      "label": "Knit is how it's made, not what it's made of: check the fibre (cotton, wool, acrylic). A tight, even knit pills less.",
+      "watch": "Loose knits snag on watches and bag straps."
+    },
+    {
+      "id": "polyester",
+      "feel": "Smooth and strong. It holds its shape, barely creases, and dries fast.",
+      "seasons": ["monsoon"],
+      "care": "Machine wash and dry on low heat. A hot iron can melt or shine it.",
+      "label": "In a blend (poly-cotton) it adds crease resistance. For hot days, look for more cotton or linen in the mix.",
+      "watch": "It doesn't breathe like natural fibres, so it traps heat and can hold on to odours."
+    },
+    {
+      "id": "viscose",
+      "feel": "Soft and cool, with a fluid drape. Made from wood pulp.",
+      "seasons": ["summer", "mild"],
+      "care": "Delicate when wet: hand wash or use a gentle cycle in cold water, and don't wring it. It can shrink.",
+      "label": "Viscose, rayon, modal, and lyocell are related. Modal and lyocell are usually stronger and keep their shape better.",
+      "watch": "Cheap viscose loses its shape after a few washes."
+    },
+    {
+      "id": "silk",
+      "feel": "Light and smooth with a soft sheen. Cool in the heat and warm in the cold.",
+      "seasons": ["winter", "mild"],
+      "care": "Dry clean, or hand wash in cold water with a mild detergent. Keep it out of direct sun, and put perfume on before you dress.",
+      "label": "Pure silk is the real thing. Art silk is artificial silk, usually viscose or polyester.",
+      "watch": "Water and sweat can leave marks."
+    },
+    {
+      "id": "satin",
+      "feel": "Glossy on the face and dull on the back. Satin is a weave, so it can be silk, polyester, or a blend.",
+      "seasons": ["winter", "mild"],
+      "care": "Follow the fibre: usually a gentle wash or dry cleaning. Iron on the dull side, on low.",
+      "label": "Silk satin breathes. Polyester satin is cheaper and warmer.",
+      "watch": "It snags easily and shows every crease."
+    },
+    {
+      "id": "leather",
+      "feel": "Tough and supple. Good leather shapes to you and ages well.",
+      "seasons": ["summer", "monsoon", "winter", "mild"],
+      "care": "Wipe clean and condition now and then. Let wet shoes dry away from direct heat, and use shoe trees.",
+      "label": "Full-grain leather is the most durable. \"Genuine leather\" is a lower grade. PU or faux leather is a plastic coating on fabric.",
+      "watch": "Soaking in heavy rain can stain it and stiffen it."
+    },
+    {
+      "id": "suede",
+      "feel": "The soft, brushed underside of leather. Velvety and less formal than smooth leather.",
+      "seasons": ["winter", "mild"],
+      "care": "Brush it with a suede brush and use a protector spray before the first wear.",
+      "label": "Nubuck looks similar but is buffed from the outer side, so it wears a little better.",
+      "watch": "Water leaves marks. Keep it for dry days."
+    },
+    {
+      "id": "canvas",
+      "feel": "Heavy, plain-woven cotton or a blend. Sturdy and casual: sneakers, bags, jackets.",
+      "seasons": ["summer", "mild"],
+      "care": "Spot clean or wash gently, and air dry. Heat can shrink it and loosen glued soles.",
+      "label": "Thicker canvas lasts longer.",
+      "watch": "It soaks up rain and dries slowly."
+    },
+    {
+      "id": "technical",
+      "feel": "Performance fabrics, often nylon or polyester with a finish: water-resistant, quick-drying, stretchy.",
+      "seasons": ["monsoon"],
+      "care": "Wash cool and skip fabric softener: it clogs the finish that wicks sweat and sheds water.",
+      "label": "Water-resistant sheds a shower. Waterproof, with taped seams, keeps out real rain.",
+      "watch": "It can feel clammy in the heat when it doesn't breathe."
+    },
+    {
+      "id": "blend",
+      "feel": "Two or more fibres together, mixing their traits: a poly-cotton shirt creases less than cotton and breathes better than polyester.",
+      "seasons": ["summer", "monsoon", "winter", "mild"],
+      "care": "Follow the care label; it's set by the most delicate fibre.",
+      "label": "Fibres are listed largest share first, with percentages. The first one tells you most about how it will feel.",
+      "watch": "A little of a fibre adds little. Five per cent cashmere won't make a jumper warm."
+    }
+  ],
+  "colour": [
+    {
+      "id": "neutrals",
+      "title": "Neutrals do most of the work",
+      "text": "Neutrals go with nearly anything, so most outfits are built on them and one piece carries the colour. These are the colours WearWise treats as neutral."
+    },
+    {
+      "id": "how_many",
+      "title": "How many colours",
+      "text": "Neutrals don't count. One or two colours on a neutral base look deliberate; three or more start to compete, and WearWise scores an outfit lower when they do. Shades of one colour count as one."
+    },
+    {
+      "id": "contrast",
+      "title": "Light against dark",
+      "text": "Two neutrals look sharpest with clear contrast in lightness, like navy and white. Two shades that are close but not the same, like two slightly different blues, can look like a near miss rather than a choice."
+    },
+    {
+      "id": "colour_pairs",
+      "title": "Colours together",
+      "text": "Neighbouring colours (blue and teal) blend easily. Opposite colours (blue and orange) balance well when one or both are soft; two strong opposites make a bold look."
+    },
+    {
+      "id": "leathers",
+      "title": "Match your leathers",
+      "text": "A leather belt and leather shoes in the same colour, brown with brown or black with black, look sharper. WearWise notes it when they're clearly different."
+    },
+    {
+      "id": "metals",
+      "title": "One metal",
+      "text": "A watch, a buckle, and jewellery in one metal, silver or gold, read as a set. Mixing is a choice to make on purpose."
+    }
+  ]
+}

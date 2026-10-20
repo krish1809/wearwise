@@ -15,7 +15,8 @@ Conventions: UUID primary keys, `created_at` and `updated_at` on every table, `u
 | `style_profiles` | `id`, `name`, `description`, `signals` (json), `position` | `style_profiles.json` |
 | `category_groups` | `id`, `name`, `position` | `taxonomy.json` groups |
 | `vocabulary_terms` | `kind` (section, fit, sizing_system, slot, pattern, fabric, season, status, formality), `id`, `name`, `position`; key `(kind, id)` | `taxonomy.json` lists |
-| `archetypes` | `id`, `name`, `category_id`, attributes as for items | `archetypes.json` |
+| `archetypes` | `id`, `name`, `category_id`, `color`, `pattern`, `fabric`, `formality`, `warmth`, `seasons[]`, `sections[]`, `styles[]`, `attrs` (json), `position` (M8) | `archetypes.json` |
+| `guide_entries` | `kind` (fabric, colour), `id` (a fabric's vocabulary id, or a colour basic), `body` (json: a fabric's feel, seasons, care, label, and watch; a colour basic's title and text), `position`; key `(kind, id)` (M8) | `guide.json` |
 
 Custom categories and occasions are rows with a `user_id`.
 
@@ -68,7 +69,7 @@ Indexes: `(user_id, archived_at)`, `(user_id, slot)`, `(user_id, category_id)`, 
 
 Built in M3 as above, with these choices: `name` is optional and the app shows "colour + category" when it's empty; `pattern` defaults to solid and `status` to available; formality, warmth, and `wears_before_wash` start from the category; empty `seasons[]` means every season; `price` is paise with `currency`. Items reference `categories` with Postgres's default (checked at the end of each statement), so an account's items and custom categories are deleted together (D28).
 
-**`item_images`**: `user_id` (the uploader; for ownership checks and cleanup), `item_id` (null between upload and saving the item; unsaved uploads are removed after a day), `storage_key`, `thumb_key`, `width`, `height`, `is_primary`, `dominant_hex` (D26).
+**`item_images`**: `user_id` (the uploader; for ownership checks and cleanup), `item_id` (null between upload and saving the item; unsaved uploads are removed after a day), `candidate_id` (a shopping candidate's photo, which moves to the item when it's bought; M8), `storage_key`, `thumb_key`, `width`, `height`, `is_primary`, `dominant_hex` (D26).
 
 ## Outfits and wear (M4, M5)
 
@@ -102,21 +103,22 @@ Pair preferences are not a table: they are worked out from `suggestion_feedback`
 
 ## Shopping (M8, M9)
 
-**`candidates`**
+**`candidates`** (built in M8, D45)
 
 | Column | Notes |
 |---|---|
 | `user_id` | |
-| `source` | manual, link, screenshot, catalog, adapter name |
-| `url`, `title`, `brand`, `image_key` or `image_url` | |
+| `source` | `manual` or `archetype` in M8 (with `archetype_id`); link, screenshot, catalog, and adapter names arrive in M9 and M10 |
+| `name`, `brand`, `url`, `size_label`, `notes` | `url` must be http or https; stored as given, never fetched in M8 |
 | `price`, `currency`, `price_checked_at` | never shown without the check time |
-| item attributes | same columns as `items`: category, colours, pattern, fabric, formality, warmth, seasons |
-| `status` | considering, buy_next, later, skipped, purchased |
+| item attributes | `category_id`, `slot`, `color_primary`, `color_secondary`, `color_hex`, `pattern`, `fabric`, `fit`, `formality`, `warmth`, `seasons[]` |
+| `status` | considering, buy_next, later, skipped, purchased (purchased only by buying it) |
 | `target_price` | optional |
-| `analysis` | json, the last analyzer result |
-| `analysis_wardrobe_version` | rerun when it differs from the user's current version |
+| `analysis` | json, the last analysis and verdict |
+| `analysis_key` | a hash of everything the analysis depends on (wardrobe version, engine version, occasions, styles and colours, reactions, sections, budgets, and the candidate's attributes and price); worked out again when it differs |
+| `item_id` | the wardrobe item made from it when bought |
 
-Marking a candidate purchased offers to create an item from it.
+Marking a candidate bought creates the item, with the candidate's photo, through the same code as adding an item.
 
 **`catalog_products`**: `source`, `external_id`, `title`, `brand`, `url`, `image_url`, `price`, `currency`, attributes, `fetched_at`, `is_demo`. Unique on `(source, external_id)`.
 

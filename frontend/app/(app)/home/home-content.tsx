@@ -13,6 +13,8 @@ import { toast } from "@/components/ui/toast";
 import { problemFrom } from "@/lib/api/errors";
 import { useCurrentUser } from "@/lib/auth";
 import { todayIso } from "@/lib/dates";
+import { useInsights } from "@/lib/insights";
+import { formatRupees } from "@/lib/money";
 import { useWearLogs } from "@/lib/outfits";
 import { useWearDay, useWeek } from "@/lib/plan";
 import { listed } from "@/lib/text";
@@ -41,9 +43,76 @@ export function HomeContent() {
         </p>
       </div>
       <Today />
+      <OneInsight />
       <FinishSetup />
     </div>
   );
+}
+
+/** One fact from Insights, a different one each day, with a link to the rest. */
+function OneInsight() {
+  const insights = useInsights();
+  const reference = useReference();
+  const [day] = useState(() => {
+    const now = new Date();
+    return Math.floor(
+      (now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) /
+        86_400_000,
+    );
+  });
+  const data = insights.data;
+  if (!data || !reference.data) return null;
+  const occasions = new Map(
+    reference.data.occasions.map((o) => [o.id, o.name]),
+  );
+  const seasons = new Map(reference.data.seasons.map((s) => [s.id, s.name]));
+  const facts: string[] = [];
+  const top = data.most_worn[0];
+  if (top) {
+    facts.push(
+      `Your most worn piece is the ${lower(top.item.display_name)}: ${top.wears} times.`,
+    );
+  }
+  const best = data.cheapest[0];
+  if (best) {
+    facts.push(
+      `Best value so far: the ${lower(best.item.display_name)}, at ${formatRupees(best.per_wear)} a wear.`,
+    );
+  }
+  const orphan = data.orphans?.[0];
+  if (orphan) {
+    facts.push(
+      `The ${lower(orphan.item.display_name)} goes with little. ${orphan.rescue}`,
+    );
+  }
+  const gap = data.coverage?.cells.find((cell) => cell.outfits === 0);
+  if (gap) {
+    facts.push(
+      `No good outfit yet for ${lower(occasions.get(gap.occasion_id) ?? gap.occasion_id)} in ${lower(seasons.get(gap.season) ?? gap.season)}.`,
+    );
+  }
+  if (data.needs_price.length > 0) {
+    const count = data.needs_price.length;
+    facts.push(
+      `${count} worn ${count === 1 ? "piece has" : "pieces have"} no price, so there's no cost per wear yet.`,
+    );
+  }
+  if (facts.length === 0) return null;
+  return (
+    <Card className="flex flex-col gap-3">
+      <CardTitle>From your insights</CardTitle>
+      <p className="max-w-prose">{facts[day % facts.length]}</p>
+      <TextLink href="/insights" className="self-start">
+        See all insights
+      </TextLink>
+    </Card>
+  );
+}
+
+function lower(name: string): string {
+  return /^[A-Z]{2}/.test(name)
+    ? name
+    : name.charAt(0).toLowerCase() + name.slice(1);
 }
 
 /** Shown once onboarding was skipped, until the person finishes it or says not now. */

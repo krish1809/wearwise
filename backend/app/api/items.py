@@ -1,6 +1,5 @@
 """The wardrobe: items, their photos, archiving, and matching sets."""
 
-import re
 import uuid
 from datetime import date, datetime
 from typing import Annotated, Any
@@ -11,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import CurrentUser, SessionDep, StorageDep
 from app.api.errors import ApiError, error_responses
-from app.api.fields import Amount, IdList, NoteText, ShortText, tidy_text
+from app.api.fields import Amount, HexColour, IdList, NoteText, ShortText, tidy_text
 from app.api.item_views import ItemBrief, Names, PhotoRef, photo_ref
 from app.models import Item, ItemImage, User
 from app.services import items, wear
@@ -19,12 +18,6 @@ from app.services import items, wear
 router = APIRouter(prefix="/items", tags=["items"])
 
 MAX_TAGS = 15
-
-
-def _check_hex(value: str | None) -> str | None:
-    if value is not None and not re.fullmatch(r"#[0-9A-Fa-f]{6}", value):
-        raise ValueError("Use a colour code like #1F2A44.")
-    return value.upper() if value else None
 
 
 def _check_purchase_date(value: date | None) -> date | None:
@@ -61,7 +54,7 @@ class ItemFields(BaseModel):
     brand: ShortText = None
     size_label: Annotated[str | None, AfterValidator(tidy_text(20))] = None
     color_secondary: str | None = None
-    color_hex: Annotated[str | None, AfterValidator(_check_hex)] = None
+    color_hex: HexColour = None
     pattern: str | None = None
     fabric: str | None = None
     fit: str | None = None

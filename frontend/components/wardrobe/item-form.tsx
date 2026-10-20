@@ -712,7 +712,7 @@ export function ItemForm({
   }
 }
 
-function ColourChips({
+export function ColourChips({
   colours,
   value,
   onChange,

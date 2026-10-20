@@ -973,6 +973,235 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/insights": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Insights
+         * @description Every number here is counted from the person's own rows; nothing is estimated.
+         */
+        get: operations["get_insights"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/candidates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Candidates
+         * @description The shopping list, newest first, each with its verdict when one is up to date.
+         */
+        get: operations["list_candidates"];
+        put?: never;
+        /**
+         * Create Candidate
+         * @description Add something you're thinking of buying. A category and a colour are all it needs.
+         */
+        post: operations["create_candidate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/candidates/from-staple": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add Staple
+         * @description Put a staple from your gaps or starter plan on the shopping list.
+         */
+        post: operations["add_staple"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/candidates/compare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Compare
+         * @description Two to four candidates side by side, each with its analysis.
+         */
+        get: operations["compare"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/candidates/{candidate_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Candidate */
+        get: operations["get_candidate"];
+        put?: never;
+        post?: never;
+        /** Delete Candidate */
+        delete: operations["delete_candidate"];
+        options?: never;
+        head?: never;
+        /** Update Candidate */
+        patch: operations["update_candidate"];
+        trace?: never;
+    };
+    "/api/v1/candidates/{candidate_id}/analysis": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Analyse
+         * @description What it would add: the outfits it makes, where you're short, what it duplicates, and
+         *     the verdict with its reasons. Worked out again whenever the wardrobe or the settings
+         *     behind it change.
+         */
+        get: operations["analyse"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/candidates/{candidate_id}/purchase": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Purchase
+         * @description Bought it: it becomes a wardrobe item, with its photo, and suggestions use it.
+         */
+        post: operations["purchase"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shopping/gaps": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Gaps
+         * @description What would add the most to your wardrobe, most first: a staple, or several that
+         *     together make a first good outfit for an occasion you have nothing for.
+         */
+        get: operations["get_gaps"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shopping/capsule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Plan Capsule
+         * @description A staged shopping plan, best first, within the budget: each step the staple that adds
+         *     the most given the ones before it (or a whole first outfit when no single piece does).
+         */
+        post: operations["plan_capsule"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shopping/split": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Split Budget
+         * @description Which things on your list to buy for the most new outfits within a budget. They're
+         *     weighed together, since a shirt and trousers make outfits neither makes alone.
+         */
+        post: operations["split_budget"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/guide": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Guide
+         * @description Fabrics, colour basics, and each style with the staples it's built on and which of
+         *     them you already have.
+         */
+        get: operations["guide"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -981,6 +1210,39 @@ export interface components {
         AccountUpdate: {
             /** Name */
             name?: string | null;
+        };
+        /** AnalysisOut */
+        AnalysisOut: {
+            /** Kind */
+            kind: string;
+            /** Verdict */
+            verdict: string;
+            /** Reasons */
+            reasons: components["schemas"]["VerdictReasonOut"][];
+            /** New Outfits */
+            new_outfits: number;
+            /** Coverage Gain */
+            coverage_gain: number;
+            /** Cells */
+            cells: components["schemas"]["CoverageCellOut"][];
+            /** Matches */
+            matches: components["schemas"]["MatchOut"][];
+            closest: components["schemas"]["ItemBrief"] | null;
+            /** Redundancy */
+            redundancy: number;
+            /** Rescued */
+            rescued: components["schemas"]["ItemBrief"][];
+            /** Examples */
+            examples: components["schemas"]["ExampleOut"][];
+            /** Cost Per New Outfit */
+            cost_per_new_outfit: number | null;
+            projected: components["schemas"]["ProjectedOut"] | null;
+            /** Usual Spend */
+            usual_spend: number | null;
+            /** Within Budget */
+            within_budget: boolean | null;
+            /** Engine Version */
+            engine_version: string;
         };
         /**
          * Basics
@@ -1046,6 +1308,202 @@ export interface components {
             /** Price Notes */
             price_notes?: string | null;
         };
+        /** CandidateAnalysed */
+        CandidateAnalysed: {
+            candidate: components["schemas"]["CandidateOut"];
+            analysis: components["schemas"]["AnalysisOut"];
+        };
+        /** CandidateCreate */
+        CandidateCreate: {
+            /** Name */
+            name?: string | null;
+            /** Brand */
+            brand?: string | null;
+            /** Url */
+            url?: string | null;
+            /** Size Label */
+            size_label?: string | null;
+            /** Color Secondary */
+            color_secondary?: string | null;
+            /** Color Hex */
+            color_hex?: string | null;
+            /** Pattern */
+            pattern?: string | null;
+            /** Fabric */
+            fabric?: string | null;
+            /** Fit */
+            fit?: string | null;
+            /** Formality */
+            formality?: number | null;
+            /** Warmth */
+            warmth?: number | null;
+            /** Seasons */
+            seasons?: string[] | null;
+            /** Price */
+            price?: number | null;
+            /** Target Price */
+            target_price?: number | null;
+            /** Status */
+            status?: string | null;
+            /** Notes */
+            notes?: string | null;
+            /** Photo Id */
+            photo_id?: string | null;
+            /** Category Id */
+            category_id: string;
+            /** Color Primary */
+            color_primary: string;
+        };
+        /** CandidateList */
+        CandidateList: {
+            /** Candidates */
+            candidates: components["schemas"]["CandidateOut"][];
+            /** Needs Occasions */
+            needs_occasions: boolean;
+        };
+        /** CandidateOut */
+        CandidateOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Source */
+            source: string;
+            /** Archetype Id */
+            archetype_id: string | null;
+            /** Name */
+            name: string | null;
+            /** Display Name */
+            display_name: string;
+            /** Brand */
+            brand: string | null;
+            /** Url */
+            url: string | null;
+            /** Size Label */
+            size_label: string | null;
+            /** Price */
+            price: number | null;
+            /** Currency */
+            currency: string;
+            /** Price Checked At */
+            price_checked_at: string | null;
+            /** Target Price */
+            target_price: number | null;
+            /** Category Id */
+            category_id: string;
+            /** Slot */
+            slot: string;
+            /** Color Primary */
+            color_primary: string;
+            /** Color Secondary */
+            color_secondary: string | null;
+            /** Color Hex */
+            color_hex: string | null;
+            /** Pattern */
+            pattern: string;
+            /** Fabric */
+            fabric: string | null;
+            /** Fit */
+            fit: string | null;
+            /** Formality */
+            formality: number;
+            /** Warmth */
+            warmth: number;
+            /** Seasons */
+            seasons: string[];
+            /** Status */
+            status: string;
+            /** Notes */
+            notes: string | null;
+            /** Item Id */
+            item_id: string | null;
+            photo: components["schemas"]["PhotoRef"] | null;
+            /** Verdict */
+            verdict: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /**
+         * CandidateUpdate
+         * @description Only the fields sent are changed; null clears an optional one, and photo_id null
+         *     removes the photo.
+         */
+        CandidateUpdate: {
+            /** Name */
+            name?: string | null;
+            /** Brand */
+            brand?: string | null;
+            /** Url */
+            url?: string | null;
+            /** Size Label */
+            size_label?: string | null;
+            /** Color Secondary */
+            color_secondary?: string | null;
+            /** Color Hex */
+            color_hex?: string | null;
+            /** Pattern */
+            pattern?: string | null;
+            /** Fabric */
+            fabric?: string | null;
+            /** Fit */
+            fit?: string | null;
+            /** Formality */
+            formality?: number | null;
+            /** Warmth */
+            warmth?: number | null;
+            /** Seasons */
+            seasons?: string[] | null;
+            /** Price */
+            price?: number | null;
+            /** Target Price */
+            target_price?: number | null;
+            /** Status */
+            status?: string | null;
+            /** Notes */
+            notes?: string | null;
+            /** Photo Id */
+            photo_id?: string | null;
+            /** Category Id */
+            category_id?: string | null;
+            /** Color Primary */
+            color_primary?: string | null;
+        };
+        /** CapsuleOut */
+        CapsuleOut: {
+            /** Steps */
+            steps: components["schemas"]["CapsuleStepOut"][];
+            /** Budget */
+            budget: number | null;
+            /** Total */
+            total: number | null;
+            /** Unpriced Groups */
+            unpriced_groups: components["schemas"]["GroupOut"][];
+        };
+        /** CapsuleRequest */
+        CapsuleRequest: {
+            /** Budget */
+            budget?: number | null;
+        };
+        /** CapsuleStepOut */
+        CapsuleStepOut: {
+            /** Staples */
+            staples: components["schemas"]["StapleOut"][];
+            /** Coverage Gain */
+            coverage_gain: number;
+            /** Cost */
+            cost: number | null;
+            /** Stage */
+            stage: number;
+        };
         /** CategoryCreate */
         CategoryCreate: {
             /** Name */
@@ -1089,6 +1547,17 @@ export interface components {
             /** Custom */
             custom: boolean;
         };
+        /** CellOut */
+        CellOut: {
+            /** Occasion Id */
+            occasion_id: string;
+            /** Season */
+            season: string;
+            /** Outfits */
+            outfits: number;
+            /** Capped */
+            capped: boolean;
+        };
         /** CheckRequest */
         CheckRequest: {
             /** Item Ids */
@@ -1104,6 +1573,52 @@ export interface components {
             hex: string | null;
             /** Neutrality */
             neutrality: number;
+        };
+        /** ColourBasicOut */
+        ColourBasicOut: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Text */
+            text: string;
+        };
+        /** CompareOut */
+        CompareOut: {
+            /** Candidates */
+            candidates: components["schemas"]["CandidateAnalysed"][];
+        };
+        /** CostOut */
+        CostOut: {
+            item: components["schemas"]["ItemBrief"];
+            /** Price */
+            price: number;
+            /** Currency */
+            currency: string;
+            /** Wears */
+            wears: number;
+            /** Per Wear */
+            per_wear: number;
+        };
+        /** CoverageCellOut */
+        CoverageCellOut: {
+            /** Occasion Id */
+            occasion_id: string;
+            /** Season */
+            season: string;
+            /** Before */
+            before: number;
+            /** Added */
+            added: number;
+        };
+        /** CoverageOut */
+        CoverageOut: {
+            /** Occasion Ids */
+            occasion_ids: string[];
+            /** Seasons */
+            seasons: string[];
+            /** Cells */
+            cells: components["schemas"]["CellOut"][];
         };
         /**
          * DayChange
@@ -1134,6 +1649,19 @@ export interface components {
             feels_like: number | null;
             /** Rain Chance */
             rain_chance: number | null;
+        };
+        /** DeclutterOut */
+        DeclutterOut: {
+            item: components["schemas"]["ItemBrief"];
+            /** Last Worn On */
+            last_worn_on: string | null;
+            /**
+             * Added On
+             * Format: date
+             */
+            added_on: string;
+            /** Outfits */
+            outfits: number;
         };
         /** DeleteAccountRequest */
         DeleteAccountRequest: {
@@ -1199,6 +1727,39 @@ export interface components {
             /** Note */
             note: string | null;
         };
+        /** ExampleOut */
+        ExampleOut: {
+            /** Template Id */
+            template_id: string;
+            /** Pieces */
+            pieces: components["schemas"]["PieceOut"][];
+        };
+        /** FabricOut */
+        FabricOut: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Feel */
+            feel: string;
+            /** Seasons */
+            seasons: string[];
+            /** Care */
+            care: string;
+            /** Label */
+            label: string;
+            /** Watch */
+            watch: string;
+        };
+        /** FamilyOut */
+        FamilyOut: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Hex */
+            hex: string | null;
+        };
         /** FeedbackIn */
         FeedbackIn: {
             /**
@@ -1216,10 +1777,81 @@ export interface components {
             /** Skipped */
             skipped: boolean;
         };
+        /** FromStaple */
+        FromStaple: {
+            /** Archetype Id */
+            archetype_id: string;
+        };
+        /** GapCellOut */
+        GapCellOut: {
+            /** Occasion Id */
+            occasion_id: string;
+            /** Season */
+            season: string;
+            /** Added */
+            added: number;
+        };
+        /** GapOut */
+        GapOut: {
+            /** Staples */
+            staples: components["schemas"]["StapleOut"][];
+            /** Coverage Gain */
+            coverage_gain: number;
+            /** New Outfits */
+            new_outfits: number;
+            /** Cells */
+            cells: components["schemas"]["GapCellOut"][];
+            /** Reason */
+            reason: string;
+        };
+        /** GapsOut */
+        GapsOut: {
+            /** Needs Occasions */
+            needs_occasions: boolean;
+            /** Gaps */
+            gaps: components["schemas"]["GapOut"][];
+            /** Covered */
+            covered: boolean;
+        };
         /** GenerateIn */
         GenerateIn: {
             /** Start */
             start?: string | null;
+        };
+        /** GroupOut */
+        GroupOut: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+        };
+        /** GuideOut */
+        GuideOut: {
+            /** Fabrics */
+            fabrics: components["schemas"]["FabricOut"][];
+            /** Colour */
+            colour: components["schemas"]["ColourBasicOut"][];
+            /** Neutrals */
+            neutrals: components["schemas"]["FamilyOut"][];
+            /** Styles */
+            styles: components["schemas"]["GuideStyleOut"][];
+        };
+        /** GuideStyleOut */
+        GuideStyleOut: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /** Colors */
+            colors: components["schemas"]["FamilyOut"][];
+            /** Fabrics */
+            fabrics: string[];
+            /** Pieces */
+            pieces: components["schemas"]["StylePieceOut"][];
+            /** Chosen */
+            chosen: boolean;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -1240,6 +1872,45 @@ export interface components {
              * @enum {string}
              */
             database: "ok" | "error";
+        };
+        /** InsightsOut */
+        InsightsOut: {
+            /** Items */
+            items: number;
+            /** Logs */
+            logs: number;
+            /** Days Logged 30 */
+            days_logged_30: number;
+            /** Needed Logs */
+            needed_logs: number;
+            /** Enough */
+            enough: boolean;
+            /** Most Worn */
+            most_worn: components["schemas"]["WornOut"][];
+            /** Least Worn */
+            least_worn: components["schemas"]["WornOut"][];
+            /** By Month */
+            by_month: components["schemas"]["MonthOut"][];
+            /** By Group */
+            by_group: components["schemas"]["TallyOut"][];
+            /** By Color */
+            by_color: components["schemas"]["TallyOut"][];
+            /** Cheapest */
+            cheapest: components["schemas"]["CostOut"][];
+            /** Dearest */
+            dearest: components["schemas"]["CostOut"][];
+            /** Needs Price */
+            needs_price: components["schemas"]["ItemBrief"][];
+            /** Versatile */
+            versatile: components["schemas"]["VersatileOut"][] | null;
+            /** Orphans */
+            orphans: components["schemas"]["OrphanOut"][] | null;
+            coverage: components["schemas"]["CoverageOut"] | null;
+            style: components["schemas"]["StyleOut"] | null;
+            /** Declutter */
+            declutter: components["schemas"]["DeclutterOut"][];
+            /** Engine Version */
+            engine_version: string;
         };
         /** ItemBrief */
         ItemBrief: {
@@ -1545,6 +2216,12 @@ export interface components {
             /** Password */
             password: string;
         };
+        /** MatchOut */
+        MatchOut: {
+            item: components["schemas"]["ItemBrief"];
+            /** Score */
+            score: number;
+        };
         /**
          * Measurements
          * @description Body measurements in cm. The app converts to inches for display only.
@@ -1572,6 +2249,13 @@ export interface components {
             /** Text */
             text: string;
         };
+        /** MonthOut */
+        MonthOut: {
+            /** Month */
+            month: string;
+            /** Days */
+            days: number;
+        };
         /** OccasionOut */
         OccasionOut: {
             /** Id */
@@ -1595,6 +2279,14 @@ export interface components {
             reasons: components["schemas"]["ReasonOut"][];
             /** Score */
             score: number;
+        };
+        /** OrphanOut */
+        OrphanOut: {
+            item: components["schemas"]["ItemBrief"];
+            /** Outfits */
+            outfits: number;
+            /** Rescue */
+            rescue: string;
         };
         /** OutfitCheck */
         OutfitCheck: {
@@ -1749,6 +2441,12 @@ export interface components {
             width: number;
             /** Height */
             height: number;
+        };
+        /** PieceOut */
+        PieceOut: {
+            item: components["schemas"]["ItemBrief"] | null;
+            /** Candidate */
+            candidate: boolean;
         };
         /** PlaceOut */
         PlaceOut: {
@@ -1907,6 +2605,36 @@ export interface components {
             /** Laundry Weekday */
             laundry_weekday?: number | null;
         };
+        /**
+         * ProjectedOut
+         * @description An estimate, always shown as one: the price over the wears a year the person's other
+         *     pieces of the same category get.
+         */
+        ProjectedOut: {
+            /** Wears A Year */
+            wears_a_year: number;
+            /** Per Wear */
+            per_wear: number;
+            /** Similar */
+            similar: number;
+        };
+        /** Purchase */
+        Purchase: {
+            /** Price */
+            price?: number | null;
+            /** Purchased On */
+            purchased_on?: string | null;
+            /** Size Label */
+            size_label?: string | null;
+        };
+        /** PurchaseOut */
+        PurchaseOut: {
+            /**
+             * Item Id
+             * Format: uuid
+             */
+            item_id: string;
+        };
         /** ReasonOut */
         ReasonOut: {
             /** Code */
@@ -1974,6 +2702,22 @@ export interface components {
              */
             item_id: string;
         };
+        /** ShareOut */
+        ShareOut: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Share */
+            share: number;
+            /** Hex */
+            hex?: string | null;
+            /**
+             * Chosen
+             * @default false
+             */
+            chosen: boolean;
+        };
         /** SizeChoice */
         SizeChoice: {
             /** Label */
@@ -1995,6 +2739,69 @@ export interface components {
             name: string;
             /** Role */
             role: string;
+        };
+        /** SplitOut */
+        SplitOut: {
+            /** Budget */
+            budget: number;
+            /** Chosen */
+            chosen: components["schemas"]["CandidateOut"][];
+            /** Left */
+            left: components["schemas"]["CandidateOut"][];
+            /** Unpriced */
+            unpriced: components["schemas"]["CandidateOut"][];
+            /** Coverage Gain */
+            coverage_gain: number;
+            /** Spent */
+            spent: number;
+            /** Exhaustive */
+            exhaustive: boolean;
+        };
+        /** SplitRequest */
+        SplitRequest: {
+            /** Budget */
+            budget: number;
+        };
+        /** StapleOut */
+        StapleOut: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Category Id */
+            category_id: string;
+            /** Slot */
+            slot: string;
+            /** Color */
+            color: string;
+            /** Hex */
+            hex: string | null;
+            /** Pattern */
+            pattern: string;
+            /** Fabric */
+            fabric: string | null;
+            /** Group Id */
+            group_id: string;
+            /** Usual Spend */
+            usual_spend: number | null;
+            /** On List */
+            on_list: boolean;
+        };
+        /** StyleOut */
+        StyleOut: {
+            /** Wears */
+            wears: number;
+            /** Palette */
+            palette: components["schemas"]["ShareOut"][];
+            /** Formality */
+            formality: components["schemas"]["ShareOut"][];
+            /** Styles */
+            styles: components["schemas"]["ShareOut"][];
+        };
+        /** StylePieceOut */
+        StylePieceOut: {
+            staple: components["schemas"]["StapleOut"];
+            owned: components["schemas"]["ItemBrief"] | null;
         };
         /** StyleProfileOut */
         StyleProfileOut: {
@@ -2081,6 +2888,17 @@ export interface components {
             season: string;
             /** Engine Version */
             engine_version: string;
+        };
+        /** TallyOut */
+        TallyOut: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Wears */
+            wears: number;
+            /** Hex */
+            hex?: string | null;
         };
         /** Term */
         Term: {
@@ -2222,6 +3040,24 @@ export interface components {
             /** Context */
             ctx?: Record<string, never>;
         };
+        /** VerdictReasonOut */
+        VerdictReasonOut: {
+            /** Code */
+            code: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "positive" | "caution";
+            /** Text */
+            text: string;
+        };
+        /** VersatileOut */
+        VersatileOut: {
+            item: components["schemas"]["ItemBrief"];
+            /** Outfits */
+            outfits: number;
+        };
         /** WearIn */
         WearIn: {
             /**
@@ -2325,6 +3161,14 @@ export interface components {
             laundry_weekday: number | null;
             /** Engine Version */
             engine_version: string;
+        };
+        /** WornOut */
+        WornOut: {
+            item: components["schemas"]["ItemBrief"];
+            /** Wears */
+            wears: number;
+            /** Last Worn On */
+            last_worn_on: string | null;
         };
         /** WornPiece */
         WornPiece: {
@@ -5730,6 +6574,761 @@ export interface operations {
             };
             /** @description Unprocessable Content */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_insights: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InsightsOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_candidates: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CandidateList"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_candidate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CandidateCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CandidateOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    add_staple: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FromStaple"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CandidateOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    compare: {
+        parameters: {
+            query: {
+                id: string[];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompareOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_candidate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                candidate_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CandidateOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_candidate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                candidate_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_candidate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                candidate_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CandidateUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CandidateOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    analyse: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                candidate_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnalysisOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    purchase: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                candidate_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Purchase"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PurchaseOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_gaps: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GapsOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    plan_capsule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CapsuleRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CapsuleOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    split_budget: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SplitRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SplitOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    guide: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GuideOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };

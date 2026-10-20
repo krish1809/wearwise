@@ -41,6 +41,8 @@ At 0.8 or above, name the owned item: "very close to your navy chinos".
 
 **Projected cost per wear.** Price divided by expected wears, where expected wears come from how often the user wears similar items. Always labelled as an estimate, and hidden if there is too little history.
 
+(Built as, in M8: a good outfit must also be dressed at the occasion's level; the candidate is fixed in place and only the outfits that need it are counted; colour closeness falls from 1 to 0 over 0.15 apart in OKLab; an accessory is judged by the good outfits it finishes; projected cost per wear uses pieces of the same category since logging began: D44.)
+
 ### 1.3 Verdict
 
 | Verdict | Rule (starting values) |
@@ -49,7 +51,7 @@ At 0.8 or above, name the owned item: "very close to your navy chinos".
 | Buy | Coverage gain in the top third of what archetypes achieve for this wardrobe, redundancy below 0.6, and price within the category budget |
 | Consider | Everything else |
 
-Every verdict shows its reasons and the numbers behind it. The user can always override.
+Every verdict shows its reasons and the numbers behind it. The user can always override. (Built as: Buy needs likeness below 0.7, since kind, pattern, and level alone make 0.65; an accessory is at most Consider: D44.)
 
 ### 1.4 Gap analysis
 
@@ -57,11 +59,11 @@ Every verdict shows its reasons and the numbers behind it. The user can always o
 
 Gap analysis runs the analyzer on every archetype that fits the user's sections and isn't already redundant, and ranks by coverage gain. The top results are the "buy next" list, each with its reason: "navy chinos would add 9 outfits, 5 of them for office".
 
-An empty category is not a gap by itself. A gap is an occasion and season with too few outfits, and the fix is whichever item raises it most.
+An empty category is not a gap by itself. A gap is an occasion and season with too few outfits, and the fix is whichever item raises it most. (Built as: an occasion and season with nothing that no single staple can open gets the fewest staples that together make a first outfit: D44.)
 
 ### 1.5 Starter capsule
 
-For a small wardrobe: pick archetypes one at a time, each time taking the one with the largest coverage gain given everything picked so far, until the budget or item limit is reached. Present it in stages (first three purchases, next three) so it reads as a plan, not a shopping spree. Costs use the user's own typical spend per category from onboarding.
+For a small wardrobe: pick archetypes one at a time, each time taking the one with the largest coverage gain given everything picked so far, until the budget or item limit is reached. Present it in stages (first three purchases, next three) so it reads as a plan, not a shopping spree. Costs use the user's own typical spend per category from onboarding. (Built as: when no single staple adds a good outfit, as in an empty wardrobe, the step is a whole outfit: D44.)
 
 ### 1.6 Budget split
 
@@ -71,6 +73,7 @@ For a small wardrobe: pick archetypes one at a time, each time taking the one wi
 - With 12 or fewer candidates, check every affordable subset.
 - With more, use greedy by gain per rupee, then compare with the best single item and keep the better.
 - Because of those interactions the objective isn't submodular, so greedy has no guarantee here. Tests compare greedy with exhaustive search on small cases and report the gap.
+- (Built as: each new outfit records the candidates it needs as a bit mask; every subset is compared with a sum-over-subsets pass; greedy steps can be the missing pieces of an outfit; measured at 98% of the best on average: D44.)
 
 ### 1.7 Tests that must exist
 

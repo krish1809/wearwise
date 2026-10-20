@@ -16,9 +16,11 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from app.models import (
+    Archetype,
     Category,
     CategoryGroup,
     ColorFamily,
+    GuideEntry,
     Occasion,
     OutfitTemplate,
     StyleProfile,
@@ -51,6 +53,8 @@ def seed_reference_data(db: Session, seed_dir: Path = SEED_DIR) -> dict[str, int
     colors = _load(seed_dir, "colors.json")["families"]
     occasions = _load(seed_dir, "occasions.json")["occasions"]
     styles = _load(seed_dir, "style_profiles.json")["profiles"]
+    archetypes = _load(seed_dir, "archetypes.json")["archetypes"]
+    guide = _load(seed_dir, "guide.json")
 
     groups = taxonomy["groups"]
     group_ids = _ids("taxonomy.json groups", groups)
@@ -109,6 +113,36 @@ def seed_reference_data(db: Session, seed_dir: Path = SEED_DIR) -> dict[str, int
         )
         if strangers:
             raise SeedError(f"Outfit template {template['id']!r} names unknown {strangers}")
+
+    _ids("archetypes.json", archetypes)
+    known = {
+        "category": category_ids,
+        "color": {c["id"] for c in colors},
+        "pattern": set(taxonomy["patterns"]),
+        "fabric": set(taxonomy["fabrics"]),
+        "seasons": set(taxonomy["seasons"]),
+        "sections": section_ids,
+        "styles": {s["id"] for s in styles},
+    }
+    for archetype in archetypes:
+        strangers = []
+        for field, allowed in known.items():
+            value = archetype.get(field)
+            values = value if isinstance(value, list) else [value]
+            strangers += [f"{field} {v!r}" for v in values if v is not None and v not in allowed]
+        if strangers:
+            raise SeedError(f"Archetype {archetype['id']!r} has unknown {', '.join(strangers)}")
+    _ids("guide.json fabrics", guide["fabrics"])
+    _ids("guide.json colour", guide["colour"])
+    for entry in guide["fabrics"]:
+        unknown = ({entry["id"]} - known["fabric"]) | (set(entry["seasons"]) - known["seasons"])
+        if unknown:
+            raise SeedError(f"Guide fabric {entry['id']!r} names unknown {sorted(unknown)}")
+    guide_rows = [
+        {"kind": kind, "id": entry["id"], "body": _without_id(entry), "position": i}
+        for kind, key in (("fabric", "fabrics"), ("colour", "colour"))
+        for i, entry in enumerate(guide[key])
+    ]
 
     changed = {
         "category_groups": _upsert(
@@ -196,6 +230,29 @@ def seed_reference_data(db: Session, seed_dir: Path = SEED_DIR) -> dict[str, int
                 for i, t in enumerate(templates)
             ],
         ),
+        "archetypes": _upsert(
+            db,
+            Archetype,
+            [
+                {
+                    "id": a["id"],
+                    "name": a["name"],
+                    "category_id": a["category"],
+                    "color": a["color"],
+                    "pattern": a["pattern"],
+                    "fabric": a.get("fabric"),
+                    "formality": a["formality"],
+                    "warmth": a["warmth"],
+                    "seasons": a["seasons"],
+                    "sections": a["sections"],
+                    "styles": a.get("styles", []),
+                    "attrs": a.get("attrs", {}),
+                    "position": i,
+                }
+                for i, a in enumerate(archetypes)
+            ],
+        ),
+        "guide_entries": _upsert(db, GuideEntry, guide_rows, key=("kind", "id")),
     }
     db.commit()
     return changed
@@ -208,6 +265,10 @@ def _load(seed_dir: Path, name: str) -> dict[str, Any]:
     except (OSError, json.JSONDecodeError) as error:
         raise SeedError(f"Can't read {path}: {error}") from error
     return data
+
+
+def _without_id(entry: dict[str, Any]) -> dict[str, Any]:
+    return {key: value for key, value in entry.items() if key != "id"}
 
 
 def _ids(label: str, rows: list[dict[str, Any]]) -> set[str]:

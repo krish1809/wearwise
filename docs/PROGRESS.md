@@ -5,13 +5,14 @@ The running state of the project, updated at the end of every slice. Keep it sho
 ## Now
 
 - **Last updated:** 2026-10-20
-- **Current milestone:** M5 and M6 released on 2026-10-20 (pull requests #4 and #5). M5's last two "Done when" items (golden set, wear test) are yours; v1.0 is tagged once they pass.
+- **Current milestone:** M8 Smart Shopping I, built on `m8-shopping` (branched from `m7-insights`) and waiting for your commits and merges. M7 is pushed on `m7-insights` but not merged yet. M5's last two "Done when" items (golden set, wear test) are still yours; v1.0 is tagged once they pass.
 - **Current slice:** none open. Open issue: on the live server the forecast request to Open-Meteo is refused, so days go by the season (place search works). The Render log line "Weather service unavailable: ..." says why.
 - **Next action (owner):**
-  1. In Render, open wearwise-api > Logs, search for "Weather service unavailable", and send the text after it.
-  2. Commit the small fixes on `m6-fixes` (staged), open a pull request, and merge it.
-  3. On the live site: choose your city in Settings, set your usual week (with a laundry day) in My Week, and plan a week.
-  4. The wear test and the golden set (M5), then the v1.0 release.
+  1. Open the pull request for `m7-insights` (already pushed) and merge it once CI passes.
+  2. Then commit `m8-shopping` (staged), push it, open its pull request, and merge it.
+  3. In Render, open wearwise-api > Logs, search for "Weather service unavailable", and send the text after it.
+  4. On the live site: set your usual spend per kind of clothing (Settings, Budget), add something you're thinking of buying, and try "Plan a starter wardrobe".
+  5. The wear test and the golden set (M5), then the v1.0 release.
 
 M1 slices:
 
@@ -87,7 +88,28 @@ M6 slices:
 | 7 | Trips and packing lists; packed items leave suggestions | done |
 | 8 | Home: today's weather and planned outfit; footer credit | done |
 
-- **Overall:** 7 of 12 milestones released (M0 to M6). v1.0 (M0 to M5) waits on the golden set and the wear test.
+M7 slices:
+
+| # | Slice | State |
+|---|---|---|
+| 1 | Engine: distinct good outfits, versatility, orphans and their rescue, coverage, worn style; stricter style match, engine 1.2 | done |
+| 2 | Service and API: wear counts, rankings, cost per wear, months, kinds, colours, declutter; `GET /insights`; measures cached per wardrobe | done |
+| 3 | Insights page: wear, value, versatility, coverage, worn style, declutter; text alternatives for every chart | done |
+| 4 | Navigation and Home's one insight; logged-out visitors sent to log in | done |
+| 5 | Browser walkthrough at 375 px and 1440 px; docs | done |
+
+M8 slices:
+
+| # | Slice | State |
+|---|---|---|
+| 1 | Engine: what a candidate adds, likeness, the verdict, gaps with whole first outfits, the starter capsule, the budget split; a good outfit dressed at the occasion's level | done |
+| 2 | Data: staples and Style Guide text in the database, candidates, photos for candidates; one migration | done |
+| 3 | Service and API: candidates, analysis stored by key, compare, gaps, capsule, budget split, buying, the guide | done |
+| 4 | Shopping pages: the list and gaps, add and edit, a candidate and its analysis, compare, budget split, starter plan | done |
+| 5 | Style Guide: fabrics, styles, colour basics, brand notebook; navigation with More on phones | done |
+| 6 | Browser walkthrough at 375 px and 1440 px; docs | done |
+
+- **Overall:** 9 of 12 milestones built (M0 to M8), 7 released. v1.0 (M0 to M5) waits on the golden set and the wear test.
 
 Live:
 
@@ -155,14 +177,14 @@ M0 code, merged in pull request #1 and deployed:
 | # | Milestone | You can now... | Status | Released | Notes |
 |---|---|---|---|---|---|
 | M0 | Foundations | open a live URL that talks to the API and database | done | 2026-10-12 | https://wearwise-rouge.vercel.app |
-| M1 | Design system, shell, auth | register, log in, and move around a styled, empty app | built, not merged | | |
-| M2 | Onboarding and profile | set (or skip) sizes, style, budget; edit them later | built, not merged | | |
-| M3 | Wardrobe | add, find, edit everything you own, with photos | built, not merged | | |
-| M4 | Outfit Studio and wear log | build and save outfits; log what you wore | built, not merged | | |
-| M5 | Outfit engine (v1.0) | get ranked outfit suggestions with reasons | not started | | v1.0 release |
-| M6 | My Week | plan seven days with weather, laundry, events, packing | not started | | |
-| M7 | Insights | see cost per wear, versatility, orphans, coverage | not started | | |
-| M8 | Smart Shopping I | analyse a purchase; see gaps; plan a capsule on a budget | not started | | |
+| M1 | Design system, shell, auth | register, log in, and move around a styled, empty app | done | 2026-10-16 | pull request #3 |
+| M2 | Onboarding and profile | set (or skip) sizes, style, budget; edit them later | done | 2026-10-16 | pull request #3 |
+| M3 | Wardrobe | add, find, edit everything you own, with photos | done | 2026-10-16 | pull request #3 |
+| M4 | Outfit Studio and wear log | build and save outfits; log what you wore | done | 2026-10-16 | pull request #3 |
+| M5 | Outfit engine (v1.0) | get ranked outfit suggestions with reasons | done | 2026-10-20 | pull request #4; v1.0 tag waits on the golden set and wear test |
+| M6 | My Week | plan seven days with weather, laundry, events, packing | done | 2026-10-20 | pull requests #5 and #6 |
+| M7 | Insights | see cost per wear, versatility, orphans, coverage | built, not merged | | |
+| M8 | Smart Shopping I | analyse a purchase; see gaps; plan a capsule on a budget | built, not merged | | |
 | M9 | Smart Shopping II | find real products for a gap | not started | | |
 | M10 | AI | auto-tag photos; chat with a stylist that knows your wardrobe | not started | | |
 | M11 | Hardening and launch | hand the link to anyone | not started | | |
@@ -180,6 +202,18 @@ M0 code, merged in pull request #1 and deployed:
 ## Log
 
 Add an entry per slice, newest first.
+
+### 2026-10-20, M8 slices 1 to 6: Smart Shopping I
+
+- Built: the purchase analyzer in `app/engine/shopping.py`: a candidate fixed in place in each occasion and season, the good outfits that need it, coverage gain with diminishing returns, likeness to what's owned, matches, orphans rescued, cost per new outfit, and Buy, Consider, or Skip with reasons (D44). Gaps from the staples, with a whole first outfit for an occasion no single staple opens; the starter capsule, starting from a whole outfit when the wardrobe is empty; the budget split, every subset up to twelve candidates and greedy past that. A good outfit now has to be dressed at the occasion's level, in Insights as well (D44). `archetypes`, `guide_entries`, `candidates`, and candidate photos in one migration; the Style Guide's text in `seed/guide.json`. API: `/candidates` (add, from a staple, edit, delete, compare, analysis, purchase), `/shopping/gaps`, `/shopping/capsule`, `/shopping/split`, `/guide`. Frontend: Shopping (what would add the most, your list by status with verdicts, compare), add and edit, a candidate's page (verdict, the numbers, where it adds outfits, outfits it would make, what it goes with, "I bought it"), Split a budget, Plan a starter wardrobe, and the Style Guide (fabrics, styles with the staples you have, colour basics, brand notebook). The navigation gains Shopping and Style Guide, with More on phones (D45).
+- Checked: `make check` passes. The shopping doc's required tests: an identical candidate is Skip and names the duplicate; opening an empty occasion beats adding to a full one; adding a candidate never lowers coverage, and matches a full recount on random wardrobes (hypothesis); the budget split never exceeds the budget and equals a brute force on random cases; the analysis is worked out again when the wardrobe changes. Also: greedy against the best (98% on average), the capsule from nothing, gaps with a whole outfit, an orphan rescued, accessories at most Consider, buying (item, photo, price paid), a candidate's photo kept out of reach of items, account deletion, category deletion, and a second account getting 404 on every route. Analysis on a 150-item wardrobe in about 0.2 s and its gaps in about 0.5 s on a laptop. The migration applies, rolls back, and reapplies with no drift. A browser walkthrough at 1440 px and 375 px: the More menu, gaps and adding a staple, the form, a candidate's verdict, a duplicate's Skip, compare, the budget split, the starter plan, buying, the Style Guide's tabs, and a logged-out visit sent to log in; no console errors. Fixed while building: casual outfits counting as interview outfits; the doc's 0.6 likeness ruling out any second pair of chinos; greedy stopping when an outfit needs two new pieces; pages wider than a phone (grids without a shrinkable column, and screen-reader text escaping a scroll area); Insights' cache missing the profile's styles and colours.
+- Decided: D44 (good outfits and the analyzer), D45 (shopping list, Style Guide, navigation).
+
+### 2026-10-20, M7 slices 1 to 5: Insights
+
+- Built: the wardrobe graph in `app/engine/insights.py` (section 11 of the engine doc): good outfits (0.7 or more) for each of the person's occasions and seasons on the steady wardrobe (everything not retired counts as clean, nothing as worn lately), versatility counted over distinct core pieces with accessories counted by the outfits they finish, orphans (under two) with a one-sentence rescue, coverage, and the style worn (palette, formality mix, and matching styles, weighted by wears). The style match now needs one of a style's colours or categories (D42; engine 1.2). `app/services/insights.py` counts wears, last worn, cost per wear, days logged by month, wears by kind and colour, and declutter suggestions from the person's rows, and caches the measures per wardrobe version (D43). `GET /insights`. Frontend: the Insights page (most and least worn, days logged, what you wear, cost per wear with "Add a price", versatile and stranded pieces, the occasion by season table, the style you wear, "Worth a second look"), Insights in the navigation in place of Settings (still in the avatar menu), and one insight on Home that changes daily. No new tables, so no migration.
+- Checked: backend tests against a fixture where every number is worked out by hand (wear counts, rankings, cost per wear, months, kinds, colours, palette, formality, coverage, orphan, declutter), the wait for five days logged, coverage waiting for occasions, a second account seeing only its own numbers, and a login required; engine tests for distinct outfits, accessories, orphans and each rescue, steady status, and the worn style. A browser walkthrough at 1440 px and 375 px (nine items, six days logged): Home's insight, the navigation, the whole Insights page, and a logged-out visit sent to log in; no console errors. Fixed while building: every style showed as 100% matched (D42); a rescue blamed the occasions when the partners clashed; "Add a price" and the item name ran together for screen readers.
+- Decided: D42 (style match), D43 (Insights).
 
 ### 2026-10-20, M5 and M6 deployed
 

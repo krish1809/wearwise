@@ -89,6 +89,38 @@ TEXTS: dict[str, str] = {
     # Packing (packing.py).
     "packing.no_good_outfit": "Nothing you have makes a good enough outfit for this day.",
     "packing.not_enough": "The packed pieces run out of clean wears by this day.",
+    # Insights (insights.py): why an item is stranded.
+    "rescue.slot": "Nothing you have for the {slot} suits it; a plain {color} one would.",
+    "rescue.partners": "What it pairs with doesn't go together; a plain {color} one for the "
+    "{slot} would.",
+    "rescue.occasions": "It's dressier or more casual than any occasion you dress for.",
+    "rescue.accessory": "It finishes few of your good outfits so far.",
+    # Shopping (shopping.py): a verdict's reasons.
+    "verdict.duplicate": "Very close to your {a}.",
+    "verdict.similar": "Similar to your {a}.",
+    "verdict.avoided": "It's in a colour you avoid.",
+    "verdict.no_outfits": "It makes no good outfit with what you own.",
+    "verdict.one_outfit": "It makes only one good outfit with what you own.",
+    "verdict.outfits": "It makes {count} good outfits with what you own.",
+    "verdict.opens": "It gives you a first good outfit for {cells}.",
+    "verdict.short": "It adds outfits where you have few: {cells}.",
+    "verdict.plenty": "You already have plenty of good outfits for everything it suits.",
+    "verdict.rescues": "It gives your {names} more to go with.",
+    "verdict.top_third": "It adds more than most wardrobe staples would.",
+    "verdict.over_budget": "It costs more than you usually spend on {group}.",
+    "verdict.finishes_none": "It finishes none of your good outfits.",
+    "verdict.finishes_one": "It finishes only one of your good outfits.",
+    "verdict.finishes": "It finishes {count} of your good outfits.",
+    "verdict.accessory": "Accessories finish outfits rather than make new ones, so the most "
+    "this says is Consider.",
+    "verdict.finishing": "Fragrance and grooming aren't matched with outfits, so this goes by "
+    "what you already own.",
+    # Gaps: what a staple would add.
+    "gap.nothing": "It adds no good outfit where you're short.",
+    "gap.one": "One new good outfit, for {cells}.",
+    "gap.adds": "{count} new good outfits, for {cells}.",
+    "gap.together": "Together, your first good outfit for {cells}.",
+    "gap.with_above": "With the pieces above, your first good outfit for {cells}.",
     # Notes on the whole result.
     "note.only_one": "This is the only outfit your available pieces make.",
     "note.few": "Only {count} different outfits work with what's available.",

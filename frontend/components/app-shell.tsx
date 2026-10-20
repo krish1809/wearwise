@@ -1,12 +1,28 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { CalendarDays, House, Layers, Settings, Shirt } from "lucide-react";
+import {
+  BookOpen,
+  CalendarDays,
+  ChartColumn,
+  Ellipsis,
+  House,
+  Layers,
+  Shirt,
+  ShoppingBag,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 import { AvatarMenu } from "@/components/ui/avatar-menu";
+import {
+  BottomSheet,
+  BottomSheetContent,
+  BottomSheetHeader,
+  BottomSheetTitle,
+  BottomSheetTrigger,
+} from "@/components/ui/bottom-sheet";
 import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/ui/error-state";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -22,8 +38,14 @@ const NAV = [
   { href: "/wardrobe", label: "Wardrobe", icon: Shirt },
   { href: "/outfits", label: "Outfits", icon: Layers },
   { href: "/week", label: "My Week", icon: CalendarDays },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/shopping", label: "Shopping", icon: ShoppingBag },
+  { href: "/insights", label: "Insights", icon: ChartColumn },
+  { href: "/guide", label: "Style Guide", icon: BookOpen },
 ] as const;
+
+// The phone's tab bar has room for four; the rest are under More.
+const TABS = NAV.slice(0, 4);
+const MORE = NAV.slice(4);
 
 function isActive(pathname: string | null, href: string): boolean {
   if (pathname === null) return false;
@@ -245,6 +267,13 @@ function TopBar({ user }: { user: User | undefined }) {
 }
 
 function TabBar({ pathname }: { pathname: string | null }) {
+  const [open, setOpen] = useState(false);
+  const inMore = MORE.some(({ href }) => isActive(pathname, href));
+  const tab = cn(
+    "flex min-h-16 w-full flex-col items-center justify-center gap-1 text-xs font-medium text-ink-soft",
+    "hover:text-ink aria-[current=page]:text-indigo",
+    focusRing,
+  );
   return (
     <nav
       aria-label="Main"
@@ -252,24 +281,59 @@ function TabBar({ pathname }: { pathname: string | null }) {
     >
       <ul
         className="grid"
-        style={{ gridTemplateColumns: `repeat(${NAV.length}, minmax(0, 1fr))` }}
+        style={{
+          gridTemplateColumns: `repeat(${TABS.length + 1}, minmax(0, 1fr))`,
+        }}
       >
-        {NAV.map(({ href, label, icon: Icon }) => (
+        {TABS.map(({ href, label, icon: Icon }) => (
           <li key={href}>
             <Link
               href={href}
               aria-current={isActive(pathname, href) ? "page" : undefined}
-              className={cn(
-                "flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-medium text-ink-soft",
-                "hover:text-ink aria-[current=page]:text-indigo",
-                focusRing,
-              )}
+              className={tab}
             >
               <Icon aria-hidden className="size-6" />
               {label}
             </Link>
           </li>
         ))}
+        <li>
+          <BottomSheet open={open} onOpenChange={setOpen}>
+            <BottomSheetTrigger
+              aria-current={inMore ? "page" : undefined}
+              className={tab}
+            >
+              <Ellipsis aria-hidden className="size-6" />
+              More
+            </BottomSheetTrigger>
+            <BottomSheetContent>
+              <BottomSheetHeader>
+                <BottomSheetTitle>More</BottomSheetTitle>
+              </BottomSheetHeader>
+              <ul className="flex flex-col gap-1 p-4">
+                {MORE.map(({ href, label, icon: Icon }) => (
+                  <li key={href}>
+                    <Link
+                      href={href}
+                      onClick={() => setOpen(false)}
+                      aria-current={
+                        isActive(pathname, href) ? "page" : undefined
+                      }
+                      className={cn(
+                        "flex min-h-12 items-center gap-3 rounded-lg px-3 font-medium text-ink",
+                        "hover:bg-tile aria-[current=page]:bg-indigo/10 aria-[current=page]:text-indigo",
+                        focusRing,
+                      )}
+                    >
+                      <Icon aria-hidden className="size-5" />
+                      {label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </BottomSheetContent>
+          </BottomSheet>
+        </li>
       </ul>
     </nav>
   );

@@ -1,5 +1,6 @@
 """Reusable request fields whose error messages read well next to a form input."""
 
+import re
 from collections.abc import Callable
 from typing import Annotated, Any
 
@@ -55,6 +56,12 @@ def _check_amount(value: int) -> int:
     return value
 
 
+def _check_hex(value: str | None) -> str | None:
+    if value is not None and not re.fullmatch(r"#[0-9A-Fa-f]{6}", value):
+        raise ValueError("Use a colour code like #1F2A44.")
+    return value.upper() if value else None
+
+
 def _unique(values: Any) -> Any:
     # Repeats are dropped, first one kept, so a double tap can't store a value twice.
     if isinstance(values, list):
@@ -67,3 +74,5 @@ NoteText = Annotated[str | None, AfterValidator(tidy_text(500))]
 # Money in minor units (paise).
 Amount = Annotated[int, AfterValidator(_check_amount)]
 IdList = Annotated[list[str] | None, BeforeValidator(_unique)]
+# A colour code such as #1F2A44, kept in capitals.
+HexColour = Annotated[str | None, AfterValidator(_check_hex)]
