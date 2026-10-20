@@ -21,6 +21,7 @@ from sqlalchemy.engine import make_url
 from sqlalchemy.orm import Session
 
 if TYPE_CHECKING:
+    from app.adapters.products import FakePageReader
     from app.adapters.storage import MemoryStorage
     from app.adapters.weather import FakeWeather
 
@@ -107,7 +108,18 @@ def weather() -> FakeWeather:
 
 
 @pytest.fixture
-def app(db: Session, storage: MemoryStorage, weather: FakeWeather) -> Iterator[FastAPI]:
+def pages() -> FakePageReader:
+    """No product page is reachable until a test adds it to `found`."""
+    from app.adapters.products import FakePageReader
+
+    return FakePageReader()
+
+
+@pytest.fixture
+def app(
+    db: Session, storage: MemoryStorage, weather: FakeWeather, pages: FakePageReader
+) -> Iterator[FastAPI]:
+    from app.adapters.products import get_page_reader
     from app.adapters.storage import get_storage
     from app.adapters.weather import get_weather
     from app.core.db import get_session
@@ -117,6 +129,7 @@ def app(db: Session, storage: MemoryStorage, weather: FakeWeather) -> Iterator[F
     application.dependency_overrides[get_session] = lambda: db
     application.dependency_overrides[get_storage] = lambda: storage
     application.dependency_overrides[get_weather] = lambda: weather
+    application.dependency_overrides[get_page_reader] = lambda: pages
     yield application
     application.dependency_overrides.clear()
 

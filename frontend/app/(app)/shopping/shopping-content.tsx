@@ -21,6 +21,7 @@ import { formatRupees } from "@/lib/money";
 import type { Reference } from "@/lib/profile";
 import {
   type Candidate,
+  priceMayHaveChanged,
   STATUSES,
   useCandidates,
   useGaps,
@@ -280,6 +281,7 @@ function CandidateRow({
         className="min-w-0 flex-1"
         name={candidate.display_name}
         photo={candidate.photo}
+        imageUrl={candidate.image_url}
         hex={candidate.color_hex ?? familyHex.get(candidate.color_primary)}
         href={`/shopping/${candidate.id}`}
       >
@@ -292,7 +294,11 @@ function CandidateRow({
               <span className="tabular-nums">
                 {formatRupees(candidate.price)}
               </span>{" "}
-              · noted {dayPhrase(candidate.price_checked_at.slice(0, 10))}
+              · {candidate.source === "link" ? "checked" : "noted"}{" "}
+              {dayPhrase(candidate.price_checked_at.slice(0, 10))}
+              {priceMayHaveChanged(candidate.price_checked_at) && (
+                <span className="block text-consider">May have changed</span>
+              )}
             </span>
           )}
         </span>

@@ -11,6 +11,7 @@ export function makeCandidate(overrides: Partial<Candidate> = {}): Candidate {
     display_name: "Navy chinos",
     brand: null,
     url: null,
+    image_url: null,
     size_label: null,
     price: 180000,
     currency: "INR",

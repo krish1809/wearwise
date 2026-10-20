@@ -108,8 +108,8 @@ Pair preferences are not a table: they are worked out from `suggestion_feedback`
 | Column | Notes |
 |---|---|
 | `user_id` | |
-| `source` | `manual` or `archetype` in M8 (with `archetype_id`); link, screenshot, catalog, and adapter names arrive in M9 and M10 |
-| `name`, `brand`, `url`, `size_label`, `notes` | `url` must be http or https; stored as given, never fetched in M8 |
+| `source` | `manual`, `archetype` (with `archetype_id`), `link` (only when a pasted page was actually read, M9), or `catalog`; screenshot arrives in M10 |
+| `name`, `brand`, `url`, `image_url`, `size_label`, `notes` | `url` and `image_url` must be http or https; the picture is shown from the shop's address, never copied (D46) |
 | `price`, `currency`, `price_checked_at` | never shown without the check time |
 | item attributes | `category_id`, `slot`, `color_primary`, `color_secondary`, `color_hex`, `pattern`, `fabric`, `fit`, `formality`, `warmth`, `seasons[]` |
 | `status` | considering, buy_next, later, skipped, purchased (purchased only by buying it) |
@@ -120,7 +120,9 @@ Pair preferences are not a table: they are worked out from `suggestion_feedback`
 
 Marking a candidate bought creates the item, with the candidate's photo, through the same code as adding an item.
 
-**`catalog_products`**: `source`, `external_id`, `title`, `brand`, `url`, `image_url`, `price`, `currency`, attributes, `fetched_at`, `is_demo`. Unique on `(source, external_id)`.
+**`catalog_products`** (built in M9, D46): `source`, `external_id`, `title`, `brand`, `url`, `image_url`, `price`, `currency`, `category_id`, `color_primary`, `pattern`, `fabric`, `formality`, `warmth`, `seasons[]`, `sections[]`, `fetched_at`, `is_demo`. Unique on `(source, external_id)`. Demo rows have no price and no URL.
+
+**`link_previews`** (M9, D46): `url` (unique), `fetched_at`, `outcome` (ok, blocked, unavailable, not_product), `data` (json: the page's preview data). Shared by everyone, with nothing about who pasted the link; read again after a day, or after 30 minutes for a failure.
 
 ## Chat (M10)
 

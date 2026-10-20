@@ -166,6 +166,7 @@ function Rows({
           <PieceRow
             name={row.display_name}
             photo={row.photo}
+            imageUrl={row.image_url}
             hex={row.color_hex ?? familyHex.get(row.color_primary)}
             href={`/shopping/${row.id}`}
           >

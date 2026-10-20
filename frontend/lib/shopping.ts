@@ -16,6 +16,9 @@ export type CapsulePlan = components["schemas"]["CapsuleOut"];
 export type Split = components["schemas"]["SplitOut"];
 export type Guide = components["schemas"]["GuideOut"];
 export type Purchase = components["schemas"]["Purchase"];
+export type LinkPreview = components["schemas"]["LinkPreviewOut"];
+export type ShopFor = components["schemas"]["ShopOut"];
+export type CatalogProduct = components["schemas"]["CatalogProductOut"];
 
 export const candidatesQueryKey = ["candidates"] as const;
 export const candidateQueryKey = (id: string) => ["candidate", id] as const;
@@ -214,4 +217,60 @@ export function needsOccasions(error: unknown): boolean {
   return (
     error instanceof ApiRequestError && error.problem.code === "needs_occasions"
   );
+}
+
+/** Read a pasted product page: its preview data, if the site allows it. */
+export function usePreviewLink() {
+  return useMutation({
+    mutationFn: (url: string) =>
+      ok(api.POST("/api/v1/links/preview", { body: { url } })),
+  });
+}
+
+/** Shop searches and demo products for a staple or a candidate. */
+export function useShop(
+  target: { archetypeId: string } | { candidateId: string },
+  enabled: boolean,
+) {
+  const query =
+    "archetypeId" in target
+      ? { archetype_id: target.archetypeId }
+      : { candidate_id: target.candidateId };
+  return useQuery({
+    queryKey: ["shopping", "shop", query],
+    enabled,
+    queryFn: () => ok(api.GET("/api/v1/shopping/shop", { params: { query } })),
+  });
+}
+
+export function useAddFromCatalog() {
+  const changed = useListChanged();
+  return useMutation({
+    mutationFn: (productId: string) =>
+      ok(
+        api.POST("/api/v1/candidates/from-catalog", {
+          body: { product_id: productId },
+        }),
+      ),
+    onSuccess: (candidate) => changed(candidate),
+  });
+}
+
+/** "shop.example.com" from a link, for saying where something came from. */
+export function siteOf(url: string | null | undefined): string | null {
+  if (!url) return null;
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return null;
+  }
+}
+
+/** True when a price was noted or read more than a day ago. */
+export function priceMayHaveChanged(
+  checkedAt: string | null | undefined,
+  now: Date = new Date(),
+): boolean {
+  if (!checkedAt) return false;
+  return now.getTime() - new Date(checkedAt).getTime() > 24 * 60 * 60 * 1000;
 }

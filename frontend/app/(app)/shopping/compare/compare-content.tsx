@@ -124,6 +124,7 @@ export function CompareContent() {
                 >
                   <ItemPhoto
                     photo={entry.candidate.photo}
+                    imageUrl={entry.candidate.image_url}
                     alt=""
                     hex={
                       entry.candidate.color_hex ??

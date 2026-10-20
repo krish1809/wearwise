@@ -18,7 +18,7 @@ from app.models.reference import (
     StyleProfile,
     VocabularyTerm,
 )
-from app.models.shopping import Candidate
+from app.models.shopping import Candidate, CatalogProduct, LinkPreview
 from app.models.suggestion import Suggestion, SuggestionFeedback
 from app.models.user import User
 from app.models.user_session import UserSession
@@ -29,6 +29,7 @@ __all__ = [
     "Base",
     "BrandNote",
     "Candidate",
+    "CatalogProduct",
     "Category",
     "CategoryGroup",
     "ColorFamily",
@@ -36,6 +37,7 @@ __all__ = [
     "GuideEntry",
     "Item",
     "ItemImage",
+    "LinkPreview",
     "Occasion",
     "Outfit",
     "OutfitItem",

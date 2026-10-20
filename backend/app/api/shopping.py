@@ -10,17 +10,19 @@ from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.api.deps import CurrentUser, SessionDep, StorageDep
+from app.api.deps import CurrentUser, PagesDep, SessionDep, StorageDep
 from app.api.errors import ApiError, error_responses
 from app.api.fields import Amount, HexColour, IdList, NoteText, ShortText, tidy_text
 from app.api.item_views import ItemBrief, Names, PhotoRef, photo_ref
 from app.engine.config import DEFAULT
 from app.models import Archetype, Candidate, Item, User
-from app.services import items, rate_limit, shopping, wear
+from app.services import items, products, rate_limit, shopping, wear
 
 router = APIRouter(tags=["shopping"])
 
 SHOPPING_PER_USER = rate_limit.Limit(attempts=300, window=timedelta(hours=1))
+# Reading pasted pages goes out to other sites, so it's limited more tightly.
+LINKS_PER_USER = rate_limit.Limit(attempts=30, window=timedelta(hours=1))
 GAPS_SHOWN = 8
 CAPSULE_STAGE = 3
 MAX_COMPARE = 4
@@ -62,9 +64,13 @@ class CandidateFields(BaseModel):
     notes: NoteText = None
     # A photo from POST /photos that isn't attached to anything yet.
     photo_id: uuid.UUID | None = None
+    # The shop's own picture, from a pasted link; shown from the shop's address.
+    image_url: Url = None
 
 
 class CandidateCreate(CandidateFields):
+    # "link" when it came from a pasted page (POST /links/preview).
+    source: Literal["manual", "link"] = "manual"
     category_id: str
     color_primary: str
 
@@ -91,10 +97,11 @@ class CandidateOut(BaseModel):
     display_name: str
     brand: str | None
     url: str | None
+    image_url: str | None
     size_label: str | None
     price: int | None
     currency: str
-    # When the price was given; a price is never shown without it.
+    # When the price was given or read; a price is never shown without it.
     price_checked_at: datetime | None
     target_price: int | None
     category_id: str
@@ -794,3 +801,186 @@ def guide(user: CurrentUser, db: SessionDep) -> GuideOut:
             for g in styles
         ],
     )
+
+
+# Real products: pasted links, shop searches, and the demo catalogue (M9).
+
+
+class LinkRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    url: Annotated[str, AfterValidator(tidy_text(2000))]
+
+
+class LinkPreviewOut(BaseModel):
+    """What a pasted page said, for the person to check before saving. Nothing is guessed:
+    what the page doesn't say is null."""
+
+    # ok; blocked (the site's robots.txt doesn't allow it); unavailable; not_product (a page,
+    # but no product on it); not_a_web_link.
+    outcome: str
+    url: str
+    fetched_at: datetime | None
+    site: str | None
+    title: str | None
+    brand: str | None
+    image_url: str | None
+    # Minor units, for a price in rupees; a price in another currency is only reported.
+    price: int | None
+    other_currency: str | None
+    # Suggested from the page's own words; the person confirms them.
+    category_id: str | None
+    color_primary: str | None
+    fabric: str | None
+
+
+class SearchLinkOut(BaseModel):
+    shop_id: str
+    shop: str
+    url: str
+
+
+class CatalogProductOut(BaseModel):
+    id: uuid.UUID
+    title: str
+    brand: str | None
+    # Null for demo products, which aren't for sale.
+    url: str | None
+    image_url: str | None
+    price: int | None
+    category_id: str
+    color_primary: str
+    hex: str | None
+    is_demo: bool
+    source: str
+    fetched_at: datetime
+    coverage_gain: float
+    new_outfits: int
+    # How alike it is to the closest piece owned, and that piece's name.
+    redundancy: float
+    closest: str | None
+
+
+class ShopOut(BaseModel):
+    query: str
+    links: list[SearchLinkOut]
+    # The person's usual spend for its kind of clothing, shown beside the links.
+    price_cap: int | None
+    group_name: str
+    # Null when no demo catalogue is loaded.
+    products: list[CatalogProductOut] | None
+
+
+class FromCatalog(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    product_id: uuid.UUID
+
+
+@router.post(
+    "/links/preview", response_model=LinkPreviewOut, responses=error_responses(401, 403, 422, 429)
+)
+def preview_link(
+    body: LinkRequest, user: CurrentUser, db: SessionDep, reader: PagesDep
+) -> LinkPreviewOut:
+    """Read a product page someone pasted: its public preview data, if the site's robots.txt
+    allows it, at most once a day. Anything unread is left for the person to fill in."""
+    try:
+        rate_limit.hit(db, f"links:user:{user.id}", LINKS_PER_USER)
+    except rate_limit.RateLimited as error:
+        db.commit()
+        raise ApiError(
+            429, "rate_limited", "That's a lot of links in an hour. Try again a little later."
+        ) from error
+    found = products.read_link(db, user, body.url, reader)
+    db.commit()
+    return LinkPreviewOut(
+        outcome=found.outcome,
+        url=found.url,
+        fetched_at=found.fetched_at,
+        site=found.site,
+        title=found.title,
+        brand=found.brand,
+        image_url=found.image_url,
+        price=found.price,
+        other_currency=found.other_currency,
+        category_id=found.category_id,
+        color_primary=found.color_primary,
+        fabric=found.fabric,
+    )
+
+
+@router.get("/shopping/shop", response_model=ShopOut, responses=error_responses(401, 404, 422, 429))
+def shop(
+    user: CurrentUser,
+    db: SessionDep,
+    archetype_id: str | None = None,
+    candidate_id: uuid.UUID | None = None,
+) -> ShopOut:
+    """Where to find a staple or a candidate: each shop's search for it, with the person's
+    usual spend as a guide, and demo catalogue products ranked by what they'd add."""
+    if (archetype_id is None) == (candidate_id is None):
+        raise ApiError(422, "invalid_input", "Choose a staple or something on your list.")
+    candidate = _owned(db, user, candidate_id) if candidate_id else None
+    staple = db.get(Archetype, archetype_id) if archetype_id else None
+    if archetype_id and staple is None:
+        raise ApiError(404, "staple_not_found", "That staple doesn't exist.")
+    _limited(db, user)
+    s = shopping.setting(db, user, wear.today())
+    found = (
+        products.shop_for_candidate(db, s, candidate)
+        if candidate
+        else products.shop_for_staple(db, s, staple)  # type: ignore[arg-type]
+    )
+    db.commit()
+    return ShopOut(
+        query=found.query,
+        links=[SearchLinkOut(shop_id=k.shop_id, shop=k.shop, url=k.url) for k in found.links],
+        price_cap=found.price_cap,
+        group_name=found.group_name,
+        products=None
+        if found.products is None
+        else [
+            CatalogProductOut(
+                id=r.product.id,
+                title=r.product.title,
+                brand=r.product.brand,
+                url=r.product.url,
+                image_url=r.product.image_url,
+                price=None if r.product.is_demo else r.product.price,
+                category_id=r.product.category_id,
+                color_primary=r.product.color_primary,
+                hex=s.families[r.product.color_primary].hex,
+                is_demo=r.product.is_demo,
+                source=r.product.source,
+                fetched_at=r.product.fetched_at,
+                coverage_gain=r.coverage_gain,
+                new_outfits=r.new_outfits,
+                redundancy=r.redundancy,
+                closest=r.closest,
+            )
+            for r in found.products
+        ],
+    )
+
+
+@router.post(
+    "/candidates/from-catalog",
+    status_code=status.HTTP_201_CREATED,
+    response_model=CandidateOut,
+    responses=error_responses(401, 403, 404, 409, 422),
+)
+def add_from_catalog(body: FromCatalog, user: CurrentUser, db: SessionDep) -> CandidateOut:
+    """Put a catalogue product on the shopping list."""
+    row = products.find_product(db, body.product_id)
+    if row is None:
+        raise ApiError(404, "product_not_found", "That product isn't in the catalogue.")
+    try:
+        made = shopping.create(db, user, products.candidate_fields(row))
+    except shopping.CandidateInvalid as error:
+        raise _invalid(error) from error
+    except shopping.TooManyCandidates as error:
+        message = f"Your shopping list can hold {shopping.MAX_CANDIDATES} things."
+        raise ApiError(409, "too_many_candidates", message) from error
+    db.commit()
+    return _outs(db, user, [made])[0]
