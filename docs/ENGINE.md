@@ -161,7 +161,7 @@ Score = 0.50*B + 0.15*O + 0.10*W + 0.10*R + 0.10*U + 0.05*S
 | below 10 °C | 6 and above | minus for shorts and open footwear |
 | Rain likely | | minus for suede, canvas, and white or very light bottoms |
 
-`W` is 1 inside the band and drops 0.3 per unit outside. With no weather data, use the season from the user's settings, and treat monsoon as "rain likely". (Until M6, the season comes from the request or the month, with bands chosen for Indian seasons: D34.)
+`W` is 1 inside the band and drops 0.3 per unit outside. With no weather data, use the season from the user's settings, and treat monsoon as "rain likely". (Until M6, the season came from the request or the month, with bands chosen for Indian seasons: D34. Since M6 the forecast's feels-like temperature, the middle of the day's apparent maximum and minimum, sets the band, and the manual setting stands in when there's no forecast: D39.)
 
 **R, rotation.** For each core item, `min(days since last worn, 14) / 14`, with never-worn counted as 1. `R` is the mean. If the exact same core outfit was worn in the last 7 days, `R = 0`.
 
@@ -234,7 +234,7 @@ These measures describe the wardrobe, not today. Compute them over every item th
 
 **Objective:** the sum of daily scores, plus a small bonus for variety across the week (distinct colours and categories), minus penalties for repeats.
 
-**Method:** beam search over days with width 50. For each partial week, ask the engine for the top 20 outfits for the next day given the simulated state, extend, and keep the best 50. That is at most 7 x 50 x 20 outfit evaluations.
+**Method:** beam search over days with width 50. For each partial week, ask the engine for the top 20 outfits for the next day given the simulated state, extend, and keep the best 50. That is at most 7 x 50 x 20 outfit evaluations. (Built as: each day's 40 best outfits ranked once, spread across the wardrobe; each choice also checked against locked days later in the week; an accessory due a wash comes off instead of blocking: D38, D40.)
 
 **Tests:** constraints never violated on random wardrobes; beam result is never worse than the greedy day-by-day plan; regenerating with locked days changes only unlocked days.
 
@@ -242,7 +242,7 @@ These measures describe the wardrobe, not today. Compute them over every item th
 
 Given trip days with occasions and weather, find a small set of items that gives every day an outfit scoring 0.65 or more, with no laundry during the trip.
 
-Greedy method: start empty; repeatedly add the item that covers the most still-uncovered days (ties go to higher versatility); stop when all days are covered; then try removing each item and keep the removal if every day is still covered. Add counted basics (socks and innerwear per day) as a plain checklist.
+Greedy method: start empty; repeatedly add the item that covers the most still-uncovered days (ties go to higher versatility); stop when all days are covered; then try removing each item and keep the removal if every day is still covered. Add counted basics (socks and innerwear per day) as a plain checklist. (Built as: whole outfits added by days dressed per new piece, within each piece's wears before a wash, and each day dressed within its occasion's level when the wardrobe allows: D41.)
 
 This is a set-cover-style problem, so greedy is a heuristic, not a guaranteed minimum. Say "a compact list", not "the smallest possible list".
 

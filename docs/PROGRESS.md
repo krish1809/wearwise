@@ -4,15 +4,14 @@ The running state of the project, updated at the end of every slice. Keep it sho
 
 ## Now
 
-- **Last updated:** 2026-10-16
-- **Current milestone:** M5 Outfit engine, built and checked locally on branch `m5-engine` (from `m4-wrap-up`). M1 to M4 are live. v1.0 is released once M5's "Done when" list is met.
-- **Current slice:** none open. Two "Done when" items need you: the golden set and the wear test.
+- **Last updated:** 2026-10-20
+- **Current milestone:** M6 My Week, built and checked locally; it sits in the working tree on top of M5, which is still staged on `m5-engine` and not committed. M5's last two "Done when" items (golden set, wear test) are yours.
+- **Current slice:** none open.
 - **Next action (owner):**
-  1. Commit M5 on `m5-engine` (the files are staged), push, open a pull request into `main`, and merge it once CI passes. It carries the M4 wrap-up commit too.
-  2. On the live site, add your own 25 to 30 items if you haven't, and save a few outfits you love as favourites with an occasion.
-  3. Wear test: ask for suggestions for "College / everyday" and one other occasion, and count how many of each top 10 you would wear (6 or more passes). Tell me the two counts.
-  4. Golden set: `DATABASE_URL='<Neon direct connection string>' make golden email=<your email>`, then label `backend/tests/golden/pairs.csv` (good, fine, or bad in each row; 60 or more) and commit the three files. `make test` then reports the agreement.
-  5. Then release v1.0: tag `v1.0.0`, a two-minute demo recording, and the README update.
+  1. Commit M5 (the staged files) on `m5-engine` and push it; open its pull request and merge once CI passes.
+  2. Then put M6 on its own branch: `git switch -c m6-week`, `git add -A`, commit, push, pull request, merge. Render runs the new migration and seed on deploy; no new settings are needed.
+  3. On the live site: choose your city in Settings (search, then pick it), set your usual week in My Week, and plan a week. Check M6's "Done when" list.
+  4. Still open from M5: the wear test and the golden set (see M5 below), then the v1.0 release.
 
 M1 slices:
 
@@ -75,7 +74,20 @@ M5 slices:
 | 10 | Golden set: export script, labelling format, agreement test | done (labels: yours) |
 | 11 | Missing pieces: which slot and why, a flagged compromise, honest notes | done |
 
-- **Overall:** 5 of 12 milestones released (M0 to M4); M5 built, waiting for the golden set, the wear test, and merging. v1.0 is M0 to M5.
+M6 slices:
+
+| # | Slice | State |
+|---|---|---|
+| 1 | Weather adapter (Open-Meteo, fake), forecast cache per place per day, place search, manual setting | done |
+| 2 | Weather in the engine: temperature bands, rain from the forecast, cold traits; engine 1.1 | done |
+| 3 | Events and the usual week; a day's occasion | done |
+| 4 | Planner: beam search over days, laundry simulation, repeat rules, locked days | done |
+| 5 | My Week page: seven days, swap, lock, plan again, mark as worn | done |
+| 6 | Laundry view and "Laundry done" | done |
+| 7 | Trips and packing lists; packed items leave suggestions | done |
+| 8 | Home: today's weather and planned outfit; footer credit | done |
+
+- **Overall:** 5 of 12 milestones released (M0 to M4); M5 and M6 built. v1.0 is M0 to M5.
 
 Live:
 
@@ -168,6 +180,13 @@ M0 code, merged in pull request #1 and deployed:
 ## Log
 
 Add an entry per slice, newest first.
+
+### 2026-10-20, M6 slices 1 to 8: My Week
+
+- Built: weather from Open-Meteo behind an adapter with a fake (`app/adapters/weather.py`), cached once per place per day and fetched outside any transaction, falling back to the person's manual setting and then the season (D39); place search for the city. The engine reads real weather (temperature bands, rain chance, cold traits from the seed; version 1.1). `events`, `plan_days`, `trips`, `trip_items`, `weather_forecasts`, category traits, and five profile fields in one migration. The planner (`app/engine/planner.py`): a beam search over days with the laundry simulation, no top twice in three days, no shoes three days running, locked days kept and looked ahead to, and a greedy plan as the floor (D38, D40). Packing lists (`app/engine/packing.py`, D41). API: `/places`, `/weather`, `/plan` (week, generate, change a day, options, wear), `/events`, `/laundry`, `/trips`. Frontend: My Week (seven day cards with weather, occasion, outfit, swap, lock, wear; your usual week; events), Laundry, Trips (list, plan a trip, packing list with packed marks and day-by-day outfits), the city search and "when there's no forecast" in Settings, Home's weather and planned outfit, My Week in the navigation, and the Open-Meteo and GeoNames credit in the footer.
+- Checked: `make check` passes (ruff, mypy on 119 files, 351 backend tests with the 2 golden-set tests skipped, TypeScript, ESLint, Prettier, 101 frontend tests, build). The migration applies, rolls back, and reapplies with no drift. Tests cover the Open-Meteo client (parsing, a retry on server errors, none on bad requests, timeouts), one fetch per place per day, the manual and season fallbacks, a remembered outage, the temperature bands and cold rules, the planner's rules on random wardrobes (hypothesis) with locked days and laundry days, beam never worse than greedy, swaps that keep the week valid, packing within wears left, and every route's ownership. "Done when": a generated week has no repeated top and nothing past its wear limit; locking two days and planning again keeps them; with the weather service down, planning works on the manual setting. A browser walkthrough at 1440 px and 375 px against the real Open-Meteo: choosing Pune, the usual week, a wedding event, planning, lock, swap, plan again (locked and swapped days kept), wearing today, the laundry, a Jaipur trip with a festive day (packed, then deleted), and Home; no console errors. Fixed while building: the planner breaking a later locked day; day pools built on three tops; socks blocking whole outfits; a wedding packed with a casual shirt; grey placeholders instead of colour swatches in two lists.
+- Left: the M5 items above.
+- Decided: D38 (planner pools), D39 (weather), D40 (My Week), D41 (trips).
 
 ### 2026-10-16, M5 slices 1 to 11: outfit engine
 
@@ -284,7 +303,7 @@ Things that are deliberately not handled yet. Move them into the README at M11.
 - On Render's free plan, the first request after 15 idle minutes takes about a minute while the backend wakes. The landing and log-in pages wake it early, and every waiting screen says so.
 - No password reset by email yet: it needs an email provider. Until then, a forgotten password means a new account. Planned for M11 at the latest.
 - The email address can't be changed yet: doing it safely needs the password again. The name can be changed in Settings.
-- Weather isn't used yet: the city is saved for M6, and suggestions go by the season meanwhile (D34).
+- Without a city or a manual setting, suggestions and plans go by the season (D34, D39).
 - Shown suggestions are kept indefinitely for acceptance rates; prune unreacted ones if the table grows (D36).
 - Photos in Backblaze B2 aren't backed up. For a personal project that's acceptable.
 - iPhone HEIC photos upload from Safari, which can read them; other browsers may not.

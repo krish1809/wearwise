@@ -7,7 +7,7 @@ between versions.
 
 from dataclasses import dataclass, field
 
-ENGINE_VERSION = "1.0"
+ENGINE_VERSION = "1.1"
 
 
 def _pair_weights() -> dict[frozenset[str], float]:
@@ -149,6 +149,22 @@ class EngineConfig:
     rain_penalty: float = 0.15
     # Bottoms this light or lighter show every splash.
     light_bottom_lightness: float = 0.85
+    # With a forecast (section 7): feels-like temperature at or above each threshold, and the
+    # target upper-body warmth; below the last, the coldest band.
+    temperature_bands: tuple[tuple[float, tuple[int, int]], ...] = (
+        (32.0, (0, 1)),
+        (25.0, (1, 2)),
+        (18.0, (2, 4)),
+        (10.0, (4, 6)),
+    )
+    coldest_band: tuple[int, int] = (6, 20)
+    hot_feels_like: float = 32.0
+    cold_feels_like: float = 10.0
+    # A forecast chance of rain at or above this counts as "rain likely".
+    rain_likely: int = 50
+    # In the cold: pieces with these traits from their category lose this much each.
+    cold_traits: frozenset[str] = frozenset({"bare_legs", "open_toe"})
+    cold_trait_penalty: float = 0.2
     rotation_days: int = 14
     repeat_outfit_days: int = 7
     preferred_colour_bonus: float = 0.1
@@ -164,6 +180,8 @@ class EngineConfig:
     # tenth of the time, which matters on a small server (D35).
     enumerate_limit: int = 5_000
     beam_width: int = 200
+    # For the planner's long lists, no piece fills more than this share of the beam (D38).
+    beam_item_share: float = 0.125
     accessorise_top: int = 50
     accessory_min: float = 0.7
     # Hard filter: an item this many steps outside the occasion's range is left out.
@@ -175,6 +193,26 @@ class EngineConfig:
     # Reasons: how many to show.
     max_positive_reasons: int = 3
     max_caution_reasons: int = 2
+
+    # Planning a week (section 12).
+    plan_beam_width: int = 50
+    # Each partial week tries this many of the day's best valid outfits...
+    plan_per_day: int = 20
+    # ...out of this many the engine ranks for the day, each core piece in no more than its
+    # slot's fair share of them (at least plan_pool_item_cap), so the week has room to rotate.
+    plan_pool: int = 40
+    plan_pool_item_cap: int = 4
+    # A top isn't planned twice within this many days; the same shoes not more than this many
+    # days running.
+    plan_top_gap_days: int = 3
+    plan_footwear_streak: int = 2
+    # Each core piece already planned that week costs this much; each colour family across
+    # the week earns this much.
+    plan_repeat_penalty: float = 0.03
+    plan_variety_bonus: float = 0.01
+
+    # Packing (section 13): a day counts as covered by an outfit scoring at least this much.
+    packing_min_score: float = 0.65
 
     # Learning from feedback (section 10).
     learning_rate: float = 0.3

@@ -1,8 +1,11 @@
 "use client";
 
+import { CloudSun } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 
 import { PageLoading } from "@/components/app-shell";
+import { OutfitBoard } from "@/components/outfits/outfit-board";
 import { TextLink } from "@/components/text-link";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
@@ -11,8 +14,15 @@ import { problemFrom } from "@/lib/api/errors";
 import { useCurrentUser } from "@/lib/auth";
 import { todayIso } from "@/lib/dates";
 import { useWearLogs } from "@/lib/outfits";
+import { useWearDay, useWeek } from "@/lib/plan";
 import { listed } from "@/lib/text";
-import { useDismissOnboardingReminder, useProfile } from "@/lib/profile";
+import {
+  useDismissOnboardingReminder,
+  useProfile,
+  useReference,
+} from "@/lib/profile";
+import { piecesName } from "@/lib/suggestions";
+import { weatherLine } from "@/lib/weather";
 
 export function HomeContent() {
   const { data: user } = useCurrentUser();
@@ -71,35 +81,86 @@ function FinishSetup() {
   );
 }
 
-/** What was worn today, or a nudge to log it. */
+/** Today's weather, and what was worn: or the outfit planned for today, or a nudge. */
 function Today() {
-  const logs = useWearLogs({ on: todayIso() });
+  const [today] = useState(todayIso);
+  const logs = useWearLogs({ on: today });
+  const week = useWeek(today);
+  const reference = useReference();
+  const wear = useWearDay(today);
   if (!logs.data) return null;
-  const today = logs.data.pages.flatMap((page) => page.logs);
-  const pieces = today.flatMap((log) => log.pieces.map((piece) => piece.name));
+  const worn = logs.data.pages.flatMap((page) => page.logs);
+  const pieces = worn.flatMap((log) => log.pieces.map((piece) => piece.name));
+  const plan = week.data?.days[0];
+  const planned = plan && plan.pieces.length > 0 && !plan.worn ? plan : null;
 
   return (
     <Card className="flex flex-col gap-4">
       <div>
         <CardTitle>Today</CardTitle>
+        {plan && (
+          <p className="mt-1 flex items-center gap-1.5 text-sm text-ink-soft">
+            <CloudSun aria-hidden className="size-4 shrink-0" />
+            {weatherLine(plan.weather)}
+          </p>
+        )}
         <CardDescription className="mt-1 max-w-prose">
-          {today.length > 0
+          {worn.length > 0
             ? `You wore ${listed(pieces)}.`
-            : "Nothing logged for today yet. Logging what you wear keeps wear counts and laundry right."}
+            : planned
+              ? `Planned: ${piecesName(planned.pieces)}.`
+              : "Nothing logged for today yet. Logging what you wear keeps wear counts and laundry right."}
         </CardDescription>
       </div>
+      {worn.length === 0 && planned && reference.data && (
+        <div className="max-w-xs">
+          <OutfitBoard
+            pieces={planned.pieces.map((piece) => ({
+              slot: piece.slot,
+              name: piece.item.display_name,
+              removed: false,
+              item: piece.item,
+            }))}
+            slots={reference.data.slots.map((slot, position) => ({
+              ...slot,
+              position,
+            }))}
+            familyHex={
+              new Map(reference.data.color_families.map((c) => [c.id, c.hex]))
+            }
+            size="small"
+          />
+        </div>
+      )}
       <div className="flex flex-wrap gap-3">
-        {today.length > 0 ? (
+        {worn.length > 0 ? (
           <Button asChild variant="secondary">
             <Link href="/worn">See the wear log</Link>
           </Button>
+        ) : planned ? (
+          <>
+            <Button
+              loading={wear.isPending}
+              onClick={() =>
+                wear.mutate(planned.day, {
+                  onSuccess: () => toast.success("Marked as worn today"),
+                  onError: (error) => toast.error(problemFrom(error).message),
+                })
+              }
+            >
+              I wore this
+            </Button>
+            <Button asChild variant="secondary">
+              <Link href="/week">See my week</Link>
+            </Button>
+          </>
         ) : (
           <>
             <Button asChild>
               <Link href="/outfits/suggest">Suggest an outfit</Link>
             </Button>
             <Button asChild variant="secondary">
-              <Link href="/outfits">Choose an outfit</Link>
+              <Link href="/week">Plan my week</Link>
             </Button>
             <Button asChild variant="secondary">
               <Link href="/worn/new">Log loose items</Link>

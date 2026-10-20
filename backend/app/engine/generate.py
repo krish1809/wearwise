@@ -15,7 +15,7 @@ from datetime import date
 from itertools import product
 
 from app.engine.config import DEFAULT, ENGINE_VERSION, EngineConfig
-from app.engine.outfits import Requirement, Template
+from app.engine.outfits import Piece, Requirement, Template, check_outfit
 from app.engine.pairs import PairScore, PairScores
 from app.engine.reasons import explain, mid, season_phrase, text
 from app.engine.scoring import Breakdown, Range, Scorer
@@ -70,6 +70,31 @@ def suggest(
     pair_cache: dict[tuple[str, str], PairScore] | None = None,
 ) -> Suggestions:
     """Up to context.count outfits, best first and different from each other."""
+    return _suggest(wardrobe, context, config, pair_cache, diverse=True)
+
+
+def rank(
+    wardrobe: Wardrobe,
+    context: Context,
+    config: EngineConfig = DEFAULT,
+    pair_cache: dict[tuple[str, str], PairScore] | None = None,
+    item_cap: int | None = None,
+) -> Suggestions:
+    """Up to context.count outfits in score order, without the variety pass: for the
+    planner, which keeps a week varied itself. With item_cap, no core piece appears in more
+    than that many of them, so the list spans the wardrobe."""
+    return _suggest(wardrobe, context, config, pair_cache, diverse=False, item_cap=item_cap)
+
+
+def _suggest(
+    wardrobe: Wardrobe,
+    context: Context,
+    config: EngineConfig,
+    pair_cache: dict[tuple[str, str], PairScore] | None,
+    *,
+    diverse: bool,
+    item_cap: int | None = None,
+) -> Suggestions:
     owned = sorted(
         (item for item in wardrobe.items if item.owner_id == context.user_id),
         key=lambda item: item.id,
@@ -95,17 +120,39 @@ def suggest(
 
     pairs = PairScores(config, pair_cache)
     level = _level(context, anchors)
-    first = _run(wardrobe, context, config, pairs, owned, anchors, level)
+    # Long ranked lists (the planner's) need a beam spread across the wardrobe.
+    spread = item_cap is not None
+    first = _run(wardrobe, context, config, pairs, owned, anchors, level, spread)
     if first.candidates:
-        return _finish(wardrobe, context, config, pairs, first, level, anchors, compromise=False)
+        return _finish(
+            wardrobe,
+            context,
+            config,
+            pairs,
+            first,
+            level,
+            anchors,
+            compromise=False,
+            diverse=diverse,
+            item_cap=item_cap,
+        )
     if context.occasion is not None and not _anchor_problem(first):
         relaxed = Range(level.low - 1, level.high + 1, level.occasion)
-        second = _run(wardrobe, context, config, pairs, owned, anchors, relaxed)
+        second = _run(wardrobe, context, config, pairs, owned, anchors, relaxed, spread)
         if second.candidates:
             # The first run's gaps explain why these are compromises.
             second.missing = first.missing
             return _finish(
-                wardrobe, context, config, pairs, second, level, anchors, compromise=True
+                wardrobe,
+                context,
+                config,
+                pairs,
+                second,
+                level,
+                anchors,
+                compromise=True,
+                diverse=diverse,
+                item_cap=item_cap,
             )
     return Suggestions(outfits=(), missing=tuple(first.missing), engine_version=ENGINE_VERSION)
 
@@ -154,6 +201,7 @@ def _run(
     owned: Sequence[EngineItem],
     anchors: tuple[EngineItem, ...],
     level: Range,
+    spread: bool = False,
 ) -> _Run:
     anchor_ids = {anchor.id for anchor in anchors}
     usable = [
@@ -190,7 +238,7 @@ def _run(
             ]
             gaps.append((len(empty), order, explained))
             continue
-        found = _generate(template, slots, extras, scorer, config)
+        found = _generate(template, slots, extras, scorer, config, spread)
         if not found:
             requirement = template.required[-1]
             name = wardrobe.slot_names.get(requirement.slot, requirement.slot)
@@ -256,6 +304,7 @@ def _generate(
     extras: tuple[EngineItem, ...],
     scorer: Scorer,
     config: EngineConfig,
+    spread: bool = False,
 ) -> list[_Draft]:
     """Every core outfit when there are few enough, otherwise a beam search."""
     total = math.prod(len(options) for options in slots)
@@ -266,7 +315,7 @@ def _generate(
             if not _rejected(core, scorer):
                 combos.append(core)
     else:
-        combos = _beam(slots, extras, scorer, config)
+        combos = _beam(slots, extras, scorer, config, spread)
     scored = _scored_extras(extras, scorer)
     return [
         _Draft(template, core, extras, scorer.quick(core, scored), _key(core)) for core in combos
@@ -278,9 +327,15 @@ def _beam(
     extras: tuple[EngineItem, ...],
     scorer: Scorer,
     config: EngineConfig,
+    spread: bool = False,
 ) -> list[tuple[EngineItem, ...]]:
-    """Fill the slots in order, keeping the best partial outfits at each step."""
+    """Fill the slots in order, keeping the best partial outfits at each step. With
+    `spread`, no piece takes more than its share of the beam, or the few best tops would
+    crowd out the rest of the wardrobe after the first step (anchors, the only option for a
+    slot, are exempt)."""
     scored = _scored_extras(extras, scorer)
+    cap = max(1, int(config.beam_width * config.beam_item_share)) if spread else 0
+    fixed = {option.id for options in slots if len(options) == 1 for option in options if option}
     partials: list[tuple[EngineItem, ...]] = [()]
     for options in slots:
         grown: list[tuple[float, tuple[str, ...], tuple[EngineItem, ...]]] = []
@@ -294,8 +349,33 @@ def _beam(
                     core = (*partial, option)
                 grown.append((scorer.quick(core, scored), _key(core), core))
         grown.sort(key=lambda entry: (-entry[0], entry[1]))
-        partials = [core for _, _, core in grown[: config.beam_width]]
+        ranked = [core for _, _, core in grown]
+        partials = (
+            _spread(ranked, config.beam_width, cap, fixed)
+            if spread
+            else ranked[: config.beam_width]
+        )
     return partials
+
+
+def _spread(
+    ranked: list[tuple[EngineItem, ...]], width: int, cap: int, fixed: set[str]
+) -> list[tuple[EngineItem, ...]]:
+    """The best `width` partial outfits, at most `cap` per piece; if that leaves room, the
+    best of the rest fill it."""
+    uses: Counter[str] = Counter()
+    kept: list[tuple[EngineItem, ...]] = []
+    skipped: list[tuple[EngineItem, ...]] = []
+    for core in ranked:
+        if len(kept) == width:
+            break
+        free = [item.id for item in core if item.id not in fixed]
+        if any(uses[item_id] >= cap for item_id in free):
+            skipped.append(core)
+            continue
+        kept.append(core)
+        uses.update(free)
+    return kept + skipped[: width - len(kept)]
 
 
 def _is_core(slot: str, wardrobe: Wardrobe) -> bool:
@@ -378,10 +458,15 @@ def _finish(
     anchors: tuple[EngineItem, ...],
     *,
     compromise: bool,
+    diverse: bool,
+    item_cap: int | None = None,
 ) -> Suggestions:
     scorer = Scorer(context, level, pairs, wardrobe.slot_kinds, config)
     ranked = sorted(run.candidates, key=lambda draft: (-draft.score, draft.key))
-    pool = ranked[: config.accessorise_top]
+    if item_cap is None:
+        pool = ranked[: max(config.accessorise_top, context.count)]
+    else:
+        pool = _capped(ranked, item_cap, context.count)
     usable = [
         item
         for item in wardrobe.items
@@ -391,7 +476,10 @@ def _finish(
     ]
     usable.sort(key=lambda item: item.id)
     finished = [_accessorise(c, anchors, usable, scorer, wardrobe, level) for c in pool]
-    picked = _diversify(finished, {anchor.id for anchor in anchors}, context.count, config)
+    if diverse:
+        picked = _diversify(finished, {anchor.id for anchor in anchors}, context.count, config)
+    else:
+        picked = sorted(finished, key=lambda c: (-c.breakdown.score, c.key))[: context.count]
     order = list(wardrobe.slot_kinds)
     outfits = []
     for candidate in picked:
@@ -469,6 +557,34 @@ def _accessorise(
     return _Candidate(candidate.template, candidate.core, extras, breakdown, candidate.key)
 
 
+def _capped(ranked: Sequence[_Draft], cap: int, count: int) -> list[_Draft]:
+    """The best drafts in order, with each piece in no more than its fair share of them: the
+    count divided by how many pieces its slot has (at least `cap`), so a long list spans the
+    wardrobe instead of leaning on a few favourites. If that leaves room, the best of the
+    rest fill it."""
+    by_slot: dict[str, set[str]] = {}
+    for draft in ranked:
+        for item in draft.core:
+            by_slot.setdefault(item.slot, set()).add(item.id)
+    share = {
+        item_id: max(cap, math.ceil(count / len(ids)))
+        for ids in by_slot.values()
+        for item_id in ids
+    }
+    uses: Counter[str] = Counter()
+    picked: list[_Draft] = []
+    skipped: list[_Draft] = []
+    for draft in ranked:
+        if len(picked) == count:
+            break
+        if any(uses[item_id] >= share[item_id] for item_id in draft.key):
+            skipped.append(draft)
+            continue
+        picked.append(draft)
+        uses.update(draft.key)
+    return picked + skipped[: count - len(picked)]
+
+
 def _slot_order(slots: frozenset[str], kinds: Mapping[str, str]) -> list[str]:
     order = list(kinds)
     return sorted(slots, key=lambda slot: (order.index(slot) if slot in order else 99, slot))
@@ -543,3 +659,49 @@ def _diversify(
 def _jaccard(a: Sequence[str], b: Sequence[str]) -> float:
     first, second = set(a), set(b)
     return len(first & second) / len(first | second)
+
+
+def score_outfit(
+    wardrobe: Wardrobe,
+    context: Context,
+    item_ids: Sequence[str],
+    config: EngineConfig = DEFAULT,
+    pair_cache: dict[tuple[str, str], PairScore] | None = None,
+) -> ScoredOutfit | None:
+    """Score and explain one given outfit in this context (a swap the person chose); None if
+    the pieces aren't the person's or don't make a whole outfit."""
+    owned = {item.id: item for item in wardrobe.items if item.owner_id == context.user_id}
+    if any(item_id not in owned for item_id in item_ids):
+        return None
+    pieces = [owned[item_id] for item_id in item_ids]
+    check = check_outfit(
+        [Piece(key=item.id, slot=item.slot, category_id=item.category_id) for item in pieces],
+        wardrobe.templates,
+    )
+    if not check.complete or check.template_id is None:
+        return None
+    core = tuple(item for item in pieces if _is_core(item.slot, wardrobe))
+    extras = tuple(item for item in pieces if not _is_core(item.slot, wardrobe))
+    if context.occasion is not None:
+        level = Range(
+            context.occasion.formality_min, context.occasion.formality_max, context.occasion
+        )
+    else:
+        levels = [item.formality for item in core]
+        level = Range(min(levels), max(levels))
+    scorer = Scorer(context, level, PairScores(config, pair_cache), wardrobe.slot_kinds, config)
+    breakdown = scorer.score(core, _scored_extras(extras, scorer))
+    order = list(wardrobe.slot_kinds)
+    return ScoredOutfit(
+        template_id=check.template_id,
+        items=tuple(
+            sorted(
+                pieces,
+                key=lambda item: (order.index(item.slot) if item.slot in order else 99, item.id),
+            )
+        ),
+        core_ids=_key(core),
+        score=round(breakdown.score, 4),
+        components=breakdown.components,
+        reasons=explain(breakdown, core, scorer, wardrobe.color_names, wardrobe.group_names),
+    )

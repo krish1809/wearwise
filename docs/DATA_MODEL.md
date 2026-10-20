@@ -90,13 +90,15 @@ Pair preferences are not a table: they are worked out from `suggestion_feedback`
 
 ## Planning (M6)
 
-**`events`**: `user_id`, `date`, `title`, `occasion_id`, `note`.
+**`profiles`** gained `latitude`, `longitude` (the place chosen for `city`, rounded to two decimals), `manual_weather` (hot, mild, cold, rainy, or null for the season), `weekday_occasions` (json: "0" Monday to "6" Sunday to an occasion), and `laundry_weekday` (0 to 6, or null). **`categories`** gained `traits[]` (bare_legs, open_toe), from the seed.
 
-**`plan_days`**: `user_id`, `date` (unique per user), `occasion_id`, `outfit_id`, `status` (planned, worn, skipped), `locked`, `weather` (json snapshot).
+**`events`**: `user_id`, `day`, `title`, `occasion_id`, `note`. Indexed on `(user_id, day)`.
 
-**`trips`**: `user_id`, `destination`, `start_date`, `end_date`, `occasion_ids[]`. **`trip_items`**: `trip_id`, `item_id`.
+**`plan_days`**: `user_id`, `day` (unique per user), `occasion_id` (chosen for the day; null follows events and the usual week), `planned_occasion_id`, `template_id`, `item_ids[]`, `core_ids[]`, `score`, `reasons` (json), `missing` (json), `locked`, `wear_log_id` (set once worn), `weather` (json snapshot: source, feels_like, rain_chance), `engine_version` (D40).
 
-**`weather_cache`**: `latitude`, `longitude` (rounded), `date`, `payload`, `fetched_at`.
+**`trips`**: `user_id`, `destination`, `latitude`, `longitude`, `start_date`, `end_date`, `days` (json: each day and its occasion), `outfits` (json: each day's outfit, reasons, and weather, or why it has none), `engine_version`. **`trip_items`**: `trip_id`, `item_id`, unique together (D41).
+
+**`weather_forecasts`**: `latitude`, `longitude` (rounded), `fetched_on`, `fetched_at`, `days` (json). Unique on `(latitude, longitude, fetched_on)`; shared by everyone near a place, with no user data (D39).
 
 ## Shopping (M8, M9)
 

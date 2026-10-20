@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "notes": "Starting taxonomy. 'sections' controls which categories are shown by default for menswear / womenswear shoppers; every category stays available through 'show all'. formality: 1 lounge or sport, 2 casual, 3 smart casual, 4 business, 5 formal or ceremonial. warmth: 0 none to 5 heavy. wears_before_wash: null means not washed on a schedule. All values are editable defaults, not rules.",
+  "notes": "Starting taxonomy. 'sections' controls which categories are shown by default for menswear / womenswear shoppers; every category stays available through 'show all'. formality: 1 lounge or sport, 2 casual, 3 smart casual, 4 business, 5 formal or ceremonial. warmth: 0 none to 5 heavy. wears_before_wash: null means not washed on a schedule. All values are editable defaults, not rules. traits (optional): weather hints the engine reads, bare_legs and open_toe, so cold-weather rules name no category in code.",
   "formality_scale": {
     "1": "Lounge / sport",
     "2": "Casual",
@@ -545,7 +545,8 @@
       "formality_min": 1,
       "formality_max": 2,
       "warmth": 1,
-      "wears_before_wash": 2
+      "wears_before_wash": 2,
+      "traits": ["bare_legs"]
     },
     {
       "id": "leggings",
@@ -1057,7 +1058,8 @@
       "formality_min": 1,
       "formality_max": 3,
       "warmth": 0,
-      "wears_before_wash": null
+      "wears_before_wash": null,
+      "traits": ["open_toe"]
     },
     {
       "id": "slides",
@@ -1072,7 +1074,8 @@
       "formality_min": 1,
       "formality_max": 1,
       "warmth": 0,
-      "wears_before_wash": null
+      "wears_before_wash": null,
+      "traits": ["open_toe"]
     },
     {
       "id": "heels",

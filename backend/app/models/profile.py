@@ -54,6 +54,19 @@ class Profile(IdMixin, TimestampMixin, Base):
     onboarding_reminder_dismissed_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True)
     )
+    # Where the weather comes from: the place chosen for `city`, rounded to about a kilometre.
+    latitude: Mapped[float | None]
+    longitude: Mapped[float | None]
+    # Used when there's no city or no forecast: hot, mild, cold, or rainy. Null: go by the
+    # season.
+    manual_weather: Mapped[str | None]
+    # The usual occasion for each weekday, "0" (Monday) to "6" (Sunday).
+    weekday_occasions: Mapped[dict[str, str]] = mapped_column(
+        JSONB, default=dict, server_default="{}"
+    )
+    # The weekday the washing gets done, 0 (Monday) to 6; the planner counts everything clean
+    # again from that day. Null: no fixed day.
+    laundry_weekday: Mapped[int | None] = mapped_column(SmallInteger)
 
 
 class BrandNote(IdMixin, TimestampMixin, Base):

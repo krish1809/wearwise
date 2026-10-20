@@ -108,10 +108,12 @@ export const DISLIKE_REASONS: { id: DislikeReason; label: string }[] = [
 
 /**
  * "White shirt, beige chinos and brown loafers": the core pieces apart from the layer, so
- * suggestions that differ only in their shoes don't share a name.
+ * outfits that differ only in their shoes don't share a name.
  */
-export function suggestionName(suggestion: Suggestion): string {
-  const names = suggestion.pieces
+export function piecesName(
+  pieces: { slot: string; core: boolean; item: { display_name: string } }[],
+): string {
+  const names = pieces
     .filter((piece) => piece.core && piece.slot !== "layer")
     .map((piece, index) =>
       index === 0 || /^[A-Z]{2}/.test(piece.item.display_name)
@@ -122,4 +124,8 @@ export function suggestionName(suggestion: Suggestion): string {
   if (names.length === 0) return "Outfit";
   if (names.length === 1) return names[0];
   return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+}
+
+export function suggestionName(suggestion: Suggestion): string {
+  return piecesName(suggestion.pieces);
 }

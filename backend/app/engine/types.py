@@ -38,6 +38,16 @@ class EngineItem:
     wears_since_wash: int = 0
     set_id: str | None = None
     last_worn_on: date | None = None
+    # Weather hints from the category: bare_legs, open_toe.
+    traits: frozenset[str] = frozenset()
+
+
+@dataclass(frozen=True)
+class Weather:
+    """The day's weather: feels-like temperature (°C) and the chance of rain (0 to 100)."""
+
+    feels_like: float
+    rain_chance: int
 
 
 @dataclass(frozen=True)
@@ -99,7 +109,10 @@ class Context:
     today: date
     # None only when anchors set the level of dress ("what goes with this?").
     occasion: Occasion | None = None
+    # The season decides which items are in season; the weather, when known, how warm to
+    # dress. Without weather, the season stands in for it (D34).
     season: str | None = None
+    weather: Weather | None = None
     # A style asked for in this request, otherwise the profile's styles.
     style: Style | None = None
     profile_styles: tuple[Style, ...] = ()

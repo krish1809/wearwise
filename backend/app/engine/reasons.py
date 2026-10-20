@@ -13,7 +13,7 @@ from collections.abc import Mapping, Sequence
 from typing import Protocol
 
 from app.engine.pairs import tone
-from app.engine.scoring import Breakdown, PairView, Scorer
+from app.engine.scoring import Breakdown, PairView, Scorer, upper_warmth
 from app.engine.types import EngineItem, Reason, ReasonKind
 
 
@@ -35,7 +35,8 @@ TEXTS: dict[str, str] = {
     "pattern.one_statement": "The one pattern is the {a}; everything else stays plain.",
     "occasion.fits": "The right level of dress for {occasion}.",
     "occasion.prefers_group": "{group} pieces suit {occasion}.",
-    "weather.breathable": "Breathable {fabrics} for the summer heat.",
+    "weather.breathable": "Breathable {fabrics} for the heat.",
+    "weather.right_warmth.day": "The right weight for {season}.",
     "weather.right_warmth.winter": "Warm enough for winter.",
     "weather.right_warmth.mild": "The right weight for mild days.",
     "weather.right_warmth.monsoon": "Light enough for humid monsoon days.",
@@ -64,6 +65,7 @@ TEXTS: dict[str, str] = {
     "weather.too_warm": "Probably too warm for {season}.",
     "weather.too_light": "May be too light for {season}; add a layer.",
     "weather.rain": "The {a} won't love the rain.",
+    "weather.cold": "The {a} may feel cold at {temperature}.",
     "rotation.repeat": "You wore this exact outfit in the last week.",
     "rotation.just_worn": "You wore the {a} in the last two days.",
     "belt.clashes_shoes": "The belt and shoes are different leathers; matching them looks sharper.",
@@ -80,6 +82,12 @@ TEXTS: dict[str, str] = {
     "missing.anchors": "These pieces don't fit in one outfit together.",
     "missing.anchor_unavailable": "The {a} can't be used right now; check its status.",
     "missing.anchor_due_wash": "The {a} should be washed first.",
+    # Planning a week (planner.py).
+    "plan.no_occasion": "Choose an occasion for this day.",
+    "plan.blocked": "Everything that fits this day is due a wash or worn too recently by then.",
+    # Packing (packing.py).
+    "packing.no_good_outfit": "Nothing you have makes a good enough outfit for this day.",
+    "packing.not_enough": "The packed pieces run out of clean wears by this day.",
     # Notes on the whole result.
     "note.only_one": "This is the only outfit your available pieces make.",
     "note.few": "Only {count} different outfits work with what's available.",
@@ -292,21 +300,24 @@ def _occasion_reasons(
 def _weather_reasons(
     breakdown: Breakdown, core: Sequence[EngineItem], scorer: Scorer, add: _Add
 ) -> None:
-    season = scorer.context.season
+    climate = scorer.climate
     config = scorer.config
-    band = config.warmth_bands.get(season) if season else None
-    if season is None or band is None:
+    if climate.band is None:
         return
-    by_slot = {item.slot: item for item in core}
-    upper = by_slot.get("one_piece") or by_slot.get("top")
-    warmth = (upper.warmth if upper else 0) + (by_slot["layer"].warmth if "layer" in by_slot else 0)
-    low, high = band
-    phrase = season_phrase(season)
+    season = scorer.context.season
+    if climate.feels_like is not None:
+        temperature = f"{round(climate.feels_like)}°"
+        phrase = f"a {temperature} day"
+    else:
+        temperature = ""
+        phrase = season_phrase(season)
+    warmth = upper_warmth(core)
+    low, high = climate.band
     if warmth > high:
         add("weather.too_warm", "caution", 0.3 * (warmth - high), season=phrase)
     elif warmth < low:
         add("weather.too_light", "caution", 0.3 * (low - warmth), season=phrase)
-    elif season == config.hot_season:
+    elif climate.hot:
         fabrics = sorted(
             {
                 item.fabric
@@ -314,11 +325,17 @@ def _weather_reasons(
                 if item.fabric in config.breathable_fabrics and item.slot != "footwear"
             }
         )
-        if fabrics and "layer" not in by_slot:
+        if fabrics and not any(item.slot == "layer" for item in core):
             add("weather.breathable", "positive", 0.45, fabrics=" and ".join(fabrics))
+    elif climate.feels_like is not None:
+        add("weather.right_warmth.day", "positive", 0.4, season=phrase)
     elif f"weather.right_warmth.{season}" in TEXTS:
         add(f"weather.right_warmth.{season}", "positive", 0.4)
-    if season == config.rain_season:
+    if climate.cold:
+        exposed = scorer.cold_risks(core)
+        if exposed:
+            add("weather.cold", "caution", 0.4, a=mid(exposed[0].name), temperature=temperature)
+    if climate.rain:
         risky = scorer.rain_risks(core)
         if risky:
             add("weather.rain", "caution", 0.35, a=mid(risky[0].name))

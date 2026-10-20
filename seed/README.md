@@ -4,7 +4,7 @@ Reference data loaded into the database by `backend/scripts/seed_reference.py` (
 
 | File | Contents | First used |
 |---|---|---|
-| `taxonomy.json` | 16 slots, 89 categories with default formality, warmth, and wears-before-wash; outfit templates; lists of patterns, fabrics, fits, sizing systems, seasons, statuses | M2 (sections, fits, sizing systems, category groups), M3 (slots, categories, patterns, fabrics, seasons, statuses), M4 (outfit templates) |
+| `taxonomy.json` | 16 slots, 89 categories with default formality, warmth, wears-before-wash, and weather traits; outfit templates; lists of patterns, fabrics, fits, sizing systems, seasons, statuses | M2 (sections, fits, sizing systems, category groups), M3 (slots, categories, patterns, fabrics, seasons, statuses), M4 (outfit templates), M6 (traits) |
 | `colors.json` | 28 colour families with a representative hex and a neutrality value | M2 |
 | `occasions.json` | 12 occasions with formality ranges | M2 |
 | `style_profiles.json` | 12 style profiles with the colours, fabrics, fits, and categories that signal each | M2 |

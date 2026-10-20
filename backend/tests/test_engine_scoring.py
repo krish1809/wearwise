@@ -9,7 +9,7 @@ from engine_support import OCCASIONS, SLOT_KINDS, STYLES, TODAY, context, make
 from app.engine.config import DEFAULT
 from app.engine.pairs import PairScores
 from app.engine.scoring import Range, Scorer
-from app.engine.types import EngineItem, Preferences
+from app.engine.types import EngineItem, Preferences, Weather
 
 
 def scorer(occasion: str | None = "college", **fields: Any) -> Scorer:
@@ -215,3 +215,53 @@ def test_the_total_stays_between_zero_and_one() -> None:
         + 0.05 * breakdown.components.style
     )
     assert breakdown.score == pytest.approx(min(1.0, expected))
+
+
+@pytest.mark.parametrize(
+    ("feels_like", "band"),
+    [
+        (36.0, (0, 1)),
+        (32.0, (0, 1)),
+        (28.0, (1, 2)),
+        (20.0, (2, 4)),
+        (12.0, (4, 6)),
+        (4.0, (6, 20)),
+    ],
+)
+def test_a_forecast_sets_the_warmth_band_by_temperature(
+    feels_like: float, band: tuple[int, int]
+) -> None:
+    s = scorer(weather=Weather(feels_like=feels_like, rain_chance=0))
+
+    assert s.climate.band == band
+
+
+def test_a_forecast_replaces_the_season() -> None:
+    # Winter by the calendar, but a warm day: dress for the day.
+    s = scorer(season="winter", weather=Weather(feels_like=28.0, rain_chance=0))
+    shirt = [make("casual_shirt", warmth=1), make("chinos")]
+
+    assert s.weather(shirt) == 1.0
+
+
+def test_rain_comes_from_the_forecast_when_there_is_one() -> None:
+    risky = [make("casual_shirt"), make("chinos", "navy"), make("loafers", fabric="suede")]
+    dry_monsoon = scorer(season="monsoon", weather=Weather(feels_like=27.0, rain_chance=20))
+    wet = scorer(season="mild", weather=Weather(feels_like=27.0, rain_chance=70))
+
+    assert dry_monsoon.weather(risky) == 1.0
+    assert wet.weather(risky) == pytest.approx(1 - 0.15)
+
+
+def test_the_cold_is_hard_on_bare_legs_and_open_toes() -> None:
+    s = scorer("home", weather=Weather(feels_like=6.0, rain_chance=0))
+    bare = [
+        make("hoodie", warmth=6),
+        make("shorts", traits=frozenset({"bare_legs"})),
+        make("sandals", traits=frozenset({"open_toe"})),
+    ]
+    covered = [make("hoodie", warmth=6), make("joggers"), make("sneakers")]
+
+    assert [item.slot for item in s.cold_risks(bare)] == ["bottom", "footwear"]
+    assert s.weather(bare) == pytest.approx(1 - 2 * 0.2)
+    assert s.weather(covered) == 1.0

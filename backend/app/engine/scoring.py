@@ -75,6 +75,7 @@ class Scorer:
         self._rotation: dict[str, float] = {}
         self._preference: dict[str, float] = {}
         self._style: dict[str, bool] = {}
+        self.climate = climate_for(context, config)
         self._recent = {
             core
             for worn_on, core in context.recent_outfits
@@ -224,29 +225,30 @@ class Scorer:
         return value
 
     def weather(self, core: Sequence[EngineItem]) -> float:
-        season = self.context.season
-        band = self.config.warmth_bands.get(season) if season else None
-        if band is None:
+        climate = self.climate
+        if climate.band is None:
             return 1.0
-        by_slot = {item.slot: item for item in core}
-        upper = by_slot.get("one_piece") or by_slot.get("top")
-        warmth = (upper.warmth if upper else 0) + (
-            by_slot["layer"].warmth if "layer" in by_slot else 0
-        )
-        low, high = band
+        warmth = upper_warmth(core)
+        low, high = climate.band
         distance = low - warmth if warmth < low else max(0, warmth - high)
         value = 1 - self.config.weather_step_penalty * distance
-        if season == self.config.hot_season:
+        if climate.hot:
             for item in core:
                 if item.slot in CLOTHING_SLOTS and item.fabric in self.config.breathable_fabrics:
                     value += self.config.breathable_bonus
                 if item.fabric in self.config.hot_fabrics:
                     value -= self.config.hot_fabric_penalty
-            if "layer" in by_slot:
+            if any(item.slot == "layer" for item in core):
                 value -= self.config.hot_layer_penalty
-        if season == self.config.rain_season:
+        if climate.cold:
+            value -= self.config.cold_trait_penalty * len(self.cold_risks(core))
+        if climate.rain:
             value -= self.config.rain_penalty * len(self.rain_risks(core))
         return _clamp(value)
+
+    def cold_risks(self, core: Sequence[EngineItem]) -> list[EngineItem]:
+        """Pieces that leave skin bare in the cold: shorts, open shoes."""
+        return [item for item in core if item.traits & self.config.cold_traits]
 
     def rain_risks(self, core: Sequence[EngineItem]) -> list[EngineItem]:
         """Pieces the rain is hard on: suede or canvas shoes, and very light bottoms."""
@@ -395,6 +397,51 @@ class Scorer:
 
     def _is_core_slot(self, slot: str) -> bool:
         return self.slot_kinds.get(slot) == "core"
+
+
+@dataclass(frozen=True)
+class Climate:
+    """How warm to dress, and what to watch for, worked out once per request."""
+
+    # Target upper-body warmth; None when nothing is known (no weather, no season).
+    band: tuple[int, int] | None
+    hot: bool
+    cold: bool
+    rain: bool
+    # The forecast's feels-like temperature, when there is one.
+    feels_like: float | None
+
+
+def climate_for(context: Context, config: EngineConfig) -> Climate:
+    weather = context.weather
+    if weather is not None:
+        band = next(
+            (band for floor, band in config.temperature_bands if weather.feels_like >= floor),
+            config.coldest_band,
+        )
+        return Climate(
+            band=band,
+            hot=weather.feels_like >= config.hot_feels_like,
+            cold=weather.feels_like < config.cold_feels_like,
+            rain=weather.rain_chance >= config.rain_likely,
+            feels_like=weather.feels_like,
+        )
+    season = context.season
+    return Climate(
+        band=config.warmth_bands.get(season) if season else None,
+        hot=season == config.hot_season,
+        cold=False,
+        # With no forecast, the monsoon counts as rain likely.
+        rain=season == config.rain_season,
+        feels_like=None,
+    )
+
+
+def upper_warmth(core: Sequence[EngineItem]) -> int:
+    """Top plus layer, or one-piece plus layer."""
+    by_slot = {item.slot: item for item in core}
+    upper = by_slot.get("one_piece") or by_slot.get("top")
+    return (upper.warmth if upper else 0) + (by_slot["layer"].warmth if "layer" in by_slot else 0)
 
 
 def _like_rate(likes: int, dislikes: int) -> float:

@@ -176,6 +176,7 @@ def seed_reference_data(db: Session, seed_dir: Path = SEED_DIR) -> dict[str, int
                     "formality_max": c["formality_max"],
                     "warmth": c["warmth"],
                     "wears_before_wash": c["wears_before_wash"],
+                    "traits": c.get("traits", []),
                     "position": i,
                 }
                 for i, c in enumerate(categories)

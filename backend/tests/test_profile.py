@@ -33,6 +33,11 @@ def test_a_new_account_starts_with_an_empty_profile(sam: TestClient) -> None:
         "category_budgets": {},
         "onboarding_step": 0,
         "onboarding_skipped": False,
+        "latitude": None,
+        "longitude": None,
+        "manual_weather": None,
+        "weekday_occasions": {},
+        "laundry_weekday": None,
         "show_onboarding_reminder": False,
     }
     assert sam.get("/api/v1/auth/me").json()["onboarding_completed"] is False
