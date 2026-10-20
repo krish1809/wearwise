@@ -13,6 +13,7 @@ from app.api import (
     photos,
     profile,
     reference,
+    suggestions,
     wear_logs,
 )
 from app.api.deps import require_requested_with
@@ -27,5 +28,7 @@ api_router.include_router(brand_notes.router)
 api_router.include_router(categories.router)
 api_router.include_router(photos.router)
 api_router.include_router(items.router)
+api_router.include_router(suggestions.suggest_router)
 api_router.include_router(outfits.router)
+api_router.include_router(suggestions.router)
 api_router.include_router(wear_logs.router)

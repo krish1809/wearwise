@@ -12,8 +12,9 @@ def delete_account(db: Session, storage: Storage, user: User) -> None:
 
     Every milestone that stores user data extends this function. The database removes every
     row that belongs to the user with it (ON DELETE CASCADE): sessions, profile, brand notes,
-    custom categories, items, and photo records. The photo files are deleted after the commit,
-    so a storage failure can't leave the account half deleted.
+    custom categories, items, photo records, outfits, the wear log, and suggestions with their
+    feedback. The photo files are deleted after the commit, so a storage failure can't leave
+    the account half deleted.
     """
     images = db.scalars(select(ItemImage).where(ItemImage.user_id == user.id))
     keys = [key for image in images for key in (image.storage_key, image.thumb_key)]

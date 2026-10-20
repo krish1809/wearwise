@@ -1,7 +1,9 @@
 import uuid
 from datetime import date
+from typing import Any
 
 from sqlalchemy import Date, ForeignKey, Index, false
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base, IdMixin, TimestampMixin
@@ -21,6 +23,12 @@ class Outfit(IdMixin, TimestampMixin, Base):
     template_id: Mapped[str | None] = mapped_column(ForeignKey("outfit_templates.id"))
     occasion_id: Mapped[str | None] = mapped_column(ForeignKey("occasions.id"))
     is_favorite: Mapped[bool] = mapped_column(default=False, server_default=false())
+    # "manual" when built in the studio, "engine" when saved from a suggestion. A suggestion
+    # keeps the engine version, score, and reasons it was shown with.
+    source: Mapped[str] = mapped_column(default="manual", server_default="manual")
+    engine_version: Mapped[str | None]
+    score: Mapped[float | None]
+    reasons: Mapped[list[dict[str, Any]]] = mapped_column(JSONB, default=list, server_default="[]")
 
 
 class OutfitItem(IdMixin, TimestampMixin, Base):

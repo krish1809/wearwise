@@ -2,7 +2,7 @@
 
 import uuid
 from datetime import date, datetime
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Query, status
 from pydantic import BaseModel, ConfigDict, Field
@@ -30,6 +30,12 @@ class OutfitPiece(BaseModel):
     removed: bool
 
 
+class ReasonOut(BaseModel):
+    code: str
+    kind: Literal["positive", "caution"]
+    text: str
+
+
 class OutfitOut(BaseModel):
     id: uuid.UUID
     name: str | None
@@ -44,6 +50,12 @@ class OutfitOut(BaseModel):
     pieces: list[OutfitPiece]
     wear_count: int
     last_worn_on: date | None
+    # "manual" from the studio, "engine" when saved from a suggestion, which keeps the
+    # engine version, score, and reasons it was shown with.
+    source: Literal["manual", "engine"]
+    engine_version: str | None
+    score: float | None
+    reasons: list[ReasonOut]
     created_at: datetime
     updated_at: datetime
 
@@ -133,6 +145,10 @@ def views(db: Session, user: User, found: list[Outfit]) -> list[OutfitOut]:
                 pieces=shown,
                 wear_count=stats.count if stats else 0,
                 last_worn_on=stats.last_worn_on if stats else None,
+                source="engine" if outfit.source == "engine" else "manual",
+                engine_version=outfit.engine_version,
+                score=outfit.score,
+                reasons=[ReasonOut.model_validate(reason) for reason in outfit.reasons],
                 created_at=outfit.created_at,
                 updated_at=outfit.updated_at,
             )

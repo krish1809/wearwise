@@ -170,6 +170,10 @@ function ItemDetails({
     ["Notes", item.notes],
   ];
 
+  // Outfits are built from clothes, shoes, and accessories; fragrance and grooming ride along.
+  const role = reference.slots.find((slot) => slot.id === item.slot)?.role;
+  const wearable = role === "core" || role === "accessory";
+
   async function changeStatus(status: string) {
     try {
       await update.mutateAsync({ status });
@@ -237,6 +241,13 @@ function ItemDetails({
                 Edit
               </Link>
             </Button>
+            {!item.archived && wearable && (
+              <Button asChild variant="secondary">
+                <Link href={`/outfits/suggest?with=${item.id}`}>
+                  What goes with this?
+                </Link>
+              </Button>
+            )}
             <Button
               variant="secondary"
               loading={archive.isPending}

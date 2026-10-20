@@ -3,6 +3,7 @@
 import { CircleCheck, Plus, Star } from "lucide-react";
 import { useId, useMemo, useState } from "react";
 
+import { CompleteOutfit } from "@/components/outfits/complete-outfit";
 import {
   OutfitBoard,
   SwatchStrip,
@@ -37,7 +38,8 @@ type StudioProps = {
   /** The outfit being edited; left out for a new one. */
   outfit?: Outfit;
   saving: boolean;
-  onSave: (body: NewOutfit) => Promise<void>;
+  /** With a suggestion id when the pieces are exactly a suggestion the person used. */
+  onSave: (body: NewOutfit, suggestionId?: string) => Promise<void>;
 };
 
 /**
@@ -65,6 +67,8 @@ export function OutfitStudio({
     null,
   );
   const [problem, setProblem] = useState<ApiProblem | null>(null);
+  // The suggestion last used to complete the outfit, while its pieces are unchanged.
+  const [used, setUsed] = useState<{ id: string; key: string } | null>(null);
   const favoriteId = useId();
 
   const ids = Object.values(chosen).map((item) => item.id);
@@ -107,12 +111,15 @@ export function OutfitStudio({
   async function save() {
     setProblem(null);
     try {
-      await onSave({
-        item_ids: ids,
-        name: name.trim() || null,
-        occasion_id: occasion || null,
-        is_favorite: favorite,
-      });
+      await onSave(
+        {
+          item_ids: ids,
+          name: name.trim() || null,
+          occasion_id: occasion || null,
+          is_favorite: favorite,
+        },
+        used && used.key === [...ids].sort().join() ? used.id : undefined,
+      );
     } catch (error) {
       setProblem(problemFrom(error));
     }
@@ -139,6 +146,25 @@ export function OutfitStudio({
           )}
           {status}
         </p>
+        <CompleteOutfit
+          itemIds={ids}
+          occasionId={occasion || null}
+          slots={slots}
+          familyHex={familyHex}
+          onUse={(suggestion) => {
+            const next = Object.fromEntries(
+              suggestion.pieces.map((piece) => [piece.slot, piece.item]),
+            );
+            setChosen(next);
+            setUsed({
+              id: suggestion.id,
+              key: Object.values(next)
+                .map((item) => item.id)
+                .sort()
+                .join(),
+            });
+          }}
+        />
       </div>
 
       <form

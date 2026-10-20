@@ -74,7 +74,7 @@ Built in M3 as above, with these choices: `name` is optional and the app shows "
 
 **`outfit_templates`** (reference, from `taxonomy.json`): `id`, `name`, `required` (json: slot, and optionally `categories` or `exclude_categories`), `optional[]` (slots), `position`.
 
-**`outfits`**: `user_id`, `name` (optional), `template_id`, `occasion_id`, `is_favorite`. Built in M4; `source` (manual, engine, stylist), `engine_version`, `score`, and `reasons` (json) arrive with the engine in M5.
+**`outfits`**: `user_id`, `name` (optional), `template_id`, `occasion_id`, `is_favorite`, `source` (manual or engine; stylist arrives with M10), `engine_version`, `score`, `reasons` (json list of `{code, kind, text}`). An outfit saved from a suggestion keeps the suggestion's version, score, and reasons; swapping a piece clears the score and reasons (D36).
 
 **`outfit_items`**: `outfit_id`, `item_id` (null once the item is deleted), `slot`, `item_name` (kept so a deleted item shows as removed). One row per slot, unique on `(outfit_id, slot)` (D30).
 
@@ -82,9 +82,11 @@ Built in M3 as above, with these choices: `name` is optional and the app shows "
 
 **`wear_log_items`**: `wear_log_id`, `item_id` (null once the item is deleted), `slot`, `item_name`. Unique on `(wear_log_id, item_id)`. This table is the truth for every wear statistic. An outfit worn is expanded into its items at logging time, so later edits to the outfit don't rewrite history. `items.wears_since_wash` is recounted from it as wears after `items.last_washed_on` (D31).
 
-**`suggestion_feedback`**: `user_id`, `item_ids[]` (sorted), `occasion_id`, `verdict` (like, dislike, skip, saved, worn), `reason` (optional), `engine_version`.
+**`suggestions`**: `user_id`, `kind` (occasion, with_item, complete), `occasion_id`, `season`, `template_id`, `item_ids[]` (every piece, in slot order), `core_ids[]` (sorted), `score`, `components` (json), `reasons` (json), `compromise`, `engine_version`, `rating` (like, dislike, skip, or null), `saved_outfit_id`, `wear_log_id`, `worn_on`. One row per outfit shown; item ids are plain arrays, so a deleted item makes a suggestion stale rather than breaking it. Indexed on `(user_id, created_at)` (D36).
 
-**`pair_preferences`**: `user_id`, `item_a`, `item_b` (ordered so a < b), `weight`. Derived from feedback; can be rebuilt.
+**`suggestion_feedback`**: `user_id`, `suggestion_id`, `item_ids[]` (the core pieces, sorted), `occasion_id`, `verdict` (like, dislike, skip, saved, worn), `reason` (for a dislike: item, colors, formality, occasion, other), `item_id` (the piece, when the reason is item), `engine_version`.
+
+Pair preferences are not a table: they are worked out from `suggestion_feedback` on every request, so they can't drift from it (D36).
 
 ## Planning (M6)
 

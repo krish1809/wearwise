@@ -141,6 +141,11 @@ def update_outfit(db: Session, user: User, outfit: Outfit, changes: dict[str, An
         changes.pop("is_favorite", None)
     if item_ids is not None:
         items, check = _complete_pieces(db, user, item_ids, changes)
+        before = {piece.item_id for piece in pieces_of(db, [outfit.id])[outfit.id]}
+        if before != {item.id for item in items}:
+            # The engine's score and reasons were for the pieces it suggested.
+            outfit.score = None
+            outfit.reasons = []
         outfit.template_id = check.template_id
         db.execute(delete(OutfitItem).where(OutfitItem.outfit_id == outfit.id))
         _write_pieces(db, user, outfit, items)

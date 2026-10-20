@@ -161,7 +161,7 @@ Score = 0.50*B + 0.15*O + 0.10*W + 0.10*R + 0.10*U + 0.05*S
 | below 10 °C | 6 and above | minus for shorts and open footwear |
 | Rain likely | | minus for suede, canvas, and white or very light bottoms |
 
-`W` is 1 inside the band and drops 0.3 per unit outside. With no weather data, use the season from the user's settings, and treat monsoon as "rain likely".
+`W` is 1 inside the band and drops 0.3 per unit outside. With no weather data, use the season from the user's settings, and treat monsoon as "rain likely". (Until M6, the season comes from the request or the month, with bands chosen for Indian seasons: D34.)
 
 **R, rotation.** For each core item, `min(days since last worn, 14) / 14`, with never-worn counted as 1. `R` is the mean. If the exact same core outfit was worn in the last 7 days, `R = 0`.
 
@@ -171,7 +171,7 @@ Score = 0.50*B + 0.15*O + 0.10*W + 0.10*R + 0.10*U + 0.05*S
 
 ## 8. Generation, accessories, diversity, reasons
 
-**Generation.** Multiply the item counts of the core slots. If the product is 50,000 or less, enumerate everything. Otherwise beam-search: fill slots in the order top, bottom, footwear, layer, keeping the best 200 partial outfits by partial score. With anchors, their slots are fixed.
+**Generation.** Multiply the item counts of the core slots. If the product is 50,000 or less, enumerate everything (5,000 in v1.0, measured in D35). Otherwise beam-search: fill slots in the order top, bottom, footwear, layer, keeping the best 200 partial outfits by partial score. With anchors, their slots are fixed.
 
 **Accessories.** For each of the best 50 core outfits, look at each optional slot and add the accessory with the highest mean pair score against the core, if that score is 0.7 or more. Fragrance is chosen by season, occasion, and time of day from its `attrs`, not by pair score.
 

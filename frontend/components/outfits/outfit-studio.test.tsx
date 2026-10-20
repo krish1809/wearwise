@@ -145,12 +145,111 @@ it("saves the chosen pieces with the details", async () => {
   fireEvent.click(screen.getByRole("button", { name: "Save outfit" }));
 
   await waitFor(() =>
-    expect(onSave).toHaveBeenCalledWith({
-      item_ids: ["shirt", "chinos", "loafers"],
-      name: "Friday",
-      occasion_id: "college",
-      is_favorite: false,
-    }),
+    expect(onSave).toHaveBeenCalledWith(
+      {
+        item_ids: ["shirt", "chinos", "loafers"],
+        name: "Friday",
+        occasion_id: "college",
+        is_favorite: false,
+      },
+      // Built by hand, not from a suggestion.
+      undefined,
+    ),
   );
   expect(sentBody(vi.mocked(api.POST), 0)).toEqual({ item_ids: [] });
+});
+
+it("completes the outfit from a suggestion and saves it as that suggestion", async () => {
+  vi.spyOn(api, "GET").mockImplementation(async (_path, init) => {
+    const slot = (init as { params: { query: { slot: string[] } } }).params
+      .query.slot[0];
+    return apiAnswer(200, {
+      items: BY_SLOT[slot] ?? [],
+      next_cursor: null,
+      total: 1,
+    }) as never;
+  });
+  const asBrief = (item: typeof SHIRT) => ({
+    id: item.id,
+    display_name: item.display_name,
+    category_id: item.category_id,
+    slot: item.slot,
+    color_primary: item.color_primary,
+    color_hex: item.color_hex,
+    status: item.status,
+    archived: false,
+    photo: null,
+  });
+  const post = vi.spyOn(api, "POST").mockImplementation((async (
+    path: string,
+    init?: { body?: { item_ids: string[] } },
+  ) =>
+    path === "/api/v1/outfits/suggest"
+      ? apiAnswer(200, {
+          suggestions: [
+            {
+              id: "sug-7",
+              kind: "with_item",
+              template_id: "separates",
+              occasion_id: null,
+              season: "mild",
+              score: 0.8,
+              compromise: false,
+              engine_version: "1.0",
+              pieces: [SHIRT, CHINOS, LOAFERS].map((item) => ({
+                slot: item.slot,
+                item: asBrief(item),
+                core: true,
+              })),
+              reasons: [
+                {
+                  code: "formality.match",
+                  kind: "positive",
+                  text: "Every piece sits at the same level of dress.",
+                },
+              ],
+              rating: null,
+              saved_outfit_id: null,
+              worn_on: null,
+              stale: false,
+            },
+          ],
+          missing: [],
+          compromise: false,
+          note: null,
+          season: "mild",
+          engine_version: "1.0",
+        })
+      : apiAnswer(200, check(init?.body?.item_ids ?? []))) as never);
+  const onSave = vi.fn(async () => {});
+  renderWithQueries(
+    <OutfitStudio reference={REFERENCE} saving={false} onSave={onSave} />,
+  );
+  await choose("top", "Navy casual shirt");
+
+  fireEvent.click(screen.getByRole("button", { name: "Complete this outfit" }));
+  const dialog = await screen.findByRole("dialog");
+  expect(
+    await within(dialog).findByText(
+      "Every piece sits at the same level of dress.",
+    ),
+  ).toBeDefined();
+  expect(
+    (post.mock.calls as unknown[][]).find(
+      ([path]) => path === "/api/v1/outfits/suggest",
+    )?.[1],
+  ).toEqual({
+    body: { occasion_id: null, anchor_item_ids: ["shirt"], count: 4 },
+  });
+  fireEvent.click(within(dialog).getByRole("button", { name: /^Use / }));
+
+  expect(
+    await screen.findByText("Ready to save: top and bottom."),
+  ).toBeDefined();
+  fireEvent.click(screen.getByRole("button", { name: "Save outfit" }));
+  await waitFor(() => expect(onSave).toHaveBeenCalledOnce());
+  expect(onSave).toHaveBeenCalledWith(
+    expect.objectContaining({ item_ids: ["shirt", "chinos", "loafers"] }),
+    "sug-7",
+  );
 });

@@ -8,7 +8,7 @@ It is not a store. There is no checkout. When WearWise points to a product, you 
 
 ## Status
 
-Live at https://wearwise-rouge.vercel.app. Milestone M1 adds the design system and accounts: register, log in and out, a styled app shell, and deleting your account. M2 adds a skippable six-step setup (sizes, measurements, occasions, style, colours, budget), Settings to change or clear every answer, and brand size notes. M3 adds the wardrobe: add items with a photo (the colour is suggested from it), search, filter, sort, edit, archive, matching sets, and categories of your own. M4 adds the Outfit Studio (build an outfit slot by slot, with finishing touches), saved outfits (favourite, duplicate, swap a piece), and a wear log (“I wore this today”, wear counts, and wears since washing). See [`docs/PROGRESS.md`](docs/PROGRESS.md).
+Live at https://wearwise-rouge.vercel.app. Milestone M1 adds the design system and accounts: register, log in and out, a styled app shell, and deleting your account. M2 adds a skippable six-step setup (sizes, measurements, occasions, style, colours, budget), Settings to change or clear every answer, and brand size notes. M3 adds the wardrobe: add items with a photo (the colour is suggested from it), search, filter, sort, edit, archive, matching sets, and categories of your own. M4 adds the Outfit Studio (build an outfit slot by slot, with finishing touches), saved outfits (favourite, duplicate, swap a piece), and a wear log (“I wore this today”, wear counts, and wears since washing). M5 adds the outfit engine: ranked, varied suggestions for an occasion, “What goes with this?” from any item, and “Complete this outfit” in the studio, each with its reasons; like, dislike, save, or wear a suggestion, and likes and dislikes change what comes first next time. See [`docs/PROGRESS.md`](docs/PROGRESS.md).
 
 <!-- At each release, replace this section with the live URL, a screenshot, and what works. -->
 
@@ -63,6 +63,7 @@ Run `make` to list them all.
 | `make migrate` | Apply migrations, then load the reference data in `seed/` |
 | `make seed` | Load the reference data in `seed/` again (safe to repeat) |
 | `make demo` | Fill the demo account (`demo@example.com`) with a wardrobe of generic staples |
+| `make golden email=you@example.com` | Export a wardrobe so its owner can label the engine's golden set (`docs/ENGINE.md`, section 9) |
 | `make api-types` | Regenerate the frontend's API types after changing a route |
 | `make check` | Everything CI runs |
 

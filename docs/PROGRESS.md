@@ -5,13 +5,14 @@ The running state of the project, updated at the end of every slice. Keep it sho
 ## Now
 
 - **Last updated:** 2026-10-16
-- **Current milestone:** M1 to M4 released on 2026-10-16 (pull request #3). Photos are stored in Backblaze B2 (D33). M5 is next.
-- **Current slice:** none open.
+- **Current milestone:** M5 Outfit engine, built and checked locally on branch `m5-engine` (from `m4-wrap-up`). M1 to M4 are live. v1.0 is released once M5's "Done when" list is met.
+- **Current slice:** none open. Two "Done when" items need you: the golden set and the wear test.
 - **Next action (owner):**
-  1. Walk through M1 to M4's "Done when" lists on the live site, on your phone and on a computer.
-  2. Add your own 25 to 30 items with photos (the last open item from M3).
-  3. Commit this file on `m4-wrap-up` and merge it.
-  4. Ask for M5 (the outfit engine and ranked suggestions, which completes v1.0).
+  1. Commit M5 on `m5-engine` (the files are staged), push, open a pull request into `main`, and merge it once CI passes. It carries the M4 wrap-up commit too.
+  2. On the live site, add your own 25 to 30 items if you haven't, and save a few outfits you love as favourites with an occasion.
+  3. Wear test: ask for suggestions for "College / everyday" and one other occasion, and count how many of each top 10 you would wear (6 or more passes). Tell me the two counts.
+  4. Golden set: `DATABASE_URL='<Neon direct connection string>' make golden email=<your email>`, then label `backend/tests/golden/pairs.csv` (good, fine, or bad in each row; 60 or more) and commit the three files. `make test` then reports the agreement.
+  5. Then release v1.0: tag `v1.0.0`, a two-minute demo recording, and the README update.
 
 M1 slices:
 
@@ -58,7 +59,23 @@ M4 slices:
 | 4 | Outfit board, studio, finishing touches | done |
 | 5 | Outfits list and page, wear log pages, item wear details, Home's Today card | done |
 | 6 | Browser walkthrough at 375 px and 1440 px; docs | done |
-- **Overall:** 5 of 12 milestones released (M0 to M4). v1.0 is M0 to M5.
+M5 slices:
+
+| # | Slice | State |
+|---|---|---|
+| 1 | Engine types and config (`app/engine/config.py`, `types.py`), `ENGINE_VERSION` | done |
+| 2 | Pair score: OKLCH colour table, formality, pattern, fabric and season, style | done |
+| 3 | Outfit score: slot-pair weights, mean plus worst, outfit adjustments | done |
+| 4 | Context score: occasion, season standing in for weather, rotation, preference, style | done |
+| 5 | Generation: hard filters, templates, enumeration and beam search, anchors | done |
+| 6 | Accessories, diversity, reasons and their sentence file | done |
+| 7 | Service and API: wardrobe loading, pair cache, stored suggestions, `POST /outfits/suggest` | done |
+| 8 | UI: Suggest page, "What goes with this?", "Complete this outfit", reasons on outfits, Home | done |
+| 9 | Feedback: like, dislike with a reason, skip, save, wear; replayed into ranking | done |
+| 10 | Golden set: export script, labelling format, agreement test | done (labels: yours) |
+| 11 | Missing pieces: which slot and why, a flagged compromise, honest notes | done |
+
+- **Overall:** 5 of 12 milestones released (M0 to M4); M5 built, waiting for the golden set, the wear test, and merging. v1.0 is M0 to M5.
 
 Live:
 
@@ -151,6 +168,13 @@ M0 code, merged in pull request #1 and deployed:
 ## Log
 
 Add an entry per slice, newest first.
+
+### 2026-10-16, M5 slices 1 to 11: outfit engine
+
+- Built: the engine in `backend/app/engine/` (`config.py` with every number, `types.py`, `pairs.py`, `scoring.py`, `generate.py`, `reasons.py`, `feedback.py`, `golden.py`), following `docs/ENGINE.md` with the gaps filled in D34. `suggestions` and `suggestion_feedback` tables and engine fields on outfits in one migration. API: `POST /outfits/suggest` for all three entry points; `POST /suggestions/{id}/feedback` (like, dislike with an optional reason, skip; a new rating replaces the last), `DELETE` to take it back, `/save` and `/wear` (each once). Pair scores cached per wardrobe version; reactions replayed into pair preferences and like-rates on every request (D36). Frontend: a Suggest page (occasion, season, style; boards whose pieces settle in, reasons with cautions marked, Save, I wore this today, Like, Dislike with a reason dialog), "What goes with this?" on item pages, "Complete this outfit" in the studio (saving it unchanged saves the suggestion), "Why it works" on saved suggestions, and "Suggest an outfit" on Home. `make golden` exports a wardrobe for labelling.
+- Checked: `make check` passes (ruff, mypy on 102 files, 284 backend tests with the 2 golden-set tests skipped until labelled, TypeScript, ESLint, Prettier, 92 frontend tests, build, API types). The migration applies, rolls back, and reapplies with no drift. Engine tests cover each colour, formality, pattern, fabric, and style rule from the tables; outfit and context scores; filters, templates (separates, one-piece, saree), anchors, accessories, fragrance by season, diversity, missing pieces, compromises, the one-outfit note, reasons, determinism, the pair cache, and rotation. Property tests (hypothesis, 450 random wardrobes and anchors) never find an unavailable, archived, unwashed, or other person's item, two items in a slot, a score outside 0 to 1, or a crash. Speed: 150 items in 0.10 s; the beam search matches trying every combination (D35). API tests cover validation, the three entry points, storage with the engine version, rating changes, ranking moving after a like and a dislike, save and wear once each, stale suggestions, the rate limit, account deletion, and another account getting 404. A browser walkthrough at 1440 px and 375 px: Home's button, the occasion prompt, suggestions, like, dislike for one piece, wear, save and "Why it works", "What goes with this?" for jeans, "Complete this outfit" from chinos and saving it, and a second account without shoes told what's missing; no console errors. Fixed from the walkthrough: sentences where a plural item name took a singular verb ("the jeans keeps"); suggestions sharing a name (names now list top, bottom, and shoes); "6 outfits for mild"; an anchor due a wash now says so.
+- Left: the golden set labels and the wear test (yours), then the v1.0 release.
+- Decided: D34 (engine gaps), D35 (beam above 5,000), D36 (stored suggestions, replayed reactions), D37 (golden set).
 
 ### 2026-10-16, M1 to M4 deployed
 
@@ -260,7 +284,8 @@ Things that are deliberately not handled yet. Move them into the README at M11.
 - On Render's free plan, the first request after 15 idle minutes takes about a minute while the backend wakes. The landing and log-in pages wake it early, and every waiting screen says so.
 - No password reset by email yet: it needs an email provider. Until then, a forgotten password means a new account. Planned for M11 at the latest.
 - The email address can't be changed yet: doing it safely needs the password again. The name can be changed in Settings.
-- Weather isn't used yet: the city is saved for M6.
+- Weather isn't used yet: the city is saved for M6, and suggestions go by the season meanwhile (D34).
+- Shown suggestions are kept indefinitely for acceptance rates; prune unreacted ones if the table grows (D36).
 - Photos in Backblaze B2 aren't backed up. For a personal project that's acceptable.
 - iPhone HEIC photos upload from Safari, which can read them; other browsers may not.
 - Settings still sits in the main navigation while it has only two neighbours; it moves to the avatar menu alone as Outfits and My Week arrive (D22).
