@@ -1,7 +1,7 @@
 # Everyday commands. Run `make` to list them.
 .DEFAULT_GOAL := help
 
-.PHONY: help setup dev db-up db-down migrate seed demo migration test lint format typecheck api-types build check
+.PHONY: help setup dev db-up db-down migrate seed demo golden migration test lint format typecheck api-types build check
 
 help: ## List the commands
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  make %-10s %s\n", $$1, $$2}'
@@ -32,6 +32,10 @@ seed: db-up ## Load the reference data in seed/ (safe to run again)
 
 demo: migrate ## Fill the demo account (demo@example.com) with a wardrobe of generic staples
 	cd backend && uv run python -m scripts.load_demo
+
+golden: ## Export a wardrobe for golden-set labelling: make golden email=you@example.com
+	@test -n "$(email)" || (echo 'Usage: make golden email=you@example.com' && exit 1)
+	cd backend && uv run python -m scripts.export_golden --email "$(email)"
 
 migration: db-up ## Create a migration from model changes: make migration m="add users"
 	@test -n "$(m)" || (echo 'Usage: make migration m="what changed"' && exit 1)

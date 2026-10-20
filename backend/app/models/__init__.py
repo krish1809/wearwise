@@ -15,6 +15,7 @@ from app.models.reference import (
     StyleProfile,
     VocabularyTerm,
 )
+from app.models.suggestion import Suggestion, SuggestionFeedback
 from app.models.user import User
 from app.models.user_session import UserSession
 
@@ -34,6 +35,8 @@ __all__ = [
     "Profile",
     "RateLimitHit",
     "StyleProfile",
+    "Suggestion",
+    "SuggestionFeedback",
     "User",
     "UserSession",
     "VocabularyTerm",

@@ -25,6 +25,8 @@ type OutfitBoardProps = {
   size?: "large" | "small";
   /** Inside a link that already names the outfit, the board is decoration. */
   decorative?: boolean;
+  /** A new suggestion: the pieces settle into place one after another. */
+  settle?: boolean;
   className?: string;
 };
 
@@ -42,6 +44,7 @@ export function OutfitBoard({
   familyHex,
   size = "large",
   decorative = false,
+  settle = false,
   className,
 }: OutfitBoardProps) {
   const info = new Map(slots.map((slot) => [slot.id, slot]));
@@ -54,6 +57,9 @@ export function OutfitBoard({
   );
   const side = ordered.filter((p) => !main.includes(p));
   const large = size === "large";
+  // Main pieces settle first, then the layer and accessories.
+  const delay = (piece: BoardPiece) =>
+    settle ? [...main, ...side].indexOf(piece) * 40 : undefined;
 
   return (
     <div
@@ -72,6 +78,7 @@ export function OutfitBoard({
             piece={piece}
             familyHex={familyHex}
             large={large}
+            settleDelay={delay(piece)}
             main
           />
         ))}
@@ -83,6 +90,7 @@ export function OutfitBoard({
             piece={piece}
             familyHex={familyHex}
             large={large}
+            settleDelay={delay(piece)}
           />
         ))}
       </ul>
@@ -94,18 +102,30 @@ function Laid({
   piece,
   familyHex,
   large,
+  settleDelay,
   main = false,
 }: {
   piece: BoardPiece;
   familyHex: Map<string, string | null>;
   large: boolean;
+  settleDelay?: number;
   main?: boolean;
 }) {
   const hex = piece.item
     ? (piece.item.color_hex ?? familyHex.get(piece.item.color_primary) ?? null)
     : null;
   return (
-    <li className="min-w-0">
+    <li
+      className={cn(
+        "min-w-0",
+        settleDelay !== undefined && "motion-safe:animate-settle",
+      )}
+      style={
+        settleDelay !== undefined
+          ? { animationDelay: `${settleDelay}ms` }
+          : undefined
+      }
+    >
       <div
         className={cn(
           "flex items-center justify-center *:max-h-full *:max-w-full",

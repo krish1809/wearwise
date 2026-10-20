@@ -8,6 +8,7 @@ import { useState } from "react";
 import { PageLoading } from "@/components/app-shell";
 import { MarkWorn } from "@/components/outfits/mark-worn";
 import { OutfitBoard, SwatchStrip } from "@/components/outfits/outfit-board";
+import { ReasonList } from "@/components/outfits/reason-list";
 import { WearLogList } from "@/components/outfits/wear-log-list";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -131,6 +132,14 @@ function Details({
             familyHex={familyHex}
           />
           <SwatchStrip pieces={outfit.pieces} familyHex={familyHex} />
+          {outfit.reasons.length > 0 && (
+            <section aria-labelledby="why-heading" className="mt-2">
+              <h2 id="why-heading" className="mb-2 font-medium">
+                Why it works
+              </h2>
+              <ReasonList reasons={outfit.reasons} />
+            </section>
+          )}
         </div>
         <div className="flex min-w-0 flex-col gap-6">
           <div className="flex items-start justify-between gap-3">

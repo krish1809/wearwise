@@ -96,6 +96,9 @@ function Today() {
         ) : (
           <>
             <Button asChild>
+              <Link href="/outfits/suggest">Suggest an outfit</Link>
+            </Button>
+            <Button asChild variant="secondary">
               <Link href="/outfits">Choose an outfit</Link>
             </Button>
             <Button asChild variant="secondary">

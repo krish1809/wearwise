@@ -453,6 +453,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/outfits/suggest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Suggest
+         * @description Ranked, varied outfits from the person's available items, each with its reasons.
+         *     With anchor_item_ids, every outfit includes those pieces.
+         */
+        post: operations["suggest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/outfits": {
         parameters: {
             query?: never;
@@ -533,6 +554,71 @@ export interface paths {
          * @description A copy to vary, saved straight away.
          */
         post: operations["duplicate_outfit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/suggestions/{suggestion_id}/feedback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rate
+         * @description Like, dislike, or skip a suggestion. A new rating replaces the last one. Likes and
+         *     dislikes change how future suggestions rank.
+         */
+        post: operations["rate"];
+        /**
+         * Clear Rating
+         * @description Take back a like, dislike, or skip.
+         */
+        delete: operations["clear_rating"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/suggestions/{suggestion_id}/save": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Save
+         * @description Save the suggestion as an outfit. Saving it again answers 200 with the same outfit.
+         */
+        post: operations["save"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/suggestions/{suggestion_id}/wear": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Wear It
+         * @description Log the suggestion as worn on a day. Logging it again answers 200 with the same entry.
+         */
+        post: operations["wear_it"];
         delete?: never;
         options?: never;
         head?: never;
@@ -723,6 +809,18 @@ export interface components {
         /** ErrorResponse */
         ErrorResponse: {
             error: components["schemas"]["ErrorDetail"];
+        };
+        /** FeedbackIn */
+        FeedbackIn: {
+            /**
+             * Verdict
+             * @enum {string}
+             */
+            verdict: "like" | "dislike" | "skip";
+            /** Reason */
+            reason?: ("item" | "colors" | "formality" | "occasion" | "other") | null;
+            /** Item Id */
+            item_id?: string | null;
         };
         /** FinishOnboardingRequest */
         FinishOnboardingRequest: {
@@ -1049,6 +1147,17 @@ export interface components {
             /** Inseam */
             inseam?: number | null;
         };
+        /** MissingOut */
+        MissingOut: {
+            /** Slot */
+            slot: string;
+            /** Slot Name */
+            slot_name: string;
+            /** Code */
+            code: string;
+            /** Text */
+            text: string;
+        };
         /** OccasionOut */
         OccasionOut: {
             /** Id */
@@ -1119,6 +1228,17 @@ export interface components {
             wear_count: number;
             /** Last Worn On */
             last_worn_on: string | null;
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "manual" | "engine";
+            /** Engine Version */
+            engine_version: string | null;
+            /** Score */
+            score: number | null;
+            /** Reasons */
+            reasons: components["schemas"]["ReasonOut"][];
             /**
              * Created At
              * Format: date-time
@@ -1272,6 +1392,18 @@ export interface components {
             /** Onboarding Step */
             onboarding_step?: number | null;
         };
+        /** ReasonOut */
+        ReasonOut: {
+            /** Code */
+            code: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "positive" | "caution";
+            /** Text */
+            text: string;
+        };
         /** ReferenceOut */
         ReferenceOut: {
             /** Sections */
@@ -1309,6 +1441,15 @@ export interface components {
             password: string;
             /** Name */
             name?: string | null;
+        };
+        /** SaveIn */
+        SaveIn: {
+            /** Name */
+            name?: string | null;
+            /** Occasion Id */
+            occasion_id?: string | null;
+            /** Is Favorite */
+            is_favorite?: boolean | null;
         };
         /** SetLink */
         SetLink: {
@@ -1351,6 +1492,81 @@ export interface components {
             /** Palette */
             palette: string[];
         };
+        /** SuggestRequest */
+        SuggestRequest: {
+            /** Occasion Id */
+            occasion_id?: string | null;
+            /** Season */
+            season?: string | null;
+            /** Style Id */
+            style_id?: string | null;
+            /** Anchor Item Ids */
+            anchor_item_ids?: string[];
+            /** Exclude Item Ids */
+            exclude_item_ids?: string[];
+            /**
+             * Count
+             * @default 10
+             */
+            count: number;
+        };
+        /** SuggestionOut */
+        SuggestionOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Template Id */
+            template_id: string;
+            /** Occasion Id */
+            occasion_id: string | null;
+            /** Season */
+            season: string | null;
+            /** Score */
+            score: number;
+            /** Compromise */
+            compromise: boolean;
+            /** Engine Version */
+            engine_version: string;
+            /** Pieces */
+            pieces: components["schemas"]["SuggestionPiece"][];
+            /** Reasons */
+            reasons: components["schemas"]["ReasonOut"][];
+            /** Rating */
+            rating: ("like" | "dislike" | "skip") | null;
+            /** Saved Outfit Id */
+            saved_outfit_id: string | null;
+            /** Worn On */
+            worn_on: string | null;
+            /** Stale */
+            stale: boolean;
+        };
+        /** SuggestionPiece */
+        SuggestionPiece: {
+            /** Slot */
+            slot: string;
+            item: components["schemas"]["ItemBrief"];
+            /** Core */
+            core: boolean;
+        };
+        /** SuggestionsOut */
+        SuggestionsOut: {
+            /** Suggestions */
+            suggestions: components["schemas"]["SuggestionOut"][];
+            /** Missing */
+            missing: components["schemas"]["MissingOut"][];
+            /** Compromise */
+            compromise: boolean;
+            /** Note */
+            note: string | null;
+            /** Season */
+            season: string;
+            /** Engine Version */
+            engine_version: string;
+        };
         /** Term */
         Term: {
             /** Id */
@@ -1386,6 +1602,16 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /** WearIn */
+        WearIn: {
+            /**
+             * Worn On
+             * Format: date
+             */
+            worn_on: string;
+            /** Note */
+            note?: string | null;
         };
         /**
          * WearLogCreate
@@ -2995,6 +3221,66 @@ export interface operations {
             };
         };
     };
+    suggest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SuggestRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuggestionsOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     list_outfits: {
         parameters: {
             query?: {
@@ -3362,6 +3648,286 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    rate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                suggestion_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FeedbackIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuggestionOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    clear_rating: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                suggestion_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuggestionOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                suggestion_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveIn"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OutfitOut"];
+                };
+            };
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OutfitOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    wear_it: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                suggestion_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WearIn"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WearLogOut"];
+                };
+            };
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WearLogOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
         };

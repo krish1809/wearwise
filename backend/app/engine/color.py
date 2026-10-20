@@ -9,6 +9,7 @@ equally different to people, unlike RGB.
 import math
 from collections import defaultdict
 from collections.abc import Sequence
+from functools import lru_cache
 
 RGB = tuple[int, int, int]
 
@@ -85,11 +86,7 @@ def _mean(pixels: Sequence[RGB]) -> RGB:
 
 
 def _to_lab(rgb: RGB) -> tuple[float, float, float]:
-    def linear(channel: int) -> float:
-        c = channel / 255
-        return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
-
-    r, g, b = (linear(c) for c in rgb)
+    r, g, b = (_linear(c) for c in rgb)
     # sRGB to XYZ (D65), scaled to the reference white.
     x = (0.4124 * r + 0.3576 * g + 0.1805 * b) / 0.95047
     y = 0.2126 * r + 0.7152 * g + 0.0722 * b
@@ -109,3 +106,33 @@ def nearest_family(rgb: RGB, families: Sequence[tuple[str, str]]) -> str:
         raise ValueError("no colour families to match against")
     target = _to_lab(rgb)
     return min(families, key=lambda family: math.dist(target, _to_lab(hex_to_rgb(family[1]))))[0]
+
+
+@lru_cache(maxsize=4096)
+def oklch(hex_value: str) -> tuple[float, float, float]:
+    """Lightness (0 to 1), chroma (0 to about 0.37), and hue (degrees) in OKLCH.
+
+    OKLCH is built so that equal steps in hue and lightness look about equally large, which is
+    what the engine's colour rules are written in (docs/ENGINE.md, section 5).
+    """
+    r, g, b = (_linear(channel) for channel in hex_to_rgb(hex_value))
+    l_ = math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b)
+    m_ = math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b)
+    s_ = math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b)
+    lightness = 0.2104542553 * l_ + 0.7936177850 * m_ - 0.0040720468 * s_
+    a = 1.9779984951 * l_ - 2.4285922050 * m_ + 0.4505937099 * s_
+    b_ = 0.0259040371 * l_ + 0.7827717662 * m_ - 0.8086757660 * s_
+    chroma = math.hypot(a, b_)
+    hue = math.degrees(math.atan2(b_, a)) % 360
+    return (lightness, chroma, hue)
+
+
+def hue_distance(first: float, second: float) -> float:
+    """Degrees between two hues the short way round the circle, 0 to 180."""
+    gap = abs(first - second) % 360
+    return min(gap, 360 - gap)
+
+
+def _linear(channel: int) -> float:
+    c = channel / 255
+    return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
