@@ -374,7 +374,7 @@ _COLUMNS = [
 ]
 
 
-def _outs(
+def candidate_outs(
     db: Session, user: User, rows: list[Candidate], s: shopping.Setting | None = None
 ) -> list[CandidateOut]:
     names = Names(db, user)
@@ -487,7 +487,9 @@ def list_candidates(user: CurrentUser, db: SessionDep) -> CandidateList:
     """The shopping list, newest first, each with its verdict when one is up to date."""
     s = shopping.setting(db, user, wear.today())
     rows = shopping.list_candidates(db, user)
-    return CandidateList(candidates=_outs(db, user, rows, s), needs_occasions=s.before is None)
+    return CandidateList(
+        candidates=candidate_outs(db, user, rows, s), needs_occasions=s.before is None
+    )
 
 
 @router.post(
@@ -506,7 +508,7 @@ def create_candidate(body: CandidateCreate, user: CurrentUser, db: SessionDep) -
         message = f"Your shopping list can hold {shopping.MAX_CANDIDATES} things."
         raise ApiError(409, "too_many_candidates", message) from error
     db.commit()
-    return _outs(db, user, [row])[0]
+    return candidate_outs(db, user, [row])[0]
 
 
 @router.post(
@@ -525,7 +527,7 @@ def add_staple(body: FromStaple, user: CurrentUser, db: SessionDep) -> Candidate
         message = f"Your shopping list can hold {shopping.MAX_CANDIDATES} things."
         raise ApiError(409, "too_many_candidates", message) from error
     db.commit()
-    return _outs(db, user, [row])[0]
+    return candidate_outs(db, user, [row])[0]
 
 
 @router.get(
@@ -544,7 +546,7 @@ def compare(
         raise _needs_occasions()
     found = [shopping.analysis(db, row, s, wear.today()) for row in rows]
     db.commit()
-    outs = _outs(db, user, rows, s)
+    outs = candidate_outs(db, user, rows, s)
     return CompareOut(
         candidates=[
             CandidateAnalysed(candidate=out, analysis=_analysis_out(db, user, result))
@@ -560,7 +562,7 @@ def compare(
 def get_candidate(candidate_id: uuid.UUID, user: CurrentUser, db: SessionDep) -> CandidateOut:
     row = _owned(db, user, candidate_id)
     s = shopping.setting(db, user, wear.today())
-    return _outs(db, user, [row], s)[0]
+    return candidate_outs(db, user, [row], s)[0]
 
 
 @router.patch(
@@ -587,7 +589,7 @@ def update_candidate(
         raise ApiError(409, "already_bought", "This is already in your wardrobe.") from error
     db.commit()
     storage.delete(removed)
-    return _outs(db, user, [row])[0]
+    return candidate_outs(db, user, [row])[0]
 
 
 @router.delete(
@@ -744,9 +746,9 @@ def split_budget(body: SplitRequest, user: CurrentUser, db: SessionDep) -> Split
     left = [c for c in plan.considered if shopping.CANDIDATE + str(c.id) not in chosen_ids]
     return SplitOut(
         budget=body.budget,
-        chosen=_outs(db, user, chosen, s),
-        left=_outs(db, user, left, s),
-        unpriced=_outs(db, user, plan.unpriced, s),
+        chosen=candidate_outs(db, user, chosen, s),
+        left=candidate_outs(db, user, left, s),
+        unpriced=candidate_outs(db, user, plan.unpriced, s),
         coverage_gain=plan.split.coverage_gain if plan.split else 0.0,
         spent=plan.split.spent if plan.split else 0,
         exhaustive=plan.split.exhaustive if plan.split else True,
@@ -983,4 +985,4 @@ def add_from_catalog(body: FromCatalog, user: CurrentUser, db: SessionDep) -> Ca
         message = f"Your shopping list can hold {shopping.MAX_CANDIDATES} things."
         raise ApiError(409, "too_many_candidates", message) from error
     db.commit()
-    return _outs(db, user, [made])[0]
+    return candidate_outs(db, user, [made])[0]

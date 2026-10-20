@@ -5,6 +5,7 @@ from typing import Annotated
 from fastapi import Depends, Request
 from sqlalchemy.orm import Session
 
+from app.adapters.ai import AIProvider, get_ai
 from app.adapters.products import PageReader, get_page_reader
 from app.adapters.storage import Storage, get_storage
 from app.adapters.weather import WeatherProvider, get_weather
@@ -20,6 +21,8 @@ SettingsDep = Annotated[Settings, Depends(get_settings)]
 StorageDep = Annotated[Storage, Depends(get_storage)]
 WeatherDep = Annotated[WeatherProvider, Depends(get_weather)]
 PagesDep = Annotated[PageReader, Depends(get_page_reader)]
+# None when AI features are off.
+AIDep = Annotated[AIProvider | None, Depends(get_ai)]
 
 
 def get_current_user(request: Request, db: SessionDep, settings: SettingsDep) -> User:

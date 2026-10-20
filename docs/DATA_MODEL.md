@@ -126,11 +126,13 @@ Marking a candidate bought creates the item, with the candidate's photo, through
 
 ## Chat (M10)
 
-**`chat_threads`**: `user_id`, `title`.
+**`chat_threads`**: `user_id`, `title` (the first message, shortened).
 
-**`chat_messages`**: `thread_id`, `role`, `content`, `tool_calls` (json), `cards` (json), `tokens_in`, `tokens_out`.
+**`chat_messages`**: `thread_id`, `role` (user, assistant), `content`, `cards` (json: outfit, item, candidate, and staple cards by id, and action cards), `tool_calls` (json: the tools called, with arguments), `seen` (json: ids the tools returned for this reply, which later replies in the thread may show), `tokens_in`, `tokens_out` (D47).
 
-**`ai_usage`**: `user_id`, `date`, `requests`, `tokens`, used for rate limits and the spend cap.
+**`chat_actions`**: `user_id`, `thread_id`, `kind` (save_outfit, plan_outfit, add_to_list, log_wear), `payload` (json, with a one-line summary), `status` (pending, done, cancelled), `result` (json: what confirming made). Nothing is changed until the person confirms (D47).
+
+**`ai_usage`**: `user_id`, `day`, `messages`, `images`, `tokens_in`, `tokens_out`, `cost_micro_usd`; unique per person per day. Used for the limits and the daily spend cap.
 
 ## Deletion
 

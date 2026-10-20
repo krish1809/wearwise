@@ -20,6 +20,7 @@ Twelve milestones, M0 to M11. Each one is a vertical slice: database, API, UI, a
 | M8 | Smart Shopping I | analyse a purchase; see gaps; plan a capsule on a budget | 7 to 10 days |
 | M9 | Smart Shopping II | find real products for a gap | 5 to 7 days |
 | M10 | AI | auto-tag photos; chat with a stylist that knows your wardrobe | 7 to 10 days |
+| M10b | Interaction and polish | drag outfits together, swipe suggestions, see your colours, and use a few new everyday tools | 6 to 8 days |
 | M11 | Hardening and launch | hand the link to anyone | 5 to 7 days |
 
 Effort is a guess, counted in working days of two to three focused hours. Treat it as a way to notice when a milestone has grown too big, not as a deadline.
@@ -271,6 +272,33 @@ Effort is a guess, counted in working days of two to three focused hours. Treat 
 - No tool can be called with another user's ID (tested).
 
 **Learn:** tool calling; grounding and validation; evaluating AI features; cost control.
+
+---
+
+## M10b. Interaction and polish
+
+Added on 2026-10-20 at the owner's request, after M9: the app works; this makes it feel like WearWise rather than a set of forms. Everything here uses data the app already has; nothing is invented to fill a screen.
+
+**Goal:** the core screens are direct and pleasant to use, and a few small tools make everyday use stick.
+
+**Build**
+- Outfit Studio by drag and drop: drag a piece onto the board, or between slots, with a live score that moves as pieces change (keyboard and tap still work).
+- Swipe suggestions on phones: right to like, left to dislike, tap for the reasons; the same feedback the buttons send.
+- A colour map of the wardrobe: items plotted by hue and lightness (the engine's own colour space); tap an area to filter the wardrobe.
+- "What if" in Shopping: put a candidate on the board with pieces you own and watch the outfit count change.
+- A coverage map you can tap: each occasion and season opens its outfits, or what's missing there.
+- Polish: transitions that respect reduced motion, undo on destructive toasts, a quick-jump menu (Ctrl or Cmd + K), and a dark theme from the design tokens.
+- Cooling-off: something on the shopping list comes back after a waiting period you choose, asking whether you still want it.
+- "Wear what you own": a 60-day challenge to wear every piece at least once, from the wear log, with progress.
+- Remix: pick up to ten pieces and see every good outfit they make.
+
+**Done when**
+- Every drag action has a keyboard and tap equivalent (tested), and nothing moves for people who ask for reduced motion.
+- Swipe and buttons send identical feedback (tested), and an accidental swipe can be undone.
+- Both themes pass contrast checks for body text, and the screenshots at 375 px and 1440 px match the design system in both.
+- The challenge, cooling-off, and remix numbers come only from rows in the database (tested against a fixture).
+
+**Learn:** pointer and keyboard interaction design; motion with restraint; theming with tokens.
 
 ---
 

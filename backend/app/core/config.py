@@ -50,6 +50,16 @@ class Settings(BaseSettings):
     weather_provider: Literal["open-meteo", "fake"] = "open-meteo"
     # Reading a product page someone pastes: "fake" for working offline.
     page_reader: Literal["web", "fake"] = "web"
+    # The stylist chat and photo tagging (docs/AI.md): "off" until a key is set; "fake" only
+    # in tests. The real provider's prices (US dollars per million tokens) turn token counts
+    # into spend, so the daily cap can be enforced.
+    ai_provider: Literal["off", "fake", "anthropic"] = "off"
+    ai_api_key: str | None = None
+    ai_model_chat: str | None = None
+    ai_model_vision: str | None = None
+    ai_daily_spend_cap_usd: float = Field(default=1.0, ge=0)
+    ai_price_input_per_mtok: float = Field(default=0.0, ge=0)
+    ai_price_output_per_mtok: float = Field(default=0.0, ge=0)
 
     @property
     def is_production(self) -> bool:
@@ -71,6 +81,24 @@ class Settings(BaseSettings):
         elif self.is_production:
             # Render's disk is wiped on every deploy, so local photos would vanish.
             raise ValueError("STORAGE_BACKEND must be s3 in production")
+        return self
+
+    @model_validator(mode="after")
+    def check_ai(self) -> Settings:
+        if self.ai_provider == "fake" and self.is_production:
+            # Scripted replies are for tests and local work, never for real people.
+            raise ValueError("AI_PROVIDER=fake isn't allowed in production")
+        if self.ai_provider == "anthropic":
+            needed = {
+                "AI_API_KEY": self.ai_api_key,
+                "AI_MODEL_CHAT": self.ai_model_chat,
+                "AI_MODEL_VISION": self.ai_model_vision,
+                "AI_PRICE_INPUT_PER_MTOK": self.ai_price_input_per_mtok,
+                "AI_PRICE_OUTPUT_PER_MTOK": self.ai_price_output_per_mtok,
+            }
+            missing = [name for name, value in needed.items() if not value]
+            if missing:
+                raise ValueError(f"AI_PROVIDER=anthropic also needs {', '.join(missing)}")
         return self
 
     @field_validator("s3_endpoint_url")

@@ -27,6 +27,7 @@ export const config = {
     "/insights/:path*",
     "/shopping/:path*",
     "/guide/:path*",
+    "/stylist/:path*",
     "/settings/:path*",
     "/onboarding/:path*",
   ],

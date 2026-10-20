@@ -5,13 +5,14 @@ The running state of the project, updated at the end of every slice. Keep it sho
 ## Now
 
 - **Last updated:** 2026-10-20
-- **Current milestone:** M9 Smart Shopping II, built on `m9-products` and waiting for your commit and merge. M7 and M8 were merged together in pull request #7. M5's last two "Done when" items (golden set, wear test) are still yours; v1.0 is tagged once they pass.
+- **Current milestone:** M10 AI, built on `m10-ai` and waiting for your commit and merge. Next: M10b Interaction and polish (added to the roadmap on 2026-10-20 at your request). M5's last two "Done when" items (golden set, wear test) are still yours; v1.0 is tagged once they pass.
 - **Current slice:** none open. Open issue: on the live server the forecast request to Open-Meteo is refused, so days go by the season (place search works). The Render log line "Weather service unavailable: ..." says why.
 - **Next action (owner):**
-  1. Commit `m9-products` (staged), push it, open its pull request, and merge it once CI passes. No new environment variable is needed on Render (`PAGE_READER` defaults to reading pages).
-  2. Optional, for the demo catalogue: open the "Fashion Product Images" dataset's own page and read its licence. If it allows this use, download its styles.csv and run `make catalog file=path/to/styles.csv` locally, or against Neon with `DATABASE_URL` set. Until then the app shows no demo products.
-  3. In Render, open wearwise-api > Logs, search for "Weather service unavailable", and send the text after it.
-  4. The wear test and the golden set (M5), then the v1.0 release.
+  1. Commit `m10-ai` (staged), push it, open its pull request, and merge it once CI passes. The stylist stays off on the live site until step 2.
+  2. To switch it on: create an API key at console.anthropic.com and add some credit (check the price on its pricing page). In Render, wearwise-api > Environment, add `AI_PROVIDER=anthropic`, `AI_API_KEY` (the key, never pasted anywhere else), `AI_MODEL_CHAT=claude-haiku-5-5`, `AI_MODEL_VISION=claude-haiku-5-5`, `AI_DAILY_SPEND_CAP_USD=1`, `AI_PRICE_INPUT_PER_MTOK=0.10`, and `AI_PRICE_OUTPUT_PER_MTOK=0.50` (or the prices the page shows).
+  3. With the same values in your local `.env`, run `make eval-stylist` (a few cents) and read the answers; grounding failures must be 0. Then tag 30 of your own photos with "Fill in from the photo" and note how many categories and colours were right first time; I'll record the numbers here.
+  4. In Render's logs, search for "Weather service unavailable" and send the text after it.
+  5. The wear test and the golden set (M5), then the v1.0 release.
 
 M1 slices:
 
@@ -118,7 +119,18 @@ M9 slices:
 | 4 | UI: "From a link" on the add page, "Find it" from staples and candidates, the shop's picture, source and "may have changed" | done |
 | 5 | Browser walkthrough at 375 px and 1440 px; docs | done |
 
-- **Overall:** 10 of 12 milestones built (M0 to M9), 9 released (M0 to M8). v1.0 (M0 to M5) waits on the golden set and the wear test.
+M10 slices:
+
+| # | Slice | State |
+|---|---|---|
+| 1 | Provider interface (`adapters/ai/`): the real provider over HTTPS, a scripted fake, and off; settings with prices and a daily cap | done |
+| 2 | Data: chat threads, messages (cards, tools, ids seen), proposals, daily usage; one migration | done |
+| 3 | Photo tagging with the app's own choices only; usage limits and spend | done |
+| 4 | The stylist: tools over the app's own services, the `reply` tool, the grounding check, proposals confirmed in the app | done |
+| 5 | UI: the Stylist page (conversations, cards, confirm), "Fill in from the photo", navigation only when switched on | done |
+| 6 | Tests for the evaluation's plumbing, `make eval-stylist` for the real model, browser walkthrough, docs | done |
+
+- **Overall:** 11 of 13 milestones built (M0 to M10), 10 released (M0 to M9). The roadmap now has M10b, Interaction and polish, before M11. v1.0 (M0 to M5) waits on the golden set and the wear test.
 
 Live:
 
@@ -194,8 +206,9 @@ M0 code, merged in pull request #1 and deployed:
 | M6 | My Week | plan seven days with weather, laundry, events, packing | done | 2026-10-20 | pull requests #5 and #6 |
 | M7 | Insights | see cost per wear, versatility, orphans, coverage | done | 2026-10-20 | pull request #7 (with M8) |
 | M8 | Smart Shopping I | analyse a purchase; see gaps; plan a capsule on a budget | done | 2026-10-20 | pull request #7 |
-| M9 | Smart Shopping II | find real products for a gap | built, not merged | | |
-| M10 | AI | auto-tag photos; chat with a stylist that knows your wardrobe | not started | | |
+| M9 | Smart Shopping II | find real products for a gap | done | 2026-10-20 | pull request #8 |
+| M10 | AI | auto-tag photos; chat with a stylist that knows your wardrobe | built, not merged | | off until a key is set |
+| M10b | Interaction and polish | drag outfits together, swipe suggestions, see your colours, and use a few new everyday tools | not started | | added 2026-10-20 |
 | M11 | Hardening and launch | hand the link to anyone | not started | | |
 
 ## Before M0 (only you can do these)
@@ -211,6 +224,13 @@ M0 code, merged in pull request #1 and deployed:
 ## Log
 
 Add an entry per slice, newest first.
+
+### 2026-10-20, M10 slices 1 to 6: the stylist and photo tagging
+
+- Built: the provider interface in `app/adapters/ai/` with Anthropic's API (Claude Haiku 5.5, over HTTPS without an SDK), a scripted fake, and an off setting (the default); settings for the key, models, prices, and a daily spend cap, refusing the fake in production. `chat_threads`, `chat_messages`, `chat_actions`, and `ai_usage` in one migration. The stylist (`app/services/stylist.py`): sixteen tools over the app's own services, answers through a `reply` tool with cards by id, the grounding check (ids must come from this conversation's tools and still belong to the person; no ids in text; one retry, then an apology with the tools' own results), and proposals that wait for Confirm. Photo tagging with the app's own lists as the only choices. Limits: messages per minute and day, photos per day, lower for the demo account, and the daily cap before every call (D47). API: `/ai/status`, `/photos/{id}/tag`, `/chat/threads`, `/chat/messages`, `/chat/actions/{id}/confirm` and `/cancel`. Frontend: the Stylist page (conversations, example questions, replies with outfit, item, shopping-list, staple, and proposal cards, Confirm and Not now, "unavailable" with its reason), "Fill in from the photo" on the item form with every filled field marked, and the Stylist in the navigation only when switched on. `make eval-stylist` for the real model.
+- Checked: `make check` (numbers below). Tests with scripted turns for each plumbing row of the evaluation table: an answer's cards resolve to real items; an invented id is sent back once and then replaced; a corrected reply is accepted; ids in text refused; another account's item can't be fetched or shown; nothing changes until Confirm (and not twice); an incomplete outfit isn't even proposed; an instruction planted in a shopping-list name gets nothing done; a provider failure leaves no messages or proposals but its tokens count; the spend cap and the daily limit; "more formal" gives a higher mean formality; a follow-up sees what the last reply showed; tagging keeps only the app's own ids, sends only the image, and counts it; ownership of conversations and proposals; results capped; login required. The settings refuse the fake in production and the real provider without its key, models, and prices. A browser walkthrough at 1440 px and 375 px with the fake provider's honest round trip: the Stylist from the navigation and from More, a question answered with three real item cards, the conversation kept and listed, and "Fill in from the photo" saying nothing could be read; no console errors.
+- Not yet checked: the real model (needs your key): `make eval-stylist`, and tagging 30 of your photos.
+- Decided: D47.
 
 ### 2026-10-20, M9 slices 1 to 5: Smart Shopping II
 

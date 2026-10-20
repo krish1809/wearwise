@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, Plus } from "lucide-react";
+import { ChevronDown, Plus, Sparkles } from "lucide-react";
 import { useId, useMemo, useState } from "react";
 
 import { RadioRow } from "@/components/profile/radio-row";
@@ -16,9 +16,10 @@ import { Select } from "@/components/ui/select";
 import { Swatch } from "@/components/ui/swatch";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/components/ui/toast";
 import { CategoryDialog } from "@/components/wardrobe/category-dialog";
 import { PhotoPicker } from "@/components/wardrobe/photo-picker";
-import type { ApiProblem } from "@/lib/api/errors";
+import { type ApiProblem, problemFrom } from "@/lib/api/errors";
 import {
   AMOUNT_ERROR,
   MAX_RUPEES,
@@ -26,6 +27,7 @@ import {
   rupeesToPaise,
 } from "@/lib/money";
 import type { Profile, Reference } from "@/lib/profile";
+import { useAIStatus, useTagPhoto } from "@/lib/stylist";
 import { toggle } from "@/components/profile/choices";
 import {
   type Category,
@@ -121,6 +123,10 @@ export function ItemForm({
   const [photo, setPhoto] = useState<PhotoRef | null>(item?.photo ?? null);
   const [photoChanged, setPhotoChanged] = useState(false);
   const [suggested, setSuggested] = useState<string | null>(null);
+  // Fields the stylist's photo tagging filled in, for the person to check.
+  const [tagged, setTagged] = useState<Set<string>>(new Set());
+  const aiStatus = useAIStatus();
+  const tagPhoto = useTagPhoto();
   // Once the photo suggests a colour, only it shows until the person asks for the rest.
   const [allColours, setAllColours] = useState(true);
   const [showAll, setShowAll] = useState(false);
@@ -150,6 +156,40 @@ export function ItemForm({
 
   function chooseCategory(id: string) {
     set("category_id", id);
+  }
+
+  async function fillFromPhoto(photoId: string) {
+    try {
+      const found = await tagPhoto.mutateAsync(photoId);
+      const filled = new Set<string>();
+      setDraft((current) => {
+        const next = { ...current };
+        for (const [name, value] of Object.entries(found.fields)) {
+          if (name in next) {
+            (next as Record<string, unknown>)[name] = value;
+            filled.add(name);
+          }
+        }
+        return next;
+      });
+      setTagged(filled);
+      setAllColours(true);
+      setSuggested(null);
+      if (
+        ["pattern", "fabric", "fit", "color_secondary"].some((f) =>
+          filled.has(f),
+        )
+      ) {
+        setMore(true);
+      }
+      toast(
+        filled.size > 0
+          ? "Filled in from the photo. Check each detail."
+          : "Nothing could be read from the photo; fill it in yourself.",
+      );
+    } catch (error) {
+      toast.error(problemFrom(error).message);
+    }
   }
 
   async function submit(again: boolean) {
@@ -249,12 +289,30 @@ export function ItemForm({
             setPhotoChanged(true);
           }}
         />
+        {photo && aiStatus.data?.available && (
+          <div className="mt-3 flex flex-col items-start gap-1">
+            <Button
+              type="button"
+              variant="secondary"
+              loading={tagPhoto.isPending}
+              onClick={() => void fillFromPhoto(photo.id)}
+            >
+              <Sparkles aria-hidden />
+              Fill in from the photo
+            </Button>
+            <p className="text-sm text-ink-soft">
+              Only the photo is sent to the AI service that suggests the
+              details. You check each one before saving.
+            </p>
+          </div>
+        )}
       </Fieldset>
 
       <Fieldset
         legend="Main colour"
         hint={
-          suggested && suggested === draft.color_primary
+          (suggested && suggested === draft.color_primary) ||
+          tagged.has("color_primary")
             ? "Suggested from the photo. Change it if it's wrong."
             : undefined
         }
@@ -287,7 +345,15 @@ export function ItemForm({
       </Fieldset>
 
       <div className="flex flex-col gap-3">
-        <Field label="Category" error={fieldError("category_id")}>
+        <Field
+          label="Category"
+          hint={
+            tagged.has("category_id")
+              ? "Suggested from the photo: check it."
+              : undefined
+          }
+          error={fieldError("category_id")}
+        >
           {(control) => (
             <Select
               value={draft.category_id}
@@ -419,7 +485,15 @@ export function ItemForm({
             </Field>
           </div>
 
-          <Fieldset legend="Pattern" error={fieldError("pattern")}>
+          <Fieldset
+            legend="Pattern"
+            hint={
+              tagged.has("pattern")
+                ? "Suggested from the photo: check it."
+                : undefined
+            }
+            error={fieldError("pattern")}
+          >
             <div className="flex flex-wrap gap-2">
               {reference.patterns.map((pattern) => (
                 <FilterChip
@@ -434,7 +508,15 @@ export function ItemForm({
           </Fieldset>
 
           <div className="grid gap-5 sm:grid-cols-2">
-            <Field label="Fabric (optional)" error={fieldError("fabric")}>
+            <Field
+              label="Fabric (optional)"
+              hint={
+                tagged.has("fabric")
+                  ? "A guess from the photo: check the label."
+                  : undefined
+              }
+              error={fieldError("fabric")}
+            >
               {(control) => (
                 <Select
                   value={draft.fabric}

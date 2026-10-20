@@ -1,7 +1,7 @@
 # Everyday commands. Run `make` to list them.
 .DEFAULT_GOAL := help
 
-.PHONY: help setup dev db-up db-down migrate seed demo catalog golden migration test lint format typecheck api-types build check
+.PHONY: help setup dev db-up db-down migrate seed demo catalog eval-stylist golden migration test lint format typecheck api-types build check
 
 help: ## List the commands
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  make %-10s %s\n", $$1, $$2}'
@@ -36,6 +36,9 @@ demo: migrate ## Fill the demo account (demo@example.com) with a wardrobe of gen
 catalog: migrate ## Load a demo catalogue (check the dataset's licence first): make catalog file=styles.csv
 	@test -n "$(file)" || (echo 'Usage: make catalog file=path/to/styles.csv' && exit 1)
 	cd backend && uv run python -m scripts.load_catalog --file "$(abspath $(file))"
+
+eval-stylist: ## Ask the stylist the evaluation questions with the real model (costs a few cents)
+	cd backend && uv run python -m scripts.eval_stylist
 
 golden: ## Export a wardrobe for golden-set labelling: make golden email=you@example.com
 	@test -n "$(email)" || (echo 'Usage: make golden email=you@example.com' && exit 1)
