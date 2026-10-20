@@ -8,7 +8,11 @@ import { ErrorState } from "@/components/ui/error-state";
 import { toast } from "@/components/ui/toast";
 import { BackLink, WardrobeData } from "@/components/wardrobe/wardrobe-data";
 import { problemFrom } from "@/lib/api/errors";
-import { useCandidate, useUpdateCandidate } from "@/lib/shopping";
+import {
+  type NewCandidate,
+  useCandidate,
+  useUpdateCandidate,
+} from "@/lib/shopping";
 
 export function EditCandidateContent() {
   const { id } = useParams<{ id: string }>();
@@ -39,7 +43,10 @@ export function EditCandidateContent() {
               saving={update.isPending}
               onSubmit={async (body) => {
                 try {
-                  await update.mutateAsync(body);
+                  // Where it came from doesn't change.
+                  const changes: Partial<NewCandidate> = { ...body };
+                  delete changes.source;
+                  await update.mutateAsync(changes);
                   toast.success("Changes saved");
                   router.push(`/shopping/${id}`);
                   return null;

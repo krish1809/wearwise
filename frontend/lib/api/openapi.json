@@ -5520,6 +5520,257 @@
           }
         }
       }
+    },
+    "/api/v1/links/preview": {
+      "post": {
+        "tags": [
+          "shopping"
+        ],
+        "summary": "Preview Link",
+        "description": "Read a product page someone pasted: its public preview data, if the site's robots.txt\nallows it, at most once a day. Anything unread is left for the person to fill in.",
+        "operationId": "preview_link",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinkRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkPreviewOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shopping/shop": {
+      "get": {
+        "tags": [
+          "shopping"
+        ],
+        "summary": "Shop",
+        "description": "Where to find a staple or a candidate: each shop's search for it, with the person's\nusual spend as a guide, and demo catalogue products ranked by what they'd add.",
+        "operationId": "shop",
+        "parameters": [
+          {
+            "name": "archetype_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Archetype Id"
+            }
+          },
+          {
+            "name": "candidate_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Candidate Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShopOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        }
+      }
+    },
+    "/api/v1/candidates/from-catalog": {
+      "post": {
+        "tags": [
+          "shopping"
+        ],
+        "summary": "Add From Catalog",
+        "description": "Put a catalogue product on the shopping list.",
+        "operationId": "add_from_catalog",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FromCatalog"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CandidateOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -6085,6 +6336,26 @@
             ],
             "title": "Photo Id"
           },
+          "image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Url"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "manual",
+              "link"
+            ],
+            "title": "Source",
+            "default": "manual"
+          },
           "category_id": {
             "type": "string",
             "title": "Category Id"
@@ -6181,6 +6452,17 @@
               }
             ],
             "title": "Url"
+          },
+          "image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Url"
           },
           "size_label": {
             "anyOf": [
@@ -6374,6 +6656,7 @@
           "display_name",
           "brand",
           "url",
+          "image_url",
           "size_label",
           "price",
           "currency",
@@ -6597,6 +6880,17 @@
             ],
             "title": "Photo Id"
           },
+          "image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Url"
+          },
           "category_id": {
             "anyOf": [
               {
@@ -6728,6 +7022,138 @@
           "stage"
         ],
         "title": "CapsuleStepOut"
+      },
+      "CatalogProductOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "brand": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brand"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Url"
+          },
+          "price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price"
+          },
+          "category_id": {
+            "type": "string",
+            "title": "Category Id"
+          },
+          "color_primary": {
+            "type": "string",
+            "title": "Color Primary"
+          },
+          "hex": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hex"
+          },
+          "is_demo": {
+            "type": "boolean",
+            "title": "Is Demo"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "fetched_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Fetched At"
+          },
+          "coverage_gain": {
+            "type": "number",
+            "title": "Coverage Gain"
+          },
+          "new_outfits": {
+            "type": "integer",
+            "title": "New Outfits"
+          },
+          "redundancy": {
+            "type": "number",
+            "title": "Redundancy"
+          },
+          "closest": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closest"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "brand",
+          "url",
+          "image_url",
+          "price",
+          "category_id",
+          "color_primary",
+          "hex",
+          "is_demo",
+          "source",
+          "fetched_at",
+          "coverage_gain",
+          "new_outfits",
+          "redundancy",
+          "closest"
+        ],
+        "title": "CatalogProductOut"
       },
       "CategoryCreate": {
         "properties": {
@@ -7557,6 +7983,21 @@
           "skipped"
         ],
         "title": "FinishOnboardingRequest"
+      },
+      "FromCatalog": {
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Product Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "product_id"
+        ],
+        "title": "FromCatalog"
       },
       "FromStaple": {
         "properties": {
@@ -9216,6 +9657,160 @@
           "items"
         ],
         "title": "LaundryOut"
+      },
+      "LinkPreviewOut": {
+        "properties": {
+          "outcome": {
+            "type": "string",
+            "title": "Outcome"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "fetched_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fetched At"
+          },
+          "site": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Site"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "brand": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brand"
+          },
+          "image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Url"
+          },
+          "price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price"
+          },
+          "other_currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Other Currency"
+          },
+          "category_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category Id"
+          },
+          "color_primary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color Primary"
+          },
+          "fabric": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fabric"
+          }
+        },
+        "type": "object",
+        "required": [
+          "outcome",
+          "url",
+          "fetched_at",
+          "site",
+          "title",
+          "brand",
+          "image_url",
+          "price",
+          "other_currency",
+          "category_id",
+          "color_primary",
+          "fabric"
+        ],
+        "title": "LinkPreviewOut",
+        "description": "What a pasted page said, for the person to check before saving. Nothing is guessed:\nwhat the page doesn't say is null."
+      },
+      "LinkRequest": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "title": "LinkRequest"
       },
       "LoginRequest": {
         "properties": {
@@ -10943,6 +11538,29 @@
         "type": "object",
         "title": "SaveIn"
       },
+      "SearchLinkOut": {
+        "properties": {
+          "shop_id": {
+            "type": "string",
+            "title": "Shop Id"
+          },
+          "shop": {
+            "type": "string",
+            "title": "Shop"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "shop_id",
+          "shop",
+          "url"
+        ],
+        "title": "SearchLinkOut"
+      },
       "SetLink": {
         "properties": {
           "item_id": {
@@ -10996,6 +11614,59 @@
           "share"
         ],
         "title": "ShareOut"
+      },
+      "ShopOut": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "title": "Query"
+          },
+          "links": {
+            "items": {
+              "$ref": "#/components/schemas/SearchLinkOut"
+            },
+            "type": "array",
+            "title": "Links"
+          },
+          "price_cap": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Cap"
+          },
+          "group_name": {
+            "type": "string",
+            "title": "Group Name"
+          },
+          "products": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/CatalogProductOut"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Products"
+          }
+        },
+        "type": "object",
+        "required": [
+          "query",
+          "links",
+          "price_cap",
+          "group_name",
+          "products"
+        ],
+        "title": "ShopOut"
       },
       "SizeChoice": {
         "properties": {

@@ -48,6 +48,8 @@ class Settings(BaseSettings):
     max_upload_mb: int = Field(default=8, ge=1, le=25)
     # Forecasts and place search: Open-Meteo, or canned answers for working offline.
     weather_provider: Literal["open-meteo", "fake"] = "open-meteo"
+    # Reading a product page someone pastes: "fake" for working offline.
+    page_reader: Literal["web", "fake"] = "web"
 
     @property
     def is_production(self) -> bool:

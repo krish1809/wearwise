@@ -7,6 +7,8 @@ type ItemPhotoProps = {
   alt: string;
   /** Shown as a plain colour block when there's no photo. */
   hex: string | null | undefined;
+  /** A shop's own picture (a shopping candidate), used when there's no photo. */
+  imageUrl?: string | null;
   size?: "thumb" | "full";
   className?: string;
 };
@@ -19,6 +21,7 @@ export function ItemPhoto({
   photo,
   alt,
   hex,
+  imageUrl,
   size = "thumb",
   className,
 }: ItemPhotoProps) {
@@ -31,6 +34,20 @@ export function ItemPhoto({
         alt={alt}
         width={photo.width}
         height={photo.height}
+        loading={size === "thumb" ? "lazy" : "eager"}
+        decoding="async"
+        className={cn("h-auto object-contain", className)}
+      />
+    );
+  }
+  if (imageUrl) {
+    return (
+      // A shop's picture, loaded from the shop without saying which page it's on.
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={imageUrl}
+        alt={alt}
+        referrerPolicy="no-referrer"
         loading={size === "thumb" ? "lazy" : "eager"}
         decoding="async"
         className={cn("h-auto object-contain", className)}

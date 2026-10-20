@@ -5,6 +5,7 @@ from typing import Annotated
 from fastapi import Depends, Request
 from sqlalchemy.orm import Session
 
+from app.adapters.products import PageReader, get_page_reader
 from app.adapters.storage import Storage, get_storage
 from app.adapters.weather import WeatherProvider, get_weather
 from app.api.errors import ApiError
@@ -18,6 +19,7 @@ SessionDep = Annotated[Session, Depends(get_session)]
 SettingsDep = Annotated[Settings, Depends(get_settings)]
 StorageDep = Annotated[Storage, Depends(get_storage)]
 WeatherDep = Annotated[WeatherProvider, Depends(get_weather)]
+PagesDep = Annotated[PageReader, Depends(get_page_reader)]
 
 
 def get_current_user(request: Request, db: SessionDep, settings: SettingsDep) -> User:

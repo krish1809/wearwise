@@ -48,19 +48,31 @@ type Draft = {
   notes: string;
 };
 
-function draftFrom(candidate: Candidate | undefined): Draft {
+/** Details read from a pasted page, for the person to check. */
+export type Prefill = {
+  name?: string | null;
+  brand?: string | null;
+  url?: string | null;
+  price?: number | null;
+  category_id?: string | null;
+  color_primary?: string | null;
+  fabric?: string | null;
+  image_url?: string | null;
+};
+
+function draftFrom(candidate: Candidate | undefined, prefill?: Prefill): Draft {
   return {
-    category_id: candidate?.category_id ?? "",
-    color_primary: candidate?.color_primary ?? "",
+    category_id: candidate?.category_id ?? prefill?.category_id ?? "",
+    color_primary: candidate?.color_primary ?? prefill?.color_primary ?? "",
     color_hex: candidate?.color_hex ?? null,
-    name: candidate?.name ?? "",
-    brand: candidate?.brand ?? "",
-    url: candidate?.url ?? "",
+    name: candidate?.name ?? prefill?.name?.slice(0, 100) ?? "",
+    brand: candidate?.brand ?? prefill?.brand ?? "",
+    url: candidate?.url ?? prefill?.url ?? "",
     size_label: candidate?.size_label ?? "",
-    price: paiseToRupeesText(candidate?.price),
+    price: paiseToRupeesText(candidate ? candidate.price : prefill?.price),
     target_price: paiseToRupeesText(candidate?.target_price),
     pattern: candidate?.pattern ?? "solid",
-    fabric: candidate?.fabric ?? "",
+    fabric: candidate?.fabric ?? prefill?.fabric ?? "",
     fit: candidate?.fit ?? "",
     formality: candidate ? String(candidate.formality) : "",
     warmth: candidate ? String(candidate.warmth) : "",
@@ -80,6 +92,8 @@ export function CandidateForm({
   categories,
   profile,
   candidate,
+  prefill,
+  source = "manual",
   saving,
   onSubmit,
 }: {
@@ -87,14 +101,22 @@ export function CandidateForm({
   categories: Category[];
   profile: Profile;
   candidate?: Candidate;
+  /** Details read from a pasted page, when adding one. */
+  prefill?: Prefill;
+  source?: "manual" | "link";
   saving: boolean;
   onSubmit: (body: NewCandidate) => Promise<ApiProblem | null>;
 }) {
-  const [draft, setDraft] = useState<Draft>(() => draftFrom(candidate));
+  const [draft, setDraft] = useState<Draft>(() =>
+    draftFrom(candidate, prefill),
+  );
+  const [imageUrl, setImageUrl] = useState<string | null>(
+    candidate?.image_url ?? prefill?.image_url ?? null,
+  );
   const [photo, setPhoto] = useState<PhotoRef | null>(candidate?.photo ?? null);
   const [photoChanged, setPhotoChanged] = useState(false);
   const [showAll, setShowAll] = useState(false);
-  const [more, setMore] = useState(Boolean(candidate));
+  const [more, setMore] = useState(Boolean(candidate || prefill));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [problem, setProblem] = useState<ApiProblem | null>(null);
   const showAllId = useId();
@@ -136,6 +158,8 @@ export function CandidateForm({
     if (Object.keys(found).length > 0) return;
 
     const body: NewCandidate = {
+      source,
+      image_url: imageUrl,
       category_id: draft.category_id,
       color_primary: draft.color_primary,
       color_hex: draft.color_hex,
@@ -180,6 +204,31 @@ export function CandidateForm({
         hint="A screenshot from the shop is fine."
         error={problem?.fields.photo_id}
       >
+        {imageUrl && !photo && (
+          <div className="mb-3 flex items-center gap-4">
+            <span className="flex size-24 shrink-0 items-center justify-center rounded-lg bg-tile p-1">
+              {/* The shop's own picture, from its address; nothing is copied. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={imageUrl}
+                alt={draft.name || "The shop's picture"}
+                referrerPolicy="no-referrer"
+                className="max-h-full max-w-full rounded object-contain"
+              />
+            </span>
+            <div className="flex flex-col items-start gap-1 text-sm text-ink-soft">
+              The shop&apos;s picture, shown from its site.
+              <Button
+                type="button"
+                variant="quiet"
+                className="-ml-4"
+                onClick={() => setImageUrl(null)}
+              >
+                Don&apos;t use it
+              </Button>
+            </div>
+          </div>
+        )}
         <PhotoPicker
           photo={photo}
           alt={

@@ -1,6 +1,6 @@
 "use client";
 
-import { ExternalLink, Pencil } from "lucide-react";
+import { Clock, ExternalLink, Pencil, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -9,6 +9,7 @@ import { PageLoading } from "@/components/app-shell";
 import { OutfitBoard } from "@/components/outfits/outfit-board";
 import { ReasonList } from "@/components/outfits/reason-list";
 import { OwnedRow } from "@/components/shopping/piece-row";
+import { ShopPanel } from "@/components/shopping/shop-panel";
 import { VerdictBadge } from "@/components/shopping/verdict-badge";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -46,6 +47,8 @@ import {
   type Analysis,
   type Candidate,
   needsOccasions,
+  priceMayHaveChanged,
+  siteOf,
   STATUSES,
   useAnalysis,
   useCandidate,
@@ -121,6 +124,7 @@ function Details({
           <div className="flex aspect-square items-center justify-center rounded-xl bg-tile p-6 *:max-h-full *:max-w-full">
             <ItemPhoto
               photo={candidate.photo}
+              imageUrl={candidate.image_url}
               alt={candidate.display_name}
               hex={
                 candidate.color_hex ?? familyHex.get(candidate.color_primary)
@@ -213,8 +217,24 @@ function Details({
   );
 }
 
+const SOURCES: Record<string, string> = {
+  manual: "Added by you",
+  archetype: "A wardrobe staple, not a product",
+  catalog: "From the demo catalogue: an example, not for sale",
+};
+
 function Facts({ candidate }: { candidate: Candidate }) {
-  const rows: [string, React.ReactNode][] = [];
+  const site = siteOf(candidate.url);
+  const read = candidate.source === "link";
+  const stale = priceMayHaveChanged(candidate.price_checked_at);
+  const rows: [string, React.ReactNode][] = [
+    [
+      "From",
+      read && site
+        ? `${site}, read from the page you pasted`
+        : (site ?? SOURCES[candidate.source] ?? "Added by you"),
+    ],
+  ];
   if (candidate.price !== null) {
     rows.push([
       "Price",
@@ -223,7 +243,14 @@ function Facts({ candidate }: { candidate: Candidate }) {
         {candidate.price_checked_at && (
           <span className="text-ink-soft">
             {" "}
-            · noted {dayPhrase(candidate.price_checked_at.slice(0, 10))}
+            · {read ? "checked" : "noted"}{" "}
+            {dayPhrase(candidate.price_checked_at.slice(0, 10))}
+          </span>
+        )}
+        {stale && (
+          <span className="mt-0.5 flex items-center gap-1 text-consider">
+            <Clock aria-hidden className="size-4" />
+            May have changed since
           </span>
         )}
       </>,
@@ -235,17 +262,15 @@ function Facts({ candidate }: { candidate: Candidate }) {
   if (candidate.size_label) rows.push(["Size", candidate.size_label]);
   return (
     <div className="flex flex-col gap-3">
-      {rows.length > 0 && (
-        <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
-          {rows.map(([term, value]) => (
-            <div key={term} className="contents">
-              <dt className="text-ink-soft">{term}</dt>
-              <dd>{value}</dd>
-            </div>
-          ))}
-        </dl>
-      )}
-      {candidate.url && (
+      <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+        {rows.map(([term, value]) => (
+          <div key={term} className="contents">
+            <dt className="text-ink-soft">{term}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))}
+      </dl>
+      {candidate.url ? (
         <a
           href={candidate.url}
           target="_blank"
@@ -259,6 +284,19 @@ function Facts({ candidate }: { candidate: Candidate }) {
           <ExternalLink aria-hidden className="size-4" />
           <span className="sr-only">(opens in a new tab)</span>
         </a>
+      ) : (
+        candidate.status !== "purchased" && (
+          <ShopPanel
+            target={{ candidateId: candidate.id }}
+            name={candidate.display_name}
+            trigger={
+              <Button variant="secondary" className="self-start">
+                <ShoppingBag aria-hidden />
+                Find it in shops
+              </Button>
+            }
+          />
+        )
       )}
       {candidate.notes && <p className="text-sm">{candidate.notes}</p>}
     </div>

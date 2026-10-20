@@ -9,13 +9,18 @@ export function PieceRow({
   name,
   photo,
   hex,
+  imageUrl,
   href,
+  label,
   children,
   className,
 }: {
   name: string;
+  /** Shown in place of the plain name (a button, say). */
+  label?: React.ReactNode;
   photo?: PhotoRef | null;
   hex: string | null | undefined;
+  imageUrl?: string | null;
   href?: string;
   children?: React.ReactNode;
   className?: string;
@@ -23,9 +28,11 @@ export function PieceRow({
   return (
     <div className={cn("flex items-center gap-3", className)}>
       <span className="flex size-12 shrink-0 items-center justify-center rounded-md bg-tile p-1 *:max-h-full *:max-w-full">
-        <ItemPhoto photo={photo} alt="" hex={hex} />
+        <ItemPhoto photo={photo} alt="" hex={hex} imageUrl={imageUrl} />
       </span>
-      {href ? (
+      {label ? (
+        <span className="min-w-0 flex-1">{label}</span>
+      ) : href ? (
         <Link
           href={href}
           className={cn(

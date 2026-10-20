@@ -3,13 +3,14 @@
 import { Check } from "lucide-react";
 
 import { PieceRow } from "@/components/shopping/piece-row";
+import { ShopPanel } from "@/components/shopping/shop-panel";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";
 import { problemFrom } from "@/lib/api/errors";
 import { formatRupees } from "@/lib/money";
 import type { Reference } from "@/lib/profile";
 import { type Staple, useAddStaple } from "@/lib/shopping";
-import { cn } from "@/lib/utils";
+import { cn, focusRing } from "@/lib/utils";
 
 /**
  * Staples (generic descriptions, not products) as rows, each with "Add to list", or a note
@@ -42,7 +43,28 @@ export function StapleList({
     <ul className={cn("flex flex-col gap-2", className)}>
       {staples.map((staple) => (
         <li key={staple.id}>
-          <PieceRow name={staple.name} hex={staple.hex}>
+          <PieceRow
+            name={staple.name}
+            hex={staple.hex}
+            label={
+              <ShopPanel
+                target={{ archetypeId: staple.id }}
+                name={staple.name}
+                trigger={
+                  <button
+                    type="button"
+                    className={cn(
+                      "max-w-full truncate rounded text-left underline decoration-line-strong underline-offset-4 hover:decoration-ink",
+                      focusRing,
+                    )}
+                  >
+                    {staple.name}
+                    <span className="sr-only">: find it in shops</span>
+                  </button>
+                }
+              />
+            }
+          >
             <span className="flex shrink-0 items-center gap-3">
               {costs && (
                 <span className="text-right text-sm text-ink-soft">

@@ -1202,6 +1202,68 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/links/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview Link
+         * @description Read a product page someone pasted: its public preview data, if the site's robots.txt
+         *     allows it, at most once a day. Anything unread is left for the person to fill in.
+         */
+        post: operations["preview_link"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/shopping/shop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Shop
+         * @description Where to find a staple or a candidate: each shop's search for it, with the person's
+         *     usual spend as a guide, and demo catalogue products ranked by what they'd add.
+         */
+        get: operations["shop"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/candidates/from-catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add From Catalog
+         * @description Put a catalogue product on the shopping list.
+         */
+        post: operations["add_from_catalog"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1349,6 +1411,14 @@ export interface components {
             notes?: string | null;
             /** Photo Id */
             photo_id?: string | null;
+            /** Image Url */
+            image_url?: string | null;
+            /**
+             * Source
+             * @default manual
+             * @enum {string}
+             */
+            source: "manual" | "link";
             /** Category Id */
             category_id: string;
             /** Color Primary */
@@ -1380,6 +1450,8 @@ export interface components {
             brand: string | null;
             /** Url */
             url: string | null;
+            /** Image Url */
+            image_url: string | null;
             /** Size Label */
             size_label: string | null;
             /** Price */
@@ -1472,6 +1544,8 @@ export interface components {
             notes?: string | null;
             /** Photo Id */
             photo_id?: string | null;
+            /** Image Url */
+            image_url?: string | null;
             /** Category Id */
             category_id?: string | null;
             /** Color Primary */
@@ -1503,6 +1577,47 @@ export interface components {
             cost: number | null;
             /** Stage */
             stage: number;
+        };
+        /** CatalogProductOut */
+        CatalogProductOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Title */
+            title: string;
+            /** Brand */
+            brand: string | null;
+            /** Url */
+            url: string | null;
+            /** Image Url */
+            image_url: string | null;
+            /** Price */
+            price: number | null;
+            /** Category Id */
+            category_id: string;
+            /** Color Primary */
+            color_primary: string;
+            /** Hex */
+            hex: string | null;
+            /** Is Demo */
+            is_demo: boolean;
+            /** Source */
+            source: string;
+            /**
+             * Fetched At
+             * Format: date-time
+             */
+            fetched_at: string;
+            /** Coverage Gain */
+            coverage_gain: number;
+            /** New Outfits */
+            new_outfits: number;
+            /** Redundancy */
+            redundancy: number;
+            /** Closest */
+            closest: string | null;
         };
         /** CategoryCreate */
         CategoryCreate: {
@@ -1776,6 +1891,14 @@ export interface components {
         FinishOnboardingRequest: {
             /** Skipped */
             skipped: boolean;
+        };
+        /** FromCatalog */
+        FromCatalog: {
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
         };
         /** FromStaple */
         FromStaple: {
@@ -2208,6 +2331,42 @@ export interface components {
         LaundryOut: {
             /** Items */
             items: components["schemas"]["LaundryItem"][];
+        };
+        /**
+         * LinkPreviewOut
+         * @description What a pasted page said, for the person to check before saving. Nothing is guessed:
+         *     what the page doesn't say is null.
+         */
+        LinkPreviewOut: {
+            /** Outcome */
+            outcome: string;
+            /** Url */
+            url: string;
+            /** Fetched At */
+            fetched_at: string | null;
+            /** Site */
+            site: string | null;
+            /** Title */
+            title: string | null;
+            /** Brand */
+            brand: string | null;
+            /** Image Url */
+            image_url: string | null;
+            /** Price */
+            price: number | null;
+            /** Other Currency */
+            other_currency: string | null;
+            /** Category Id */
+            category_id: string | null;
+            /** Color Primary */
+            color_primary: string | null;
+            /** Fabric */
+            fabric: string | null;
+        };
+        /** LinkRequest */
+        LinkRequest: {
+            /** Url */
+            url: string;
         };
         /** LoginRequest */
         LoginRequest: {
@@ -2694,6 +2853,15 @@ export interface components {
             /** Is Favorite */
             is_favorite?: boolean | null;
         };
+        /** SearchLinkOut */
+        SearchLinkOut: {
+            /** Shop Id */
+            shop_id: string;
+            /** Shop */
+            shop: string;
+            /** Url */
+            url: string;
+        };
         /** SetLink */
         SetLink: {
             /**
@@ -2717,6 +2885,19 @@ export interface components {
              * @default false
              */
             chosen: boolean;
+        };
+        /** ShopOut */
+        ShopOut: {
+            /** Query */
+            query: string;
+            /** Links */
+            links: components["schemas"]["SearchLinkOut"][];
+            /** Price Cap */
+            price_cap: number | null;
+            /** Group Name */
+            group_name: string;
+            /** Products */
+            products: components["schemas"]["CatalogProductOut"][] | null;
         };
         /** SizeChoice */
         SizeChoice: {
@@ -7329,6 +7510,194 @@ export interface operations {
             };
             /** @description Unauthorized */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    preview_link: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LinkRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LinkPreviewOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    shop: {
+        parameters: {
+            query?: {
+                archetype_id?: string | null;
+                candidate_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShopOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    add_from_catalog: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FromCatalog"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CandidateOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

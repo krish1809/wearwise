@@ -109,6 +109,8 @@ So product discovery is a set of adapters behind one interface, starting with so
 
 After adapter 1 and 2 the feature is honest and useful. Adapter 4 makes the demo look complete. Adapter 5 is a bonus.
 
+(Built in M9: adapters 1, 2, and 4. Search links carry no price filters, which shops don't document; the usual spend is shown beside them. The pasted-link reader obeys robots.txt, only reaches public addresses, and keeps what it read for a day. The demo catalogue's loader is ready, but no dataset is loaded until its licence is confirmed: D46.)
+
 ### 2.3 What is known about official sources
 
 Checked in October 2026. Re-check before building, because programmes change.
@@ -149,6 +151,8 @@ Rules for every adapter:
 4. Run the purchase analyzer on each.
 5. Rank by coverage gain per rupee, with redundancy as a penalty.
 6. Show the top results with their reasons, a "why this one" line, and a link out to the retailer.
+
+(Built as: demo products of the same kind, the 30 closest in colour weighed, ranked by coverage gain times one minus likeness; demo products have no price, so there's no per-rupee ranking until a priced source exists: D46.)
 
 ### 2.6 Size and fit
 

@@ -5,14 +5,13 @@ The running state of the project, updated at the end of every slice. Keep it sho
 ## Now
 
 - **Last updated:** 2026-10-20
-- **Current milestone:** M8 Smart Shopping I, built on `m8-shopping` (branched from `m7-insights`) and waiting for your commits and merges. M7 is pushed on `m7-insights` but not merged yet. M5's last two "Done when" items (golden set, wear test) are still yours; v1.0 is tagged once they pass.
+- **Current milestone:** M9 Smart Shopping II, built on `m9-products` and waiting for your commit and merge. M7 and M8 were merged together in pull request #7. M5's last two "Done when" items (golden set, wear test) are still yours; v1.0 is tagged once they pass.
 - **Current slice:** none open. Open issue: on the live server the forecast request to Open-Meteo is refused, so days go by the season (place search works). The Render log line "Weather service unavailable: ..." says why.
 - **Next action (owner):**
-  1. Open the pull request for `m7-insights` (already pushed) and merge it once CI passes.
-  2. Then commit `m8-shopping` (staged), push it, open its pull request, and merge it.
+  1. Commit `m9-products` (staged), push it, open its pull request, and merge it once CI passes. No new environment variable is needed on Render (`PAGE_READER` defaults to reading pages).
+  2. Optional, for the demo catalogue: open the "Fashion Product Images" dataset's own page and read its licence. If it allows this use, download its styles.csv and run `make catalog file=path/to/styles.csv` locally, or against Neon with `DATABASE_URL` set. Until then the app shows no demo products.
   3. In Render, open wearwise-api > Logs, search for "Weather service unavailable", and send the text after it.
-  4. On the live site: set your usual spend per kind of clothing (Settings, Budget), add something you're thinking of buying, and try "Plan a starter wardrobe".
-  5. The wear test and the golden set (M5), then the v1.0 release.
+  4. The wear test and the golden set (M5), then the v1.0 release.
 
 M1 slices:
 
@@ -109,7 +108,17 @@ M8 slices:
 | 5 | Style Guide: fabrics, styles, colour basics, brand notebook; navigation with More on phones | done |
 | 6 | Browser walkthrough at 375 px and 1440 px; docs | done |
 
-- **Overall:** 9 of 12 milestones built (M0 to M8), 7 released. v1.0 (M0 to M5) waits on the golden set and the wear test.
+M9 slices:
+
+| # | Slice | State |
+|---|---|---|
+| 1 | Adapters: shop search links; a page reader for one pasted link (robots.txt, public addresses only, limits) with a fake | done |
+| 2 | Data: `link_previews`, `catalog_products`, candidate pictures; the demo catalogue loader and `make catalog` | done |
+| 3 | Service and API: read a link (cached a day), suggestions from the page's words, shop searches and ranked demo products, candidates from links and the catalogue | done |
+| 4 | UI: "From a link" on the add page, "Find it" from staples and candidates, the shop's picture, source and "may have changed" | done |
+| 5 | Browser walkthrough at 375 px and 1440 px; docs | done |
+
+- **Overall:** 10 of 12 milestones built (M0 to M9), 9 released (M0 to M8). v1.0 (M0 to M5) waits on the golden set and the wear test.
 
 Live:
 
@@ -183,9 +192,9 @@ M0 code, merged in pull request #1 and deployed:
 | M4 | Outfit Studio and wear log | build and save outfits; log what you wore | done | 2026-10-16 | pull request #3 |
 | M5 | Outfit engine (v1.0) | get ranked outfit suggestions with reasons | done | 2026-10-20 | pull request #4; v1.0 tag waits on the golden set and wear test |
 | M6 | My Week | plan seven days with weather, laundry, events, packing | done | 2026-10-20 | pull requests #5 and #6 |
-| M7 | Insights | see cost per wear, versatility, orphans, coverage | built, not merged | | |
-| M8 | Smart Shopping I | analyse a purchase; see gaps; plan a capsule on a budget | built, not merged | | |
-| M9 | Smart Shopping II | find real products for a gap | not started | | |
+| M7 | Insights | see cost per wear, versatility, orphans, coverage | done | 2026-10-20 | pull request #7 (with M8) |
+| M8 | Smart Shopping I | analyse a purchase; see gaps; plan a capsule on a budget | done | 2026-10-20 | pull request #7 |
+| M9 | Smart Shopping II | find real products for a gap | built, not merged | | |
 | M10 | AI | auto-tag photos; chat with a stylist that knows your wardrobe | not started | | |
 | M11 | Hardening and launch | hand the link to anyone | not started | | |
 
@@ -202,6 +211,13 @@ M0 code, merged in pull request #1 and deployed:
 ## Log
 
 Add an entry per slice, newest first.
+
+### 2026-10-20, M9 slices 1 to 5: Smart Shopping II
+
+- Built: shop search links for a staple or a candidate (Myntra, AJIO, Flipkart, Amazon), with the usual spend beside them; a reader for one pasted product page (`app/adapters/pages.py`) that obeys robots.txt, reaches only public addresses (each address checked, the connection pinned to it, every redirect checked), and reads only link-preview data, cached a day in `link_previews`; suggestions for category, colour, and fabric from the page's own words; a demo catalogue (`catalog_products`) with a loader for the "Fashion Product Images" styles.csv (`make catalog file=...`), ranked by what each product would add (D46). API: `POST /links/preview`, `GET /shopping/shop`, `POST /candidates/from-catalog`; candidates take `source` ("manual" or "link") and the shop's `image_url`. Frontend: "From a link" on the add page (read, then check and save), "Find it" from every staple (its name) and from candidates without a link, the shop's picture shown from the shop, where each candidate came from, and "may have changed" on prices over a day old. One migration.
+- Checked: `make check` passes. Reader tests against a local test server: product data from schema.org and Open Graph, robots.txt obeyed (including rules for WearWise by name), a missing robots.txt allows and an unreadable one refuses, private addresses refused (loopback, private ranges, link-local and the cloud metadata address, IPv6 loopback, shared address space, and a host with any private address), a redirect into a private network refused, size limits, non-pages, and refused pages without a retry. API tests: one read per page per day, a day later read again, blocked and unreachable pages answered rather than failed, failures remembered, a foreign price reported not converted, candidates from links and the catalogue, the loader's mapping and skips, demo products ranked and marked (every product shown has a link or is marked demo), the rate limit, a second account's candidate 404. A browser walkthrough at 1440 px and 375 px: a staple's "Find it" panel with the four shops and usual spend, pasting https://example.com/ (one real read, no product, the link kept), the candidate's source and noted price, and "Find it in shops" from a staple on the list; no console errors. Fixed while building: a link that couldn't be read was labelled "read from the page" with its typed price "checked"; it now counts as typed in.
+- Not done: no demo catalogue is loaded, since the dataset's licence couldn't be confirmed (D46); no affiliate API (none applied for).
+- Decided: D46.
 
 ### 2026-10-20, M8 slices 1 to 6: Smart Shopping I
 

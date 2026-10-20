@@ -305,3 +305,22 @@ Next.js runs with `cacheComponents` and `partialPrefetching` on, as create-next-
 
 **Rejected:** analysing every candidate whenever the list loads (slow on a small server); a copy of the staples in the frontend; fetching shop pages for a pasted link (M9, under the rules in the shopping doc).
 **Revisit if:** analyses are slow on the server for big wardrobes (work them out after saving, in the background), or people want the list's verdicts without opening each one.
+
+## D46. Real products: shop searches, one pasted page at a time, and a demo catalogue only with a checked licence
+
+**Why:**
+- **Shop search links.** A staple or a candidate becomes search words (colour, kind, and "men" or "women" when the profile has one section), linked to each shop's own search page: Myntra, AJIO, Flipkart, and Amazon, with the address formats each site uses (checked October 2026; they're one list in `adapters/products.py`). There are no price filters in the links: the shops don't document them and they change often, so the person's usual spend is shown beside the links instead ("Look for under ₹2,000"). Nothing is fetched; the person browses there. Opened with `noopener noreferrer nofollow`.
+- **A pasted link** is read by `adapters/pages.py`: one page, the one the person asked about, and only its link-preview data (Open Graph and schema.org Product: name, brand, picture, price, colour, material). Its rules:
+  - robots.txt is obeyed under the name "WearWise", and one that can't be read (refused, an error, a timeout) counts as a no; a missing one (404) allows;
+  - no cookies, no login, nothing worked around: a login page or a bot check is just "not a product", and the person fills in the form;
+  - only public addresses: the host is resolved, every address must be public, and the connection goes to the checked address (so a link, or a redirect, can't point the server at its own network or a cloud metadata address); http and https on the standard ports only, no passwords in links;
+  - five seconds, one retry for a server error or timeout, three redirects, 2 MB;
+  - what was read is kept a day in `link_previews` (shared, page data only, nothing about who pasted it), and a failure for 30 minutes, so a page is read at most once a day;
+  - 30 reads an hour per person.
+- **Suggestions, never guesses.** Page text is untrusted: trimmed, length-limited, and stored as plain text. Category, colour, and fabric are suggested only where their seed names appear in the page's own words, and the person checks every field before saving. A price in another currency is reported, not converted. A candidate counts as "from a link" (and its price as "checked" on that day) only when the page's details were actually read; a link that couldn't be read is kept on an ordinary entry. Prices noted or checked more than a day ago say "may have changed".
+- **Pictures stay at the shop.** A candidate from a link keeps the page's picture address and the browser loads it from the shop, without a referrer; nothing is copied to our storage. M11's content security policy needs to allow https images for this.
+- **The demo catalogue** (`catalog_products`) is loaded by `make catalog file=...` from the "Fashion Product Images" dataset's styles.csv. The dataset's licence couldn't be confirmed (its mirror's card has no licence), so nothing is loaded or committed; the owner checks the licence on the dataset's own page first. Labels map onto seed categories and colours only where the match is clear (the rest are skipped and counted); no seasons, and a pattern or fabric only when the name states one. Demo products have no price, no buy link, and a "Demo" label everywhere. For a staple or candidate, the catalogue's products of the same kind are weighed (the 30 closest in colour), duplicates of what's owned left out, and ranked by coverage gain times one minus likeness; they're hidden entirely while no catalogue is loaded.
+- **No affiliate or product API**: none has been applied for (section 2.3 of the shopping doc lists what's known).
+
+**Rejected:** fetching shop search results (that's scraping, and the shops' bot checks are there to stop it); copying product pictures; guessing a category or colour from a picture of someone else's product; loading a dataset whose licence isn't known.
+**Revisit if:** a shop changes its search addresses (update the list), an affiliate programme approves the app (adapter 5), or the owner confirms the dataset's licence (load it, and mention its source on the page).
