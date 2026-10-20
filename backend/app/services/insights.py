@@ -145,9 +145,9 @@ def gather(db: Session, user: User, today: date) -> Insights:
     dearest = [entry for entry in reversed(by_value) if entry not in cheapest][:COST_LIST]
     needs_price = [entry.item for entry in worn if entry.wears and entry.item.price is None]
 
-    occasions = _occasions(db, profile)
+    occasions = occasions_for(db, profile)
     seasons = [term.id for term in reference.terms(db, "season")]
-    measures = _measure(db, user, profile, occasions, seasons, today) if items else None
+    measures = measures_for(db, user, profile, occasions, seasons, today) if items else None
     style = _worn_style(db, user, profile, worn, today) if enough else None
 
     return Insights(
@@ -232,13 +232,33 @@ def _by_color(db: Session, user: User) -> list[Tally]:
     return [Tally(color, name, count, hex_) for color, name, hex_, count in rows]
 
 
-def _occasions(db: Session, profile: Profile) -> list[Occasion]:
+def occasions_for(db: Session, profile: Profile) -> list[Occasion]:
     """The occasions the person dresses for: chosen in onboarding, or in their usual week."""
     wanted = set(profile.occasion_ids) | set(profile.weekday_occasions.values())
     return [occasion for occasion in reference.ordered(db, Occasion) if occasion.id in wanted]
 
 
-def _measure(
+def fingerprint(
+    db: Session, user: User, profile: Profile, occasions: list[Occasion]
+) -> tuple[object, ...]:
+    """Everything the wardrobe's measures depend on: when any of it changes, they're worked
+    out again. The wardrobe (its version), the engine, the occasions, the styles and colours
+    chosen in the profile, and the reactions to suggestions."""
+    reactions = db.scalar(select(func.count()).where(SuggestionFeedback.user_id == user.id)) or 0
+    return (
+        user.id,
+        user.wardrobe_version,
+        ENGINE_VERSION,
+        tuple(occasion.id for occasion in occasions),
+        tuple(sorted(profile.style_profile_ids)),
+        tuple(sorted(profile.preferred_colors)),
+        tuple(sorted(profile.avoided_colors)),
+        profile.fit_preference,
+        reactions,
+    )
+
+
+def measures_for(
     db: Session,
     user: User,
     profile: Profile,
@@ -246,16 +266,10 @@ def _measure(
     seasons: list[str],
     today: date,
 ) -> Measures | None:
+    """The wardrobe graph for these occasions and seasons, cached per fingerprint."""
     if not occasions:
         return None
-    reactions = db.scalar(select(func.count()).where(SuggestionFeedback.user_id == user.id)) or 0
-    key = (
-        user.id,
-        user.wardrobe_version,
-        ENGINE_VERSION,
-        tuple(occasion.id for occasion in occasions),
-        reactions,
-    )
+    key = (*fingerprint(db, user, profile, occasions), tuple(seasons))
     with _lock:
         cached = _measures.get(key)
         if cached is not None:

@@ -202,6 +202,7 @@ def _run(
     anchors: tuple[EngineItem, ...],
     level: Range,
     spread: bool = False,
+    at_level: bool = False,
 ) -> _Run:
     anchor_ids = {anchor.id for anchor in anchors}
     usable = [
@@ -238,7 +239,7 @@ def _run(
             ]
             gaps.append((len(empty), order, explained))
             continue
-        found = _generate(template, slots, extras, scorer, config, spread)
+        found = _generate(template, slots, extras, scorer, config, spread, at_level)
         if not found:
             requirement = template.required[-1]
             name = wardrobe.slot_names.get(requirement.slot, requirement.slot)
@@ -305,13 +306,17 @@ def _generate(
     scorer: Scorer,
     config: EngineConfig,
     spread: bool = False,
+    at_level: bool = False,
 ) -> list[_Draft]:
-    """Every core outfit when there are few enough, otherwise a beam search."""
+    """Every core outfit when there are few enough, otherwise a beam search. With
+    `at_level`, enumerated outfits off the occasion's level are dropped before scoring."""
     total = math.prod(len(options) for options in slots)
     if total <= config.enumerate_limit:
         combos: list[tuple[EngineItem, ...]] = []
         for combo in product(*slots):
             core = tuple(item for item in combo if item is not None)
+            if at_level and not _at_level(core, scorer.level):
+                continue
             if not _rejected(core, scorer):
                 combos.append(core)
     else:
@@ -547,7 +552,7 @@ def _accessorise(
                 added.append(chosen)
             continue
         fit, best = min(
-            ((_accessory_fit(option, candidate.core, scorer), option) for option in options),
+            ((accessory_fit(option, candidate.core, scorer), option) for option in options),
             key=lambda entry: (-entry[0], entry[1].id),
         )
         if fit >= scorer.config.accessory_min:
@@ -590,7 +595,7 @@ def _slot_order(slots: frozenset[str], kinds: Mapping[str, str]) -> list[str]:
     return sorted(slots, key=lambda slot: (order.index(slot) if slot in order else 99, slot))
 
 
-def _accessory_fit(item: EngineItem, core: Sequence[EngineItem], scorer: Scorer) -> float:
+def accessory_fit(item: EngineItem, core: Sequence[EngineItem], scorer: Scorer) -> float:
     """The weighted mean of the accessory's pair scores with the core pieces."""
     total = weight_sum = 0.0
     for piece in core:
@@ -716,25 +721,38 @@ class CoreOutfit:
     score: float
 
 
+def _at_level(core: Sequence[EngineItem], level: Range) -> bool:
+    """Whether the outfit's mean formality is inside the occasion's range: a good outfit
+    for an occasion is dressed for it, not a step off (D44)."""
+    mean = sum(item.formality for item in core) / len(core)
+    return level.low <= mean <= level.high
+
+
 def good_cores(
     wardrobe: Wardrobe,
     context: Context,
     threshold: float,
     config: EngineConfig = DEFAULT,
     pair_cache: dict[tuple[str, str], PairScore] | None = None,
+    anchors: tuple[EngineItem, ...] = (),
 ) -> list[CoreOutfit]:
-    """Every distinct core outfit for the context scoring at least `threshold`, best first.
-    Large wardrobes go through the beam search, spread across the wardrobe, so the count is
-    of the outfits it finds rather than every possible one."""
+    """Every distinct core outfit for the context scoring at least `threshold` and dressed
+    at the occasion's level, best first; with anchors, only those that include them.
+    Anchors pass the same filters as everything else here (a summer-only piece makes nothing
+    in winter). Large wardrobes go through the beam search, spread across the wardrobe, so
+    the count is of the outfits it finds rather than every possible one."""
     owned = sorted(
         (item for item in wardrobe.items if item.owner_id == context.user_id),
         key=lambda item: item.id,
     )
+    level = _level(context, anchors)
+    if any(_why_not(anchor, context, level, config) is not None for anchor in anchors):
+        return []
     pairs = PairScores(config, pair_cache)
-    run = _run(wardrobe, context, config, pairs, owned, (), _level(context, ()), spread=True)
+    run = _run(wardrobe, context, config, pairs, owned, anchors, level, spread=True, at_level=True)
     found = [
         CoreOutfit(draft.key, draft.template.id, draft.score)
         for draft in run.candidates
-        if draft.score >= threshold
+        if draft.score >= threshold and _at_level(draft.core, level)
     ]
     return sorted(found, key=lambda outfit: (-outfit.score, outfit.core_ids))

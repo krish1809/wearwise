@@ -7,7 +7,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.models import Category, Item, User
+from app.models import Candidate, Category, Item, User
 
 # Far more than anyone needs; keeps the category list one small response.
 MAX_CUSTOM = 100
@@ -22,9 +22,10 @@ class TooManyCategories(Exception):
 
 
 class CategoryInUse(Exception):
-    def __init__(self, items: int) -> None:
-        super().__init__(f"{items} items use this category")
+    def __init__(self, items: int, candidates: int = 0) -> None:
+        super().__init__(f"{items} items and {candidates} candidates use this category")
         self.items = items
+        self.candidates = candidates
 
 
 def visible_to(user: User) -> Any:
@@ -82,7 +83,8 @@ def find_custom(db: Session, user: User, category_id: str) -> Category | None:
 
 def delete_custom(db: Session, category: Category) -> None:
     items = db.scalar(select(func.count()).where(Item.category_id == category.id)) or 0
-    if items:
-        raise CategoryInUse(items)
+    wanted = db.scalar(select(func.count()).where(Candidate.category_id == category.id)) or 0
+    if items or wanted:
+        raise CategoryInUse(items, wanted)
     db.delete(category)
     db.flush()

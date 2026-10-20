@@ -90,7 +90,7 @@ Each component needs: default, hover, focus-visible, active, disabled, loading (
 
 ## Navigation
 
-- **Desktop:** left sidebar with Home, Wardrobe, Outfits, My Week, Shopping, Insights, Stylist; Settings in the avatar menu.
+- **Desktop:** left sidebar with Home, Wardrobe, Outfits, My Week, Shopping, Insights, Style Guide, Stylist; Settings in the avatar menu.
 - **Phone:** bottom tab bar with Home, Wardrobe, Outfits, My Week, and More; a floating add button above it.
 - Show a destination only once its page exists. M1 ships with Home and Settings only.
 

@@ -220,6 +220,35 @@ class EngineConfig:
     # Packing (section 13): a day counts as covered by an outfit scoring at least this much.
     packing_min_score: float = 0.65
 
+    # Shopping (docs/SHOPPING.md, part 1). Good outfits for one occasion and season are worth
+    # log2(1 + n), counting at most coverage_cap of them.
+    coverage_cap: int = 10
+    # How alike two pieces for the same slot are: these weights add up to 1.
+    similar_category: float = 0.35
+    similar_colour: float = 0.35
+    similar_pattern: float = 0.15
+    similar_formality: float = 0.15
+    # Colours this far apart in OKLab count as different; closer ones are partly alike (white
+    # and cream about 0.6, navy and charcoal about 0.45, navy and black about 0.2).
+    colour_closeness_distance: float = 0.15
+    # Verdicts: at this similarity a candidate duplicates what's owned (Skip); Buy needs less
+    # than buy_similarity_below, at least min_new_outfits, and a coverage gain in the top
+    # buy_top_share of what the staples would add. The doc's 0.6 would rule out a second
+    # piece of the same kind in any colour, since kind, pattern, and level alone make 0.65
+    # (D44).
+    duplicate_at: float = 0.8
+    buy_similarity_below: float = 0.7
+    min_new_outfits: int = 2
+    buy_top_share: float = 1 / 3
+    # Budget split: every affordable subset up to this many candidates, greedy above.
+    split_exhaustive_up_to: int = 12
+    # Starter capsule: at most this many pieces; when no single piece adds an outfit, the
+    # best of this many whole outfits are compared.
+    capsule_limit: int = 12
+    capsule_bundles: int = 50
+    # New outfits shown as examples.
+    shopping_examples: int = 3
+
     # Learning from feedback (section 10).
     learning_rate: float = 0.3
 

@@ -214,7 +214,7 @@ Items are nodes. Two items in different slots are connected if `P >= 0.65`.
 
 | Measure | Definition | Used for |
 |---|---|---|
-| Versatility | Number of distinct good outfits (`Score >= 0.7`, for any of the user's occasions) containing the item | Insights, purchase analysis |
+| Versatility | Number of distinct good outfits (`Score >= 0.7` and dressed at the occasion's level, D44, for any of the user's occasions) containing the item | Insights, purchase analysis |
 | Orphan | Available item with versatility below 2 | Insights, "rescue" suggestions |
 | Coverage | For each occasion and season, the number of distinct good outfits, capped at 10 | Gap analysis, purchase analysis |
 

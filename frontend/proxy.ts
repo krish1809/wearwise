@@ -25,6 +25,8 @@ export const config = {
     "/laundry/:path*",
     "/trips/:path*",
     "/insights/:path*",
+    "/shopping/:path*",
+    "/guide/:path*",
     "/settings/:path*",
     "/onboarding/:path*",
   ],

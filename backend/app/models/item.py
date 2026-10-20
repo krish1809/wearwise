@@ -82,6 +82,10 @@ class ItemImage(IdMixin, TimestampMixin, Base):
     item_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("items.id", ondelete="CASCADE"), index=True
     )
+    # Or a shopping candidate's photo; it moves to the item when the candidate is bought.
+    candidate_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("candidates.id", ondelete="CASCADE"), index=True
+    )
     # Keys in the storage backend: the photo (at most 1600 px) and a 400 px thumbnail.
     storage_key: Mapped[str]
     thumb_key: Mapped[str]

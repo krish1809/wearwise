@@ -143,14 +143,15 @@ def find_photo(db: Session, user: User, image_id: uuid.UUID) -> ItemImage | None
 
 
 def remove_unattached(db: Session, user: User) -> list[str]:
-    """Delete this person's photos that were uploaded but never saved with an item. Returns the
-    storage keys, to delete once the change is committed."""
+    """Delete this person's photos that were uploaded but never saved with an item or a
+    shopping candidate. Returns the storage keys, to delete once the change is committed."""
     cutoff = datetime.now(UTC) - UNATTACHED_FOR
     stale = list(
         db.scalars(
             select(ItemImage).where(
                 ItemImage.user_id == user.id,
                 ItemImage.item_id.is_(None),
+                ItemImage.candidate_id.is_(None),
                 ItemImage.created_at < cutoff,
             )
         )

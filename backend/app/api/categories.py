@@ -99,7 +99,12 @@ def delete_category(category_id: str, user: CurrentUser, db: SessionDep) -> None
     try:
         categories.delete_custom(db, category)
     except categories.CategoryInUse as error:
-        count = f"{error.items} item{'s' if error.items != 1 else ''}"
-        message = f"{count} still use this category. Move or delete them first."
-        raise ApiError(409, "category_in_use", message) from error
+        parts = []
+        if error.items:
+            parts.append(f"{error.items} item{'s' if error.items != 1 else ''}")
+        if error.candidates:
+            wished = error.candidates
+            parts.append(f"{wished} thing{'s' if wished != 1 else ''} on your shopping list")
+        message = f"{' and '.join(parts)} still use this category. Move or delete them first."
+        raise ApiError(409, "category_in_use", message[0].upper() + message[1:]) from error
     db.commit()

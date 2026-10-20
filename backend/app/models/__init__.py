@@ -8,26 +8,32 @@ from app.models.planning import Event, PlanDay, Trip, TripItem, WeatherForecast
 from app.models.profile import BrandNote, Profile
 from app.models.rate_limit import RateLimitHit
 from app.models.reference import (
+    Archetype,
     Category,
     CategoryGroup,
     ColorFamily,
+    GuideEntry,
     Occasion,
     OutfitTemplate,
     StyleProfile,
     VocabularyTerm,
 )
+from app.models.shopping import Candidate
 from app.models.suggestion import Suggestion, SuggestionFeedback
 from app.models.user import User
 from app.models.user_session import UserSession
 
 __all__ = [
     "AppMeta",
+    "Archetype",
     "Base",
     "BrandNote",
+    "Candidate",
     "Category",
     "CategoryGroup",
     "ColorFamily",
     "Event",
+    "GuideEntry",
     "Item",
     "ItemImage",
     "Occasion",

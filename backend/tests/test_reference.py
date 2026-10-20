@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
-from app.models import ColorFamily, Occasion, VocabularyTerm
+from app.models import Archetype, ColorFamily, GuideEntry, Occasion, VocabularyTerm
 from app.services.reference_seed import SEED_DIR, SeedError, seed_reference_data
 
 
@@ -93,8 +93,8 @@ def test_seeding_never_deletes_rows_missing_from_the_files(db: Session) -> None:
 
 @pytest.fixture
 def seed_copy(tmp_path: Path) -> Path:
-    for name in ("taxonomy.json", "colors.json", "occasions.json", "style_profiles.json"):
-        shutil.copy(SEED_DIR / name, tmp_path / name)
+    for path in SEED_DIR.glob("*.json"):
+        shutil.copy(path, tmp_path / path.name)
     return tmp_path
 
 
@@ -114,3 +114,38 @@ def test_an_occasion_preferring_an_unknown_group_is_refused(db: Session, seed_co
 
     with pytest.raises(SeedError, match="spacesuits"):
         seed_reference_data(db, seed_copy)
+
+
+def test_a_staple_naming_an_unknown_colour_is_refused(db: Session, seed_copy: Path) -> None:
+    staples = json.loads((seed_copy / "archetypes.json").read_text())
+    staples["archetypes"][0]["color"] = "ultraviolet"
+    (seed_copy / "archetypes.json").write_text(json.dumps(staples))
+
+    with pytest.raises(SeedError, match="ultraviolet"):
+        seed_reference_data(db, seed_copy)
+
+
+def test_a_guide_entry_for_an_unknown_fabric_is_refused(db: Session, seed_copy: Path) -> None:
+    guide = json.loads((seed_copy / "guide.json").read_text())
+    guide["fabrics"][0]["id"] = "moonbeam"
+    (seed_copy / "guide.json").write_text(json.dumps(guide))
+
+    with pytest.raises(SeedError, match="moonbeam"):
+        seed_reference_data(db, seed_copy)
+
+
+def test_staples_and_the_guide_are_loaded_in_order(db: Session) -> None:
+    staples = seed("archetypes.json")["archetypes"]
+    guide = seed("guide.json")
+
+    loaded = list(db.scalars(select(Archetype).order_by(Archetype.position)))
+    fabrics = list(
+        db.scalars(
+            select(GuideEntry).where(GuideEntry.kind == "fabric").order_by(GuideEntry.position)
+        )
+    )
+
+    assert [row.id for row in loaded] == [s["id"] for s in staples]
+    assert loaded[0].category_id == staples[0]["category"]
+    assert [row.id for row in fabrics] == [f["id"] for f in guide["fabrics"]]
+    assert "id" not in fabrics[0].body and fabrics[0].body["care"]

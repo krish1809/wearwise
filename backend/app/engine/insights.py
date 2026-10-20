@@ -12,7 +12,7 @@ from dataclasses import dataclass, replace
 
 from app.engine.color import oklch
 from app.engine.config import DEFAULT, EngineConfig
-from app.engine.generate import good_cores
+from app.engine.generate import accessory_fit, good_cores
 from app.engine.pairs import PairScore, PairScores
 from app.engine.reasons import mid, text
 from app.engine.scoring import Range, Scorer, fits_style
@@ -44,6 +44,8 @@ class Measures:
     rescues: Mapping[str, Rescue]
     # Distinct good outfits for each (occasion, season).
     coverage: Mapping[tuple[str, str], int]
+    # Every distinct good outfit: its core ids and template.
+    good: Mapping[tuple[str, ...], str]
 
 
 @dataclass(frozen=True)
@@ -69,6 +71,12 @@ def steady(wardrobe: Wardrobe) -> Wardrobe:
     )
 
 
+def steady_context(base: Context) -> Context:
+    """The context for measuring the wardrobe: nothing worn lately, weather from the season,
+    nothing fixed or left out."""
+    return replace(base, recent_outfits=(), weather=None, anchor_ids=(), exclude_ids=frozenset())
+
+
 def measure(
     wardrobe: Wardrobe,
     base: Context,
@@ -79,7 +87,7 @@ def measure(
     pair_cache: dict[tuple[str, str], PairScore] | None = None,
 ) -> Measures:
     whole = steady(wardrobe)
-    context = replace(base, recent_outfits=(), weather=None, anchor_ids=(), exclude_ids=frozenset())
+    context = steady_context(base)
     coverage: dict[tuple[str, str], int] = {}
     good: dict[tuple[str, ...], str] = {}
     for occasion in occasions:
@@ -109,7 +117,7 @@ def measure(
         for accessory in accessories:
             if (
                 accessory.slot in allowed
-                and _fit(accessory, pieces, scorer) >= config.accessory_min
+                and accessory_fit(accessory, pieces, scorer) >= config.accessory_min
             ):
                 versatility[accessory.id] += 1
 
@@ -127,16 +135,8 @@ def measure(
         orphans=tuple(item.id for item in orphans),
         rescues=rescues,
         coverage=coverage,
+        good=good,
     )
-
-
-def _fit(item: EngineItem, core: Sequence[EngineItem], scorer: Scorer) -> float:
-    total = weights = 0.0
-    for piece in core:
-        weight = scorer.pair_weight(item, piece)
-        total += weight * scorer.pair_value(item, piece)[1]
-        weights += weight
-    return total / weights if weights else 0.0
 
 
 def _rescue(

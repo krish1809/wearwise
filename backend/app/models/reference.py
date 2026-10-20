@@ -124,3 +124,38 @@ class OutfitTemplate(TimestampMixin, Base):
     # Slots that may be added: layers, accessories, fragrance.
     optional: Mapped[list[str]] = mapped_column(ARRAY(String), server_default="{}")
     position: Mapped[int]
+
+
+class Archetype(TimestampMixin, Base):
+    """A common wardrobe staple from seed/archetypes.json, such as "navy chinos": a generic
+    description with full attributes and no price, used for gaps and the starter capsule."""
+
+    __tablename__ = "archetypes"
+
+    id: Mapped[str] = mapped_column(primary_key=True)
+    name: Mapped[str]
+    category_id: Mapped[str] = mapped_column(ForeignKey("categories.id"))
+    color: Mapped[str] = mapped_column(ForeignKey("color_families.id"))
+    pattern: Mapped[str]
+    fabric: Mapped[str | None]
+    formality: Mapped[int]
+    warmth: Mapped[int]
+    seasons: Mapped[list[str]] = mapped_column(ARRAY(String), server_default="{}")
+    sections: Mapped[list[str]] = mapped_column(ARRAY(String), server_default="{}")
+    # Style profile ids it belongs to.
+    styles: Mapped[list[str]] = mapped_column(ARRAY(String), server_default="{}")
+    attrs: Mapped[dict[str, Any]] = mapped_column(JSONB, server_default="{}")
+    position: Mapped[int]
+
+
+class GuideEntry(TimestampMixin, Base):
+    """Style Guide text from seed/guide.json: a fabric (keyed by its vocabulary id) or a
+    colour basic."""
+
+    __tablename__ = "guide_entries"
+
+    kind: Mapped[str] = mapped_column(primary_key=True)
+    id: Mapped[str] = mapped_column(primary_key=True)
+    # Fabric: feel, seasons, care, label, watch. Colour: title, text.
+    body: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    position: Mapped[int]

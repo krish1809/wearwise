@@ -1,10 +1,23 @@
 """The name an item is shown by: its own, or its colour and category ("Navy t-shirt")."""
 
+from typing import Protocol
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models import ColorFamily, Item, User
+from app.models import ColorFamily, User
 from app.services import categories
+
+
+class Nameable(Protocol):
+    """An item, or something described like one (a shopping candidate)."""
+
+    @property
+    def name(self) -> str | None: ...
+    @property
+    def color_primary(self) -> str: ...
+    @property
+    def category_id(self) -> str: ...
 
 
 class ItemNames:
@@ -16,7 +29,7 @@ class ItemNames:
             id_: name for id_, name in db.execute(select(ColorFamily.id, ColorFamily.name))
         }
 
-    def display_name(self, item: Item) -> str:
+    def display_name(self, item: Nameable) -> str:
         if item.name:
             return item.name
         colour = _short(self.colors.get(item.color_primary, ""))
