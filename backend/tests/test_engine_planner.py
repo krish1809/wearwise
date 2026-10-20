@@ -125,7 +125,8 @@ def test_a_small_wardrobe_says_which_days_it_could_not_fill() -> None:
     assert plan.days[0].outfit is not None
     assert [m.code for m in plan.days[1].missing] == ["plan.blocked"]
     assert plan.days[1].missing[0].text == (
-        "Everything that fits this day is due a wash or worn too recently by then."
+        "Everything that fits this day is due a wash or worn too recently by then. "
+        "A laundry day in your usual week frees things up."
     )
 
 

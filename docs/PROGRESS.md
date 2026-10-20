@@ -5,13 +5,13 @@ The running state of the project, updated at the end of every slice. Keep it sho
 ## Now
 
 - **Last updated:** 2026-10-20
-- **Current milestone:** M6 My Week, built and checked locally; it sits in the working tree on top of M5, which is still staged on `m5-engine` and not committed. M5's last two "Done when" items (golden set, wear test) are yours.
-- **Current slice:** none open.
+- **Current milestone:** M5 and M6 released on 2026-10-20 (pull requests #4 and #5). M5's last two "Done when" items (golden set, wear test) are yours; v1.0 is tagged once they pass.
+- **Current slice:** none open. Open issue: on the live server the forecast request to Open-Meteo is refused, so days go by the season (place search works). The Render log line "Weather service unavailable: ..." says why.
 - **Next action (owner):**
-  1. Commit M5 (the staged files) on `m5-engine` and push it; open its pull request and merge once CI passes.
-  2. Then put M6 on its own branch: `git switch -c m6-week`, `git add -A`, commit, push, pull request, merge. Render runs the new migration and seed on deploy; no new settings are needed.
-  3. On the live site: choose your city in Settings (search, then pick it), set your usual week in My Week, and plan a week. Check M6's "Done when" list.
-  4. Still open from M5: the wear test and the golden set (see M5 below), then the v1.0 release.
+  1. In Render, open wearwise-api > Logs, search for "Weather service unavailable", and send the text after it.
+  2. Commit the small fixes on `m6-fixes` (staged), open a pull request, and merge it.
+  3. On the live site: choose your city in Settings, set your usual week (with a laundry day) in My Week, and plan a week.
+  4. The wear test and the golden set (M5), then the v1.0 release.
 
 M1 slices:
 
@@ -87,7 +87,7 @@ M6 slices:
 | 7 | Trips and packing lists; packed items leave suggestions | done |
 | 8 | Home: today's weather and planned outfit; footer credit | done |
 
-- **Overall:** 5 of 12 milestones released (M0 to M4); M5 and M6 built. v1.0 is M0 to M5.
+- **Overall:** 7 of 12 milestones released (M0 to M6). v1.0 (M0 to M5) waits on the golden set and the wear test.
 
 Live:
 
@@ -180,6 +180,13 @@ M0 code, merged in pull request #1 and deployed:
 ## Log
 
 Add an entry per slice, newest first.
+
+### 2026-10-20, M5 and M6 deployed
+
+- Done: pull requests #4 (M5) and #5 (M6) merged; CI passed on `main`; Vercel and Render deployed (Render finished at 05:57 UTC, running both migrations and the seed).
+- Checked on the live site, through Vercel, with a throwaway account (deleted afterwards): register; nine items; place search for Pune through the server (1.8 s); the profile's city and usual week; suggestions (10 outfits, engine 1.1, 0.6 s); a planned week (0.75 s; four days dressed, the last three explained, since four tops each needed a wash after one wear and no laundry day was set); wearing today; the laundry list; a three-day trip packed in five items. Not working: the forecast. Both Pune and Mumbai went by the season, failing in about a second (not a timeout), while the same request from a laptop answers in under a second; Render's free servers share outgoing addresses, so Open-Meteo's per-address limit is the likely cause. The app falls back as designed.
+- Fixed after deploying: `/week`, `/laundry`, and `/trips` were missing from the pages that send a logged-out visitor to log in (the API refused their data, but the empty page loaded); a test now checks every logged-in section is listed. The message for a day the laundry blocks now suggests setting a laundry day.
+- Left: the forecast on the live server (needs the log line), then M5's golden set and wear test.
 
 ### 2026-10-20, M6 slices 1 to 8: My Week
 
