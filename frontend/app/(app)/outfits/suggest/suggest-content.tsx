@@ -276,7 +276,10 @@ function Suggester({
                   ))}
                 </ul>
               )}
-              <ul className="grid gap-x-6 gap-y-12 sm:grid-cols-2 xl:grid-cols-3">
+              <p className="text-sm text-ink-soft [@media(pointer:fine)]:hidden">
+                Swipe an outfit right to like it, or left to dislike it.
+              </p>
+              <ul className="grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 xl:grid-cols-3">
                 {shown.map((suggestion) => (
                   <li key={suggestion.id}>
                     <SuggestionCard

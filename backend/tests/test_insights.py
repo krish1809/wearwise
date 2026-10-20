@@ -6,15 +6,16 @@ from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import update
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 from wardrobe_support import add_item
 
-from app.models import Item
+from app.models import Item, Profile
 from app.services import insights as insights_service
 from app.services.wear import today
 
 INSIGHTS = "/api/v1/insights"
+CHALLENGE = "/api/v1/insights/challenge"
 
 
 @pytest.fixture(autouse=True)
@@ -207,3 +208,70 @@ def test_another_account_sees_only_its_own(sam: TestClient, ana: TestClient, db:
 
 def test_insights_need_a_login(client: TestClient) -> None:
     assert client.get(INSIGHTS).status_code == 401
+
+
+def test_a_coverage_cell_opens_to_its_outfits_or_whats_missing(sam: TestClient) -> None:
+    sam.patch("/api/v1/profile", json={"occasion_ids": ["college", "interview"]})
+    shirt = add_item(sam, "casual_shirt", "white", fabric="cotton")
+    chinos = add_item(sam, "chinos", "navy", fabric="cotton")
+    loafers = add_item(sam, "loafers", "brown", fabric="leather")
+
+    college = sam.get("/api/v1/insights/coverage/college/mild").json()
+    interview = sam.get("/api/v1/insights/coverage/interview/mild").json()
+    coverage = sam.get(INSIGHTS).json()["coverage"]
+
+    shown = {i["id"] for i in college["outfits"][0]["items"]}
+    assert shown == {shirt["id"], chinos["id"], loafers["id"]}
+    # The same count as the map's square.
+    square = next(
+        c for c in coverage["cells"] if (c["occasion_id"], c["season"]) == ("college", "mild")
+    )
+    assert len(college["outfits"]) == square["outfits"]
+    assert interview["outfits"] == []
+    assert interview["missing"] or interview["closest"]
+
+
+def test_a_coverage_cell_is_only_for_your_occasions(sam: TestClient) -> None:
+    sam.patch("/api/v1/profile", json={"occasion_ids": ["college"]})
+
+    assert sam.get("/api/v1/insights/coverage/festive/mild").status_code == 404
+    assert sam.get("/api/v1/insights/coverage/college/spring").status_code == 404
+
+
+def test_the_wear_what_you_own_challenge_counts_from_the_wear_log(
+    sam: TestClient, ana: TestClient, db: Session
+) -> None:
+    shirt = add_item(sam, "casual_shirt", "white")
+    chinos = add_item(sam, "chinos", "navy")
+    loafers = add_item(sam, "loafers", "brown")
+    tee = add_item(sam, "tshirt", "olive")
+    log(sam, 3, shirt, chinos)
+    assert sam.get(CHALLENGE).json() == {"challenge": None, "days": 60}
+
+    started = sam.post(CHALLENGE).json()["challenge"]
+    # Wear from before the start doesn't count.
+    assert (started["day"], started["worn"], started["total"]) == (1, 0, 4)
+    log(sam, 0, shirt, loafers)
+    found = sam.get(CHALLENGE).json()["challenge"]
+    assert (found["worn"], found["unworn_count"], found["finished"]) == (2, 2, False)
+    assert {i["id"] for i in found["unworn"]} == {chinos["id"], tee["id"]}
+
+    # Another person's challenge is their own.
+    assert ana.get(CHALLENGE).json()["challenge"] is None
+    assert ana.delete(CHALLENGE).status_code == 204
+    assert sam.get(CHALLENGE).json()["challenge"] is not None
+
+    # Started 61 days ago: it ended yesterday-but-one, so today's wear is after the end and
+    # the wear three days ago is inside it.
+    db.execute(
+        update(Profile)
+        .where(Profile.user_id == db.scalar(select(Item.user_id).where(Item.id == shirt["id"])))
+        .values(challenge_started_on=today() - timedelta(days=61))
+    )
+    db.flush()
+    over = sam.get(CHALLENGE).json()["challenge"]
+    assert (over["day"], over["finished"]) == (62, True)
+    assert {i["id"] for i in over["unworn"]} == {loafers["id"], tee["id"]}
+
+    assert sam.delete(CHALLENGE).status_code == 204
+    assert sam.get(CHALLENGE).json()["challenge"] is None

@@ -10,6 +10,7 @@ import {
   type BoardPiece,
 } from "@/components/outfits/outfit-board";
 import { ReasonList } from "@/components/outfits/reason-list";
+import { Swipeable } from "@/components/outfits/swipe";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -79,6 +80,29 @@ export function SuggestionCard({
     }
   }
 
+  /** A swipe: the same feedback the buttons send, and an Undo in case it was a slip. */
+  async function swiped(feedback: Feedback, done: string) {
+    const before = suggestion.rating;
+    const problem = await send(feedback);
+    if (problem) {
+      toast.error(problem);
+      return;
+    }
+    toast.success(done, {
+      action: {
+        label: "Undo",
+        onClick: () =>
+          void send(
+            before === "like"
+              ? { verdict: "like" }
+              : before === "dislike"
+                ? { verdict: "dislike", reason: null, item_id: null }
+                : null,
+          ),
+      },
+    });
+  }
+
   async function saveIt() {
     try {
       const outfit = await save.mutateAsync({ id: suggestion.id, body: {} });
@@ -104,7 +128,33 @@ export function SuggestionCard({
 
   return (
     <article aria-labelledby={titleId} className="flex flex-col gap-3">
-      <OutfitBoard pieces={pieces} slots={slots} familyHex={familyHex} settle />
+      {suggestion.stale ? (
+        <OutfitBoard
+          pieces={pieces}
+          slots={slots}
+          familyHex={familyHex}
+          settle
+        />
+      ) : (
+        <Swipeable
+          label={name}
+          onLike={() => void swiped({ verdict: "like" }, "Liked")}
+          // Exactly what Dislike sends when no reason is given.
+          onDislike={() =>
+            void swiped(
+              { verdict: "dislike", reason: null, item_id: null },
+              "Disliked",
+            )
+          }
+        >
+          <OutfitBoard
+            pieces={pieces}
+            slots={slots}
+            familyHex={familyHex}
+            settle
+          />
+        </Swipeable>
+      )}
       <SwatchStrip pieces={pieces} familyHex={familyHex} />
       <div className="flex flex-col gap-1">
         <h3 id={titleId} className="font-display text-lg font-semibold">

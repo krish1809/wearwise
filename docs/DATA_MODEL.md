@@ -114,6 +114,7 @@ Pair preferences are not a table: they are worked out from `suggestion_feedback`
 | item attributes | `category_id`, `slot`, `color_primary`, `color_secondary`, `color_hex`, `pattern`, `fabric`, `fit`, `formality`, `warmth`, `seasons[]` |
 | `status` | considering, buy_next, later, skipped, purchased (purchased only by buying it) |
 | `target_price` | optional |
+| `remind_on` | optional date (M10b): "sleep on it"; on that day the shopping list asks whether it's still wanted. Set only to a day after today and within a year; cleared when the person answers, skips it, or buys it |
 | `analysis` | json, the last analysis and verdict |
 | `analysis_key` | a hash of everything the analysis depends on (wardrobe version, engine version, occasions, styles and colours, reactions, sections, budgets, and the candidate's attributes and price); worked out again when it differs |
 | `item_id` | the wardrobe item made from it when bought |
@@ -133,6 +134,14 @@ Marking a candidate bought creates the item, with the candidate's photo, through
 **`chat_actions`**: `user_id`, `thread_id`, `kind` (save_outfit, plan_outfit, add_to_list, log_wear), `payload` (json, with a one-line summary), `status` (pending, done, cancelled), `result` (json: what confirming made). Nothing is changed until the person confirms (D47).
 
 **`ai_usage`**: `user_id`, `day`, `messages`, `images`, `tokens_in`, `tokens_out`, `cost_micro_usd`; unique per person per day. Used for the limits and the daily spend cap.
+
+## Interaction and polish (M10b)
+
+**`profiles`** gained `challenge_started_on` (date, or null when no challenge runs): the start of the "wear what you own" challenge. Its progress is not stored; it's counted on every request from `wear_log_items` between the start and the 60th day, over the pieces in the wardrobe now (not archived or retired).
+
+**`candidates`** gained `remind_on` (see Shopping).
+
+The theme choice is not stored on the server: it's a per-browser setting (D48).
 
 ## Deletion
 

@@ -7,7 +7,7 @@ or estimated. Rankings wait until there are enough wear logs to mean something.
 
 import uuid
 from collections import OrderedDict
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date, timedelta
 from threading import Lock
 
@@ -15,7 +15,16 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.engine.config import DEFAULT, ENGINE_VERSION
-from app.engine.insights import Family, Measures, WornStyle, measure, worn_style
+from app.engine.generate import good_cores, season_for, suggest
+from app.engine.insights import (
+    Family,
+    Measures,
+    WornStyle,
+    measure,
+    steady,
+    steady_context,
+    worn_style,
+)
 from app.models import (
     Category,
     CategoryGroup,
@@ -334,3 +343,159 @@ def without_cache() -> None:
     """For tests: forget cached measures."""
     with _lock:
         _measures.clear()
+
+
+@dataclass(frozen=True)
+class CellDetail:
+    """One occasion and season of the coverage map, opened."""
+
+    # Good outfits there, best first (at most ten), as core item ids.
+    outfits: list[tuple[list[uuid.UUID], float]]
+    # When there are none: why, and the closest outfits there are.
+    missing: list[str]
+    closest: list[tuple[list[uuid.UUID], float]]
+    # Staples (ids) that would add good outfits there, most first.
+    staples: list[str]
+
+
+def cell(db: Session, user: User, occasion: Occasion, season: str, today: date) -> CellDetail:
+    """The good outfits for one occasion and season, counted the same way as the coverage
+    map (the steady wardrobe, the season's weather); with none, what's missing."""
+    # Shopping builds on this module, so it's imported here, not at the top.
+    from app.services import shopping
+
+    profile = profiles.get_or_create_profile(db, user)
+    wardrobe = steady(suggestions.load_wardrobe(db, user, today))
+    base = suggestions.base_context(db, user, profile, wardrobe, today)
+    context = replace(
+        steady_context(base),
+        occasion=suggestions.engine_occasion(occasion),
+        season=season,
+        count=3,
+    )
+    pairs = suggestions.pair_cache_for(user)
+    found = good_cores(wardrobe, context, DEFAULT.versatility_min_score, DEFAULT, pairs)
+    outfits = [([uuid.UUID(i) for i in o.core_ids], o.score) for o in found[:10]]
+    missing: list[str] = []
+    closest: list[tuple[list[uuid.UUID], float]] = []
+    if not outfits:
+        near = suggest(wardrobe, context, DEFAULT, pairs)
+        missing = [m.text for m in near.missing]
+        closest = [([uuid.UUID(i) for i in o.core_ids], o.score) for o in near.outfits[:2]]
+    s = shopping.setting(db, user, today)
+    staples = [
+        gap.item_ids[0].removeprefix(shopping.STAPLE)
+        for gap in shopping.gaps(db, s)
+        if len(gap.item_ids) == 1 and gap.added.get((occasion.id, season))
+    ][:3]
+    return CellDetail(outfits, missing, closest, staples)
+
+
+CHALLENGE_DAYS = 60
+
+
+@dataclass(frozen=True)
+class Challenge:
+    """The "wear what you own" challenge: wear every piece at least once in 60 days."""
+
+    started_on: date
+    # The last day that counts.
+    ends_on: date
+    # Today's day of the challenge, 1 to 60; past 60 once it's over.
+    day: int
+    finished: bool
+    # Pieces in the wardrobe now (not archived or retired), and how many of them were worn
+    # between the start and the end (or today).
+    total: int
+    worn: int
+    # The ones not worn yet, oldest first.
+    unworn: list[Item]
+
+
+def challenge(db: Session, user: User, today: date) -> Challenge | None:
+    """The running challenge, counted from wear logs since it began; None when none runs."""
+    profile = profiles.get_or_create_profile(db, user)
+    start = profile.challenge_started_on
+    if start is None:
+        return None
+    ends_on = start + timedelta(days=CHALLENGE_DAYS - 1)
+    pieces = list(
+        db.scalars(
+            select(Item)
+            .where(Item.user_id == user.id, Item.archived_at.is_(None), Item.status != "retired")
+            .order_by(Item.created_at, Item.id)
+        )
+    )
+    worn = set(
+        db.scalars(
+            select(WearLogItem.item_id)
+            .join(WearLog, WearLog.id == WearLogItem.wear_log_id)
+            .where(
+                WearLog.user_id == user.id,
+                WearLog.worn_on >= start,
+                WearLog.worn_on <= min(today, ends_on),
+                WearLogItem.item_id.is_not(None),
+            )
+            .distinct()
+        )
+    )
+    return Challenge(
+        started_on=start,
+        ends_on=ends_on,
+        day=(today - start).days + 1,
+        finished=today > ends_on,
+        total=len(pieces),
+        worn=sum(1 for item in pieces if item.id in worn),
+        unworn=[item for item in pieces if item.id not in worn],
+    )
+
+
+def start_challenge(db: Session, user: User, today: date) -> None:
+    """Start (or start again) from today."""
+    profiles.get_or_create_profile(db, user).challenge_started_on = today
+    db.flush()
+
+
+def stop_challenge(db: Session, user: User) -> None:
+    profiles.get_or_create_profile(db, user).challenge_started_on = None
+    db.flush()
+
+
+REMIX_MAX = 10
+REMIX_SHOWN = 6
+
+
+@dataclass(frozen=True)
+class Remix:
+    """What a handful of pieces can do on their own: the good outfits from only them, for
+    each occasion the person dresses for, this season."""
+
+    season: str
+    # Each occasion, its best good outfits (core item ids and score), and how many in all.
+    by_occasion: list[tuple[Occasion, list[tuple[list[uuid.UUID], float]], int]]
+    # Distinct good outfits across every occasion.
+    total: int
+
+
+def remix(db: Session, user: User, item_ids: list[uuid.UUID], today: date) -> Remix:
+    """Scored the same way as the coverage map (the steady wardrobe, the season's weather),
+    over the chosen pieces alone."""
+    profile = profiles.get_or_create_profile(db, user)
+    chosen = {str(item_id) for item_id in item_ids}
+    full = steady(suggestions.load_wardrobe(db, user, today))
+    wardrobe = replace(full, items=tuple(item for item in full.items if item.id in chosen))
+    season = season_for(today)
+    base = replace(
+        steady_context(suggestions.base_context(db, user, profile, wardrobe, today)),
+        season=season,
+    )
+    pairs = suggestions.pair_cache_for(user)
+    groups = []
+    seen: set[tuple[str, ...]] = set()
+    for occasion in occasions_for(db, profile):
+        context = replace(base, occasion=suggestions.engine_occasion(occasion), count=3)
+        found = good_cores(wardrobe, context, DEFAULT.versatility_min_score, DEFAULT, pairs)
+        seen.update(outfit.core_ids for outfit in found)
+        best = [([uuid.UUID(i) for i in o.core_ids], o.score) for o in found[:REMIX_SHOWN]]
+        groups.append((occasion, best, len(found)))
+    return Remix(season=season, by_occasion=groups, total=len(seen))

@@ -22,7 +22,7 @@ function Switch({
       )}
       {...props}
     >
-      <SwitchPrimitive.Thumb className="block size-5 rounded-full bg-white transition-transform data-checked:translate-x-4 data-unchecked:translate-x-0" />
+      <SwitchPrimitive.Thumb className="block size-5 rounded-full bg-on-ink transition-transform data-checked:translate-x-4 data-unchecked:translate-x-0" />
     </SwitchPrimitive.Root>
   );
 }

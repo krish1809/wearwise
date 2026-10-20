@@ -4,6 +4,7 @@ from fastapi.testclient import TestClient
 from photo_support import photo_bytes
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
+from wardrobe_support import add_item
 
 from app.adapters.storage import MemoryStorage
 from app.models import Item, ItemImage, User
@@ -325,3 +326,23 @@ def test_deleting_the_account_removes_items_photos_and_custom_categories(
     assert db.scalar(select(func.count()).select_from(Item)) == 0
     assert db.scalar(select(func.count()).select_from(ItemImage)) == 0
     assert storage.files == {}
+
+
+def test_the_colour_map_places_items_with_the_engines_colour_rules(
+    sam: TestClient, ana: TestClient
+) -> None:
+    navy = add_item(sam, "chinos", "navy")
+    orange = add_item(sam, "tshirt", "orange")
+    patterned = add_item(sam, "casual_shirt", "multi")
+    gone = add_item(sam, "tshirt", "white")
+    sam.post(f"/api/v1/items/{gone['id']}/archive")
+    add_item(ana, "tshirt", "red")
+
+    points = {p["id"]: p for p in sam.get("/api/v1/items/colours").json()}
+
+    assert set(points) == {navy["id"], orange["id"], patterned["id"]}
+    assert points[navy["id"]]["neutral"] is True and points[navy["id"]]["known"] is True
+    assert points[orange["id"]]["neutral"] is False
+    assert 30 < points[orange["id"]]["hue"] < 80
+    assert points[navy["id"]]["lightness"] < points[orange["id"]]["lightness"]
+    assert points[patterned["id"]]["known"] is False and points[patterned["id"]]["hex"] is None

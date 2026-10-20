@@ -1,8 +1,8 @@
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
 
-from sqlalchemy import BigInteger, DateTime, ForeignKey, Index, SmallInteger, String, false
+from sqlalchemy import BigInteger, Date, DateTime, ForeignKey, Index, SmallInteger, String, false
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -48,6 +48,9 @@ class Candidate(IdMixin, TimestampMixin, Base):
     # considering, buy_next, later, skipped, or purchased.
     status: Mapped[str] = mapped_column(default="considering", server_default="considering")
     notes: Mapped[str | None]
+    # "Wait before buying": the day to ask again whether it's still wanted. Cleared once the
+    # person answers, skips it, or buys it.
+    remind_on: Mapped[date | None] = mapped_column(Date)
     # The last analysis and verdict, and the key it was made under: everything it depends on
     # (wardrobe version, engine version, occasions, styles, budgets, the candidate itself).
     analysis: Mapped[dict[str, Any] | None] = mapped_column(JSONB)

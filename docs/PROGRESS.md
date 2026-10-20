@@ -4,11 +4,11 @@ The running state of the project, updated at the end of every slice. Keep it sho
 
 ## Now
 
-- **Last updated:** 2026-10-20
-- **Current milestone:** M10 AI, built on `m10-ai` and waiting for your commit and merge. Next: M10b Interaction and polish (added to the roadmap on 2026-10-20 at your request). M5's last two "Done when" items (golden set, wear test) are still yours; v1.0 is tagged once they pass.
+- **Last updated:** 2026-10-21
+- **Current milestone:** M10b Interaction and polish, built in the working tree on top of M10 (which is staged on `m10-ai`, waiting for your commit). The two are committed separately: M10 first, then M10b on its own branch. Next: M11 Hardening and launch. M5's last two "Done when" items (golden set, wear test) are still yours; v1.0 is tagged once they pass.
 - **Current slice:** none open. Open issue: on the live server the forecast request to Open-Meteo is refused, so days go by the season (place search works). The Render log line "Weather service unavailable: ..." says why.
 - **Next action (owner):**
-  1. Commit `m10-ai` (staged), push it, open its pull request, and merge it once CI passes. The stylist stays off on the live site until step 2.
+  1. Commit `m10-ai` (only what's staged), push it, open its pull request, and merge it once CI passes. The stylist stays off on the live site until step 2. Then make a branch `m10b-polish`, stage the M10b files, commit, push, and open its pull request once M10 is merged.
   2. To switch it on: create an API key at console.anthropic.com and add some credit (check the price on its pricing page). In Render, wearwise-api > Environment, add `AI_PROVIDER=anthropic`, `AI_API_KEY` (the key, never pasted anywhere else), `AI_MODEL_CHAT=claude-haiku-5-5`, `AI_MODEL_VISION=claude-haiku-5-5`, `AI_DAILY_SPEND_CAP_USD=1`, `AI_PRICE_INPUT_PER_MTOK=0.10`, and `AI_PRICE_OUTPUT_PER_MTOK=0.50` (or the prices the page shows).
   3. With the same values in your local `.env`, run `make eval-stylist` (a few cents) and read the answers; grounding failures must be 0. Then tag 30 of your own photos with "Fill in from the photo" and note how many categories and colours were right first time; I'll record the numbers here.
   4. In Render's logs, search for "Weather service unavailable" and send the text after it.
@@ -130,7 +130,20 @@ M10 slices:
 | 5 | UI: the Stylist page (conversations, cards, confirm), "Fill in from the photo", navigation only when switched on | done |
 | 6 | Tests for the evaluation's plumbing, `make eval-stylist` for the real model, browser walkthrough, docs | done |
 
-- **Overall:** 11 of 13 milestones built (M0 to M10), 10 released (M0 to M9). The roadmap now has M10b, Interaction and polish, before M11. v1.0 (M0 to M5) waits on the golden set and the wear test.
+M10b slices:
+
+| # | Slice | State |
+|---|---|---|
+| 1 | Dark theme from the tokens, the theme choice in the account menu, a contrast test for both themes | done |
+| 2 | Quick jump (Ctrl or Cmd + K), and Undo on archive, skip, and conversation delete | done |
+| 3 | Swipe suggestions on phones, sending what Like and Dislike send | done |
+| 4 | The studio's tray: drag a piece onto the board or press it, with a live score and its reasons | done |
+| 5 | The colour map, and coverage squares that open to their outfits or what's missing | done |
+| 6 | Try a candidate on with pieces you own | done |
+| 7 | Sleep on it, Wear what you own, and Remix; one migration | done |
+| 8 | Browser walkthrough at 375 px and 1440 px in both themes; docs | done |
+
+- **Overall:** 12 of 13 milestones built (M0 to M10b), 10 released (M0 to M9). v1.0 (M0 to M5) waits on the golden set and the wear test.
 
 Live:
 
@@ -208,7 +221,7 @@ M0 code, merged in pull request #1 and deployed:
 | M8 | Smart Shopping I | analyse a purchase; see gaps; plan a capsule on a budget | done | 2026-10-20 | pull request #7 |
 | M9 | Smart Shopping II | find real products for a gap | done | 2026-10-20 | pull request #8 |
 | M10 | AI | auto-tag photos; chat with a stylist that knows your wardrobe | built, not merged | | off until a key is set |
-| M10b | Interaction and polish | drag outfits together, swipe suggestions, see your colours, and use a few new everyday tools | not started | | added 2026-10-20 |
+| M10b | Interaction and polish | drag outfits together, swipe suggestions, see your colours, and use a few new everyday tools | built, not merged | | added 2026-10-20 |
 | M11 | Hardening and launch | hand the link to anyone | not started | | |
 
 ## Before M0 (only you can do these)
@@ -224,6 +237,12 @@ M0 code, merged in pull request #1 and deployed:
 ## Log
 
 Add an entry per slice, newest first.
+
+### 2026-10-21, M10b slices 1 to 8: interaction and polish
+
+- Built: a dark theme from the same tokens (`:root[data-theme="dark"]`), with `on-ink` and `on-light` for text on filled shapes, chosen in the account menu (Like this device, Light, Dark) and applied before the page paints. Quick jump (Ctrl or Cmd + K): pages, actions, and your items. Undo toasts on archive, skip, and deleting a conversation. Swiping suggestions on phones (touch and pen only; reduced motion keeps the card still). The studio's tray: drag a piece onto the board or press it, with a live score meter and the engine's reasons (`/outfits/check` now returns them). The colour map (`/wardrobe/colours`, `GET /items/colours`). Coverage squares that open (`GET /insights/coverage/{occasion}/{season}`). "Try it with your pieces" on a candidate (`POST /candidates/{id}/try`). Sleep on it: remind me in a week, two weeks, or a month, and "Still want it?" on the shopping list on that day. Wear what you own: a 60-day challenge on Insights, counted from the wear log (`/insights/challenge`). Remix (`/outfits/remix`, `POST /outfits/remix`): the good outfits two to ten pieces make, per occasion, each one savable. One migration: `candidates.remind_on`, `profiles.challenge_started_on`.
+- Checked: `make check`: backend 476 passed, 2 skipped (the golden set waits on your labels); frontend 168 tests; build. New tests: dragging equals pressing and the meter shows the score; swipes send what the buttons send, can be undone, and ignore scrolling and the mouse; quick jump finds and opens; every text pair passes contrast in both themes; colours, a coverage square (only your own occasions), and trying a candidate on (someone else's gets 404); a reminder must be after today and within a year, comes due on its day, and clears on skip or keep; the challenge counts only wear between its start and day 60, is per person, and stops; remix uses only the chosen pieces, and refuses one, eleven, or someone else's. A browser walkthrough at 1440 px and 375 px, light and dark: the theme kept after a reload, quick jump to Remix, Remix finding an outfit, the studio's live score, the colour map, the challenge started, a coverage square opened, a candidate tried on and slept on, and an archive undone; no console or server errors. The staged M10 snapshot was also checked on its own (backend 467 passed; frontend types, lint, 119 tests; API types current), so the two commits each pass.
+- Decided: D48.
 
 ### 2026-10-20, M10 slices 1 to 6: the stylist and photo tagging
 
@@ -386,3 +405,5 @@ Things that are deliberately not handled yet. Move them into the README at M11.
 - iPhone HEIC photos upload from Safari, which can read them; other browsers may not.
 - Settings still sits in the main navigation while it has only two neighbours; it moves to the avatar menu alone as Outfits and My Week arrive (D22).
 - The `make` commands assume Linux or macOS. On Windows, use WSL.
+- The server's "today" is the UTC day (plans, reminders, the challenge), so in India its new day starts at 05:30 (D48).
+- Dragging pieces works with a mouse; on a phone, pieces are pressed instead (D48).

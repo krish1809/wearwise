@@ -16,11 +16,11 @@ const buttonVariants = cva(
     variants: {
       variant: {
         // Ink, not indigo: indigo marks what is selected, and is never a button fill.
-        primary: "bg-ink text-white hover:bg-ink/85 active:bg-ink/75",
+        primary: "bg-ink text-on-ink hover:bg-ink/85 active:bg-ink/75",
         secondary:
           "border border-line bg-surface text-ink hover:bg-tile active:bg-line",
         quiet: "text-ink hover:bg-tile active:bg-line",
-        destructive: "bg-skip text-white hover:bg-skip/90 active:bg-skip/80",
+        destructive: "bg-skip text-on-ink hover:bg-skip/90 active:bg-skip/80",
       },
       size: {
         default: "",

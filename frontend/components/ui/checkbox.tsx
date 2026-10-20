@@ -16,7 +16,7 @@ function Checkbox({
       className={cn(
         // A 20px box with a 44px touch area around it.
         "relative grid size-5 shrink-0 place-content-center rounded-sm border-2 border-ink-soft bg-surface transition-colors after:absolute after:-inset-3",
-        "hover:border-ink data-checked:border-indigo data-checked:bg-indigo data-checked:text-white",
+        "hover:border-ink data-checked:border-indigo data-checked:bg-indigo data-checked:text-on-ink",
         "disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-skip",
         focusRing,
         className,

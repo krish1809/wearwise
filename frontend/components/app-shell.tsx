@@ -16,6 +16,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
+import { QuickJump } from "@/components/quick-jump";
 import { AvatarMenu } from "@/components/ui/avatar-menu";
 import {
   BottomSheet,
@@ -260,8 +261,9 @@ function TopBar({ user }: { user: User | undefined }) {
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-line bg-paper px-4 sm:px-6 lg:justify-end lg:px-10">
       <Wordmark className="lg:hidden" />
+      {user && <QuickJump />}
       {user?.is_demo && (
-        <span className="mr-3 ml-auto rounded-full bg-consider/15 px-3 py-1 text-sm font-medium text-ink">
+        <span className="mr-3 rounded-full bg-consider/15 px-3 py-1 text-sm font-medium text-ink">
           Demo account
         </span>
       )}

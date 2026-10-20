@@ -155,7 +155,7 @@ function LogForm({ reference }: { reference: Reference }) {
                       hex={item.color_hex ?? familyHex.get(item.color_primary)}
                     />
                     {on && (
-                      <span className="absolute top-1.5 right-1.5 grid size-6 place-content-center rounded-full bg-indigo text-white">
+                      <span className="absolute top-1.5 right-1.5 grid size-6 place-content-center rounded-full bg-indigo text-on-ink">
                         <CheckIcon aria-hidden className="size-4" />
                       </span>
                     )}

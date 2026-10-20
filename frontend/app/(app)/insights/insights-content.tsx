@@ -2,16 +2,26 @@
 
 import { ChartColumn } from "lucide-react";
 import Link from "next/link";
-import { useId } from "react";
+import { useId, useState } from "react";
 
+import { OutfitBoard } from "@/components/outfits/outfit-board";
+import { StapleList } from "@/components/shopping/staple-list";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ItemPhoto } from "@/components/wardrobe/item-photo";
 import { WardrobeData } from "@/components/wardrobe/wardrobe-data";
+import { problemFrom } from "@/lib/api/errors";
 import { dayPhrase } from "@/lib/dates";
 import {
   type CostRow,
@@ -20,10 +30,14 @@ import {
   percent,
   useInsights,
   type WornRow,
+  type CoverageCell,
+  useCoverageCell,
 } from "@/lib/insights";
 import { formatRupees } from "@/lib/money";
 import type { Reference } from "@/lib/profile";
 import { cn, focusRing } from "@/lib/utils";
+
+import { ChallengeCard } from "./challenge-card";
 
 type Brief = WornRow["item"];
 
@@ -102,6 +116,8 @@ function Sections({
           your most and least worn pieces and the style you actually wear.
         </Alert>
       )}
+
+      <ChallengeCard familyHex={familyHex} />
 
       <div className="grid gap-6 md:grid-cols-2">
         {data.enough && (
@@ -270,6 +286,7 @@ function Sections({
               coverage={data.coverage}
               occasions={occasions}
               seasons={seasons}
+              reference={reference}
             />
           </>
         )}
@@ -515,11 +532,17 @@ function Coverage({
   coverage,
   occasions,
   seasons,
+  reference,
 }: {
   coverage: NonNullable<Insights["coverage"]>;
   occasions: Map<string, string>;
   seasons: Map<string, string>;
+  reference: Reference;
 }) {
+  const [opened, setOpened] = useState<{
+    occasion: string;
+    season: string;
+  } | null>(null);
   const cell = new Map(
     coverage.cells.map((entry) => [
       `${entry.occasion_id}:${entry.season}`,
@@ -530,7 +553,8 @@ function Coverage({
     <Card>
       <CardTitle>Good outfits by occasion and season</CardTitle>
       <CardDescription className="mt-1">
-        Different outfits that score well. &ldquo;None&rdquo; is a gap.
+        Different outfits that score well. &ldquo;None&rdquo; is a gap. Press a
+        square to see its outfits, or what&apos;s missing.
       </CardDescription>
       <div className="mt-4 overflow-x-auto">
         <table className="w-full min-w-[28rem] border-separate border-spacing-1 text-sm">
@@ -559,15 +583,26 @@ function Coverage({
                 {coverage.seasons.map((season) => {
                   const entry = cell.get(`${occasion}:${season}`);
                   const count = entry?.outfits ?? 0;
+                  const shown =
+                    count === 0
+                      ? "None"
+                      : entry?.capped
+                        ? "10+"
+                        : String(count);
                   return (
-                    <td
-                      key={season}
-                      className={cn(
-                        "rounded-md px-2 py-2 text-center tabular-nums",
-                        count === 0 ? "bg-paper font-medium" : "bg-tile",
-                      )}
-                    >
-                      {count === 0 ? "None" : entry?.capped ? "10+" : count}
+                    <td key={season} className="p-0">
+                      <button
+                        type="button"
+                        onClick={() => setOpened({ occasion, season })}
+                        aria-label={`${occasions.get(occasion) ?? occasion}, ${seasons.get(season) ?? season}: ${count === 0 ? "no good outfits" : `${shown} good ${count === 1 ? "outfit" : "outfits"}`}. Open.`}
+                        className={cn(
+                          "w-full rounded-md px-2 py-2 text-center tabular-nums hover:ring-2 hover:ring-line-strong",
+                          count === 0 ? "bg-paper font-medium" : "bg-tile",
+                          focusRing,
+                        )}
+                      >
+                        {shown}
+                      </button>
                     </td>
                   );
                 })}
@@ -576,7 +611,106 @@ function Coverage({
           </tbody>
         </table>
       </div>
+      <CellDialog
+        cell={opened}
+        title={
+          opened
+            ? `${occasions.get(opened.occasion) ?? opened.occasion}, ${(seasons.get(opened.season) ?? opened.season).toLowerCase()}`
+            : ""
+        }
+        reference={reference}
+        onClose={() => setOpened(null)}
+      />
     </Card>
+  );
+}
+
+/** One square, opened: its good outfits, or what's missing and what would help. */
+function CellDialog({
+  cell,
+  title,
+  reference,
+  onClose,
+}: {
+  cell: { occasion: string; season: string } | null;
+  title: string;
+  reference: Reference;
+  onClose: () => void;
+}) {
+  const found = useCoverageCell(cell);
+  const slots = reference.slots.map((slot, position) => ({
+    ...slot,
+    position,
+  }));
+  const familyHex = new Map(reference.color_families.map((c) => [c.id, c.hex]));
+  const board = (outfit: CoverageCell["outfits"][number], index: number) => (
+    <li key={index}>
+      <OutfitBoard
+        size="small"
+        slots={slots}
+        familyHex={familyHex}
+        pieces={outfit.items.map((item) => ({
+          slot: item.slot,
+          name: item.display_name,
+          removed: false,
+          item,
+        }))}
+      />
+      <p className="mt-1 text-sm text-ink-soft">
+        {outfit.items.map((item) => item.display_name).join(", ")}
+      </p>
+    </li>
+  );
+  return (
+    <Dialog open={cell !== null} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>
+            Good outfits from everything you own, as if it were all clean.
+          </DialogDescription>
+        </DialogHeader>
+        {found.isError ? (
+          <Alert tone="error">{problemFrom(found.error).message}</Alert>
+        ) : !found.data ? (
+          <Skeleton className="h-40" />
+        ) : found.data.outfits.length > 0 ? (
+          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {found.data.outfits.map(board)}
+          </ul>
+        ) : (
+          <div className="flex flex-col gap-4">
+            <p className="font-medium">No good outfit here yet.</p>
+            {found.data.missing.length > 0 && (
+              <ul className="list-disc pl-5 text-sm">
+                {found.data.missing.map((text) => (
+                  <li key={text}>{text}</li>
+                ))}
+              </ul>
+            )}
+            {found.data.closest.length > 0 && (
+              <div>
+                <p className="mb-2 text-sm text-ink-soft">
+                  The closest, not quite good enough to count:
+                </p>
+                <ul className="grid grid-cols-2 gap-3">
+                  {found.data.closest.map(board)}
+                </ul>
+              </div>
+            )}
+            {found.data.staples.length > 0 && (
+              <div>
+                <p className="mb-2 text-sm text-ink-soft">What would help:</p>
+                <StapleList
+                  staples={found.data.staples}
+                  reference={reference}
+                />
+              </div>
+            )}
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
 

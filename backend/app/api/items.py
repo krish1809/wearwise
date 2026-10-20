@@ -12,8 +12,10 @@ from app.api.deps import CurrentUser, SessionDep, StorageDep
 from app.api.errors import ApiError, error_responses
 from app.api.fields import Amount, HexColour, IdList, NoteText, ShortText, tidy_text
 from app.api.item_views import ItemBrief, Names, PhotoRef, photo_ref
+from app.engine.config import DEFAULT
+from app.engine.pairs import tone
 from app.models import Item, ItemImage, User
-from app.services import items, wear
+from app.services import items, suggestions, wear
 
 router = APIRouter(prefix="/items", tags=["items"])
 
@@ -250,6 +252,48 @@ def create_item(body: ItemCreate, user: CurrentUser, db: SessionDep) -> ItemDeta
         raise _invalid(error) from error
     db.commit()
     return _detail(db, user, item)
+
+
+class ColourPoint(BaseModel):
+    """An item's colour as the engine sees it, for the colour map."""
+
+    id: uuid.UUID
+    display_name: str
+    color_primary: str
+    # The measured colour, else the family's; null for multicolour.
+    hex: str | None
+    # OKLCH: lightness 0 to 1, chroma 0 to about 0.37, hue in degrees.
+    lightness: float
+    chroma: float
+    hue: float
+    # Goes with nearly anything (the engine's rule: a neutral family, or almost no chroma).
+    neutral: bool
+    # False for multicolour, which has no single hue.
+    known: bool
+
+
+@router.get("/colours", response_model=list[ColourPoint], responses=error_responses(401))
+def colours(user: CurrentUser, db: SessionDep) -> list[ColourPoint]:
+    """Every item in the wardrobe (not archived), placed by colour with the engine's own
+    colour rules."""
+    wardrobe = suggestions.load_wardrobe(db, user, wear.today())
+    points = []
+    for item in sorted(wardrobe.items, key=lambda i: i.id):
+        found = tone(item, DEFAULT)
+        points.append(
+            ColourPoint(
+                id=uuid.UUID(item.id),
+                display_name=item.name,
+                color_primary=item.color_family,
+                hex=item.color_hex,
+                lightness=round(found.lightness, 4),
+                chroma=round(found.chroma, 4),
+                hue=round(found.hue, 2),
+                neutral=found.neutral,
+                known=found.known,
+            )
+        )
+    return points
 
 
 @router.get("/{item_id}", response_model=ItemDetailOut, responses=error_responses(401, 404))

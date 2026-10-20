@@ -28,12 +28,27 @@ Measured contrast: `ink` on `paper` 15.4:1, `ink-soft` on `paper` 5.9:1, `indigo
 
 Rules:
 - One accent. Indigo marks what is selected or clickable. It is the colour of indigo dye and denim, and it is not any retailer's brand colour.
-- Primary buttons are `ink` with white text. Indigo is not a button fill.
+- Primary buttons are `ink` with `on-ink` text. Indigo is not a button fill.
 - Verdict colours appear only on verdicts and system messages, always with an icon or word, never colour alone.
 - No gradients. No coloured section backgrounds.
 - Depth comes from `tile` against `surface` against `paper`, not from shadows. One soft shadow is allowed, on floating layers only (dialogs, menus, the add button).
 
-Light theme only for v1. Keep every colour as a CSS variable so a dark theme stays possible.
+Two more tokens carry text on filled shapes: `on-ink` (`#FFFFFF`; text and icons on an `ink` fill, such as a primary button) and `on-light` (`#1B1D20`; a tick on a light swatch). Never write `white` or `black` in a component; use these.
+
+### Dark theme (M10b, D48)
+
+The same tokens with dark values, under `:root[data-theme="dark"]`. The account menu offers Like this device, Light, and Dark; the choice is kept in the browser and applied by a small script in the page head before anything paints, so a dark page never flashes light.
+
+| Token | Dark | Token | Dark |
+|---|---|---|---|
+| `paper` | `#121417` | `ink` | `#ECEEF1` |
+| `surface` | `#1C1F23` | `ink-soft` | `#A7AEB8` |
+| `tile` | `#272B31` | `indigo` | `#AAB7FF` |
+| `line` | `#343941` | `buy` | `#5FCC95` |
+| `line-strong` | `#7D8590` | `consider` | `#E3B458` |
+| `on-ink` | `#121417` | `skip` | `#FF9086` |
+
+Primary buttons stay `ink` with `on-ink` text, so in dark they are light with dark text. A test (`frontend/app/theme.test.ts`) measures every text pair at 4.5:1 or more and every input edge at 3:1 or more, in both themes; a colour change that breaks one fails CI.
 
 ## Type
 
@@ -120,4 +135,7 @@ Each component needs: default, hover, focus-visible, active, disabled, loading (
 - Form fields have visible labels; errors are tied to their fields.
 - Colour is never the only signal.
 - `prefers-reduced-motion` respected.
+- Every gesture has a plain equivalent (M10b): dragging a piece onto the board does what pressing it does; swiping a suggestion sends what Like and Dislike send; both work by keyboard.
+- Swipes respond to touch and pen only, never a mouse, and need a clear sideways move (96 px, more sideways than down), so scrolling never rates anything. With reduced motion the card doesn't follow the finger; the swipe still counts.
+- Anything that can't be put back easily (archiving, skipping, deleting a conversation) shows a toast with Undo instead of a confirmation, where undo is honest; a deletion waits until the toast closes.
 - Tested at 200% zoom and 375 px width.

@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOut, Settings } from "lucide-react";
+import { LogOut, Monitor, Moon, Settings, Sun } from "lucide-react";
 import Link from "next/link";
 
 import {
@@ -8,9 +8,12 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { type ThemeChoice, useTheme } from "@/lib/theme";
 import { cn, focusRing } from "@/lib/utils";
 
 /** Up to two letters for the avatar: from the name if there is one, otherwise the email. */
@@ -37,6 +40,7 @@ function AvatarMenu({
   onLogOut,
   defaultOpen,
 }: AvatarMenuProps) {
+  const [theme, setTheme] = useTheme();
   return (
     <DropdownMenu defaultOpen={defaultOpen} modal={false}>
       <DropdownMenuTrigger
@@ -60,6 +64,28 @@ function AvatarMenu({
             Settings
           </Link>
         </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel className="text-sm text-ink-soft">
+          Theme
+        </DropdownMenuLabel>
+        <DropdownMenuRadioGroup
+          value={theme}
+          onValueChange={(value) => setTheme(value as ThemeChoice)}
+        >
+          <DropdownMenuRadioItem value="system">
+            <Monitor aria-hidden />
+            Like this device
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="light">
+            <Sun aria-hidden />
+            Light
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="dark">
+            <Moon aria-hidden />
+            Dark
+          </DropdownMenuRadioItem>
+        </DropdownMenuRadioGroup>
+        <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={onLogOut}>
           <LogOut aria-hidden />
           Log out

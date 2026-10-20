@@ -71,12 +71,16 @@ export function useOutfit(id: string) {
 }
 
 /** Which template the chosen items fill, and what's still needed. Changes nothing. */
-export function useOutfitCheck(itemIds: string[]) {
+export function useOutfitCheck(itemIds: string[], occasionId?: string | null) {
   const sorted = [...itemIds].sort();
   return useQuery({
-    queryKey: ["outfit-check", sorted],
+    queryKey: ["outfit-check", sorted, occasionId ?? null],
     queryFn: () =>
-      ok(api.POST("/api/v1/outfits/check", { body: { item_ids: sorted } })),
+      ok(
+        api.POST("/api/v1/outfits/check", {
+          body: { item_ids: sorted, occasion_id: occasionId || null },
+        }),
+      ),
     // Keep showing the last answer while the next one loads, so the hint doesn't flicker.
     placeholderData: keepPreviousData,
     staleTime: 60_000,
@@ -229,5 +233,19 @@ export function useDeleteWearLog(id: string) {
       if (!response.ok) throw new ApiRequestError(readApiError(error));
     },
     onSuccess: refresh,
+  });
+}
+
+export type Remix = components["schemas"]["RemixOut"];
+
+/** The good outfits a handful of pieces make on their own, for each occasion. */
+export function useRemix(itemIds: string[]) {
+  const sorted = [...itemIds].sort();
+  return useQuery({
+    queryKey: ["outfits", "remix", sorted],
+    enabled: sorted.length >= 2,
+    placeholderData: keepPreviousData,
+    queryFn: () =>
+      ok(api.POST("/api/v1/outfits/remix", { body: { item_ids: sorted } })),
   });
 }

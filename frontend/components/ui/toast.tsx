@@ -33,7 +33,7 @@ function Toaster() {
           title: "font-medium",
           description: "text-sm text-ink-soft",
           actionButton:
-            "ml-auto min-h-9 shrink-0 rounded-lg bg-ink px-3 text-sm font-medium text-white",
+            "ml-auto min-h-9 shrink-0 rounded-lg bg-ink px-3 text-sm font-medium text-on-ink",
           cancelButton:
             "ml-auto min-h-9 shrink-0 rounded-lg px-3 text-sm font-medium text-ink",
         },

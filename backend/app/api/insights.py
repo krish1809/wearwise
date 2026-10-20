@@ -3,16 +3,20 @@
 import uuid
 from datetime import date
 
-from fastapi import APIRouter
+from fastapi import APIRouter, status
 from pydantic import BaseModel
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.deps import CurrentUser, SessionDep
-from app.api.errors import error_responses
+from app.api.errors import ApiError, error_responses
 from app.api.item_views import ItemBrief, Names, briefs
+from app.api.shopping import StapleOut, staple_outs
 from app.engine.config import DEFAULT, ENGINE_VERSION
-from app.models import ColorFamily, StyleProfile, User
-from app.services import insights, reference, wear
+from app.models import ColorFamily, Item, StyleProfile, User
+from app.services import insights, reference, shopping, wear
+from app.services import items as items_service
+from app.services import profile as profiles
 
 router = APIRouter(tags=["insights"])
 
@@ -239,3 +243,133 @@ def get_insights(user: CurrentUser, db: SessionDep) -> InsightsOut:
     found = insights.gather(db, user, wear.today())
     db.commit()
     return _view(db, user, found)
+
+
+class CellOutfitOut(BaseModel):
+    items: list[ItemBrief]
+    score: float
+
+
+class CellDetailOut(BaseModel):
+    occasion_id: str
+    season: str
+    # Good outfits here, best first (at most ten).
+    outfits: list[CellOutfitOut]
+    # With none: why, and the closest there are (not good enough to count).
+    missing: list[str]
+    closest: list[CellOutfitOut]
+    # Staples that would add good outfits here.
+    staples: list[StapleOut]
+
+
+@router.get(
+    "/insights/coverage/{occasion_id}/{season}",
+    response_model=CellDetailOut,
+    responses=error_responses(401, 404),
+)
+def coverage_cell(
+    occasion_id: str, season: str, user: CurrentUser, db: SessionDep
+) -> CellDetailOut:
+    """One square of the coverage map, opened: its good outfits, or what's missing."""
+    profile = profiles.get_or_create_profile(db, user)
+    occasion = next((o for o in insights.occasions_for(db, profile) if o.id == occasion_id), None)
+    seasons = [term.id for term in reference.terms(db, "season")]
+    if occasion is None or season not in seasons:
+        raise ApiError(404, "cell_not_found", "That isn't one of your occasions and seasons.")
+    found = insights.cell(db, user, occasion, season, wear.today())
+    ids = {i for outfit, _ in [*found.outfits, *found.closest] for i in outfit}
+    rows = (
+        list(db.scalars(select(Item).where(Item.user_id == user.id, Item.id.in_(ids))))
+        if ids
+        else []
+    )
+    names = Names(db, user)
+    photos = items_service.primary_photos(db, [row.id for row in rows])
+    cards = {row.id: names.brief(row, photos.get(row.id)) for row in rows}
+
+    def outfit_out(entry: tuple[list[uuid.UUID], float]) -> CellOutfitOut:
+        outfit, score = entry
+        return CellOutfitOut(items=[cards[i] for i in outfit if i in cards], score=score)
+
+    s = shopping.setting(db, user, wear.today())
+    rows_by_id = {row.id: row for row in shopping.staples(db, s.profile)}
+    staples = staple_outs(db, user, s, [rows_by_id[i] for i in found.staples if i in rows_by_id])
+    db.commit()
+    return CellDetailOut(
+        occasion_id=occasion.id,
+        season=season,
+        outfits=[outfit_out(entry) for entry in found.outfits],
+        missing=found.missing,
+        closest=[outfit_out(entry) for entry in found.closest],
+        staples=[staples[i] for i in found.staples if i in staples],
+    )
+
+
+class ChallengeOut(BaseModel):
+    started_on: date
+    ends_on: date
+    day: int
+    days: int
+    finished: bool
+    total: int
+    worn: int
+    # Not worn since it began, oldest first (at most UNWORN_SHOWN; the count is all of them).
+    unworn: list[ItemBrief]
+    unworn_count: int
+
+
+class ChallengeStatus(BaseModel):
+    # Null when no challenge is running.
+    challenge: ChallengeOut | None
+    days: int
+
+
+UNWORN_SHOWN = 24
+
+
+def _challenge_status(db: Session, user: User) -> ChallengeStatus:
+    found = insights.challenge(db, user, wear.today())
+    if found is None:
+        return ChallengeStatus(challenge=None, days=insights.CHALLENGE_DAYS)
+    shown = found.unworn[:UNWORN_SHOWN]
+    cards = briefs(db, Names(db, user), [item.id for item in shown])
+    return ChallengeStatus(
+        challenge=ChallengeOut(
+            started_on=found.started_on,
+            ends_on=found.ends_on,
+            day=found.day,
+            days=insights.CHALLENGE_DAYS,
+            finished=found.finished,
+            total=found.total,
+            worn=found.worn,
+            unworn=[cards[item.id] for item in shown],
+            unworn_count=len(found.unworn),
+        ),
+        days=insights.CHALLENGE_DAYS,
+    )
+
+
+@router.get("/insights/challenge", response_model=ChallengeStatus, responses=error_responses(401))
+def get_challenge(user: CurrentUser, db: SessionDep) -> ChallengeStatus:
+    """Wear what you own: progress counted from the wear log since the challenge began."""
+    return _challenge_status(db, user)
+
+
+@router.post(
+    "/insights/challenge", response_model=ChallengeStatus, responses=error_responses(401, 403)
+)
+def start_challenge(user: CurrentUser, db: SessionDep) -> ChallengeStatus:
+    """Start the challenge from today (or start it again)."""
+    insights.start_challenge(db, user, wear.today())
+    db.commit()
+    return _challenge_status(db, user)
+
+
+@router.delete(
+    "/insights/challenge",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses=error_responses(401, 403),
+)
+def stop_challenge(user: CurrentUser, db: SessionDep) -> None:
+    insights.stop_challenge(db, user)
+    db.commit()

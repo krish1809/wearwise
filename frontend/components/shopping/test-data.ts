@@ -30,6 +30,8 @@ export function makeCandidate(overrides: Partial<Candidate> = {}): Candidate {
     seasons: [],
     status: "considering",
     notes: null,
+    remind_on: null,
+    reminder_due: false,
     item_id: null,
     photo: null,
     verdict: null,

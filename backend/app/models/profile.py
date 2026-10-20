@@ -1,8 +1,18 @@
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
 
-from sqlalchemy import BigInteger, DateTime, ForeignKey, Index, SmallInteger, String, false, func
+from sqlalchemy import (
+    BigInteger,
+    Date,
+    DateTime,
+    ForeignKey,
+    Index,
+    SmallInteger,
+    String,
+    false,
+    func,
+)
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -67,6 +77,8 @@ class Profile(IdMixin, TimestampMixin, Base):
     # The weekday the washing gets done, 0 (Monday) to 6; the planner counts everything clean
     # again from that day. Null: no fixed day.
     laundry_weekday: Mapped[int | None] = mapped_column(SmallInteger)
+    # The day the "wear what you own" challenge began; null when none is running.
+    challenge_started_on: Mapped[date | None] = mapped_column(Date)
 
 
 class BrandNote(IdMixin, TimestampMixin, Base):

@@ -411,6 +411,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/items/colours": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Colours
+         * @description Every item in the wardrobe (not archived), placed by colour with the engine's own
+         *     colour rules.
+         */
+        get: operations["colours"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/items/{item_id}": {
         parameters: {
             query?: never;
@@ -553,6 +574,27 @@ export interface paths {
          * @description Which template these items fill, and what's still needed. Changes nothing.
          */
         post: operations["check"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/outfits/remix": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Remix
+         * @description The good outfits a handful of your own pieces make on their own, per occasion, this
+         *     season. Scored like the coverage map; changes nothing.
+         */
+        post: operations["remix"];
         delete?: never;
         options?: never;
         head?: never;
@@ -993,6 +1035,51 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/insights/coverage/{occasion_id}/{season}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Coverage Cell
+         * @description One square of the coverage map, opened: its good outfits, or what's missing.
+         */
+        get: operations["coverage_cell"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/insights/challenge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Challenge
+         * @description Wear what you own: progress counted from the wear log since the challenge began.
+         */
+        get: operations["get_challenge"];
+        put?: never;
+        /**
+         * Start Challenge
+         * @description Start the challenge from today (or start it again).
+         */
+        post: operations["start_challenge"];
+        /** Stop Challenge */
+        delete: operations["stop_challenge"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/candidates": {
         parameters: {
             query?: never;
@@ -1258,6 +1345,27 @@ export interface paths {
          * @description Put a catalogue product on the shopping list.
          */
         post: operations["add_from_catalog"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/candidates/{candidate_id}/try": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Try Candidate
+         * @description Put the candidate with pieces you own and see how that outfit scores, as if you'd
+         *     bought it. Nothing is saved.
+         */
+        post: operations["try_candidate"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1570,6 +1678,8 @@ export interface components {
             status?: string | null;
             /** Notes */
             notes?: string | null;
+            /** Remind On */
+            remind_on?: string | null;
             /** Photo Id */
             photo_id?: string | null;
             /** Image Url */
@@ -1649,6 +1759,10 @@ export interface components {
             status: string;
             /** Notes */
             notes: string | null;
+            /** Remind On */
+            remind_on: string | null;
+            /** Reminder Due */
+            reminder_due: boolean;
             /** Item Id */
             item_id: string | null;
             photo: components["schemas"]["PhotoRef"] | null;
@@ -1703,6 +1817,8 @@ export interface components {
             status?: string | null;
             /** Notes */
             notes?: string | null;
+            /** Remind On */
+            remind_on?: string | null;
             /** Photo Id */
             photo_id?: string | null;
             /** Image Url */
@@ -1844,6 +1960,21 @@ export interface components {
             /** Custom */
             custom: boolean;
         };
+        /** CellDetailOut */
+        CellDetailOut: {
+            /** Occasion Id */
+            occasion_id: string;
+            /** Season */
+            season: string;
+            /** Outfits */
+            outfits: components["schemas"]["CellOutfitOut"][];
+            /** Missing */
+            missing: string[];
+            /** Closest */
+            closest: components["schemas"]["CellOutfitOut"][];
+            /** Staples */
+            staples: components["schemas"]["StapleOut"][];
+        };
         /** CellOut */
         CellOut: {
             /** Occasion Id */
@@ -1855,10 +1986,52 @@ export interface components {
             /** Capped */
             capped: boolean;
         };
+        /** CellOutfitOut */
+        CellOutfitOut: {
+            /** Items */
+            items: components["schemas"]["ItemBrief"][];
+            /** Score */
+            score: number;
+        };
+        /** ChallengeOut */
+        ChallengeOut: {
+            /**
+             * Started On
+             * Format: date
+             */
+            started_on: string;
+            /**
+             * Ends On
+             * Format: date
+             */
+            ends_on: string;
+            /** Day */
+            day: number;
+            /** Days */
+            days: number;
+            /** Finished */
+            finished: boolean;
+            /** Total */
+            total: number;
+            /** Worn */
+            worn: number;
+            /** Unworn */
+            unworn: components["schemas"]["ItemBrief"][];
+            /** Unworn Count */
+            unworn_count: number;
+        };
+        /** ChallengeStatus */
+        ChallengeStatus: {
+            challenge: components["schemas"]["ChallengeOut"] | null;
+            /** Days */
+            days: number;
+        };
         /** CheckRequest */
         CheckRequest: {
             /** Item Ids */
             item_ids: string[];
+            /** Occasion Id */
+            occasion_id?: string | null;
         };
         /** ColorFamilyOut */
         ColorFamilyOut: {
@@ -1879,6 +2052,33 @@ export interface components {
             title: string;
             /** Text */
             text: string;
+        };
+        /**
+         * ColourPoint
+         * @description An item's colour as the engine sees it, for the colour map.
+         */
+        ColourPoint: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Display Name */
+            display_name: string;
+            /** Color Primary */
+            color_primary: string;
+            /** Hex */
+            hex: string | null;
+            /** Lightness */
+            lightness: number;
+            /** Chroma */
+            chroma: number;
+            /** Hue */
+            hue: number;
+            /** Neutral */
+            neutral: boolean;
+            /** Known */
+            known: boolean;
         };
         /** CompareOut */
         CompareOut: {
@@ -2668,6 +2868,15 @@ export interface components {
             optional_slots: string[];
             /** Message */
             message: string | null;
+            /** Score */
+            score?: number | null;
+            /** Good */
+            good?: boolean | null;
+            /**
+             * Reasons
+             * @default []
+             */
+            reasons: components["schemas"]["ReasonOut"][];
         };
         /** OutfitCreate */
         OutfitCreate: {
@@ -3044,6 +3253,40 @@ export interface components {
             password: string;
             /** Name */
             name?: string | null;
+        };
+        /** RemixGroupOut */
+        RemixGroupOut: {
+            /** Occasion Id */
+            occasion_id: string;
+            /** Occasion Name */
+            occasion_name: string;
+            /** Outfits */
+            outfits: components["schemas"]["RemixOutfitOut"][];
+            /** Count */
+            count: number;
+        };
+        /** RemixOut */
+        RemixOut: {
+            /** Season */
+            season: string;
+            /** Groups */
+            groups: components["schemas"]["RemixGroupOut"][];
+            /** Total */
+            total: number;
+            /** Needs Occasions */
+            needs_occasions: boolean;
+        };
+        /** RemixOutfitOut */
+        RemixOutfitOut: {
+            /** Items */
+            items: components["schemas"]["ItemBrief"][];
+            /** Score */
+            score: number;
+        };
+        /** RemixRequest */
+        RemixRequest: {
+            /** Item Ids */
+            item_ids: string[];
         };
         /** SaveIn */
         SaveIn: {
@@ -3458,6 +3701,29 @@ export interface components {
             end_date: string;
             /** Item Count */
             item_count: number;
+        };
+        /**
+         * TryOut
+         * @description The candidate with pieces the person owns: whole or not, and if whole, its score.
+         */
+        TryOut: {
+            /** Complete */
+            complete: boolean;
+            /** Message */
+            message: string | null;
+            /** Score */
+            score: number | null;
+            /** Good */
+            good: boolean | null;
+            /** Reasons */
+            reasons: components["schemas"]["VerdictReasonOut"][];
+        };
+        /** TryRequest */
+        TryRequest: {
+            /** Item Ids */
+            item_ids: string[];
+            /** Occasion Id */
+            occasion_id?: string | null;
         };
         /** UserOut */
         UserOut: {
@@ -4845,6 +5111,35 @@ export interface operations {
             };
         };
     };
+    colours: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ColourPoint"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     get_item: {
         parameters: {
             query?: never;
@@ -5432,6 +5727,57 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OutfitCheck"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    remix: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RemixRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RemixOut"];
                 };
             };
             /** @description Unauthorized */
@@ -7060,6 +7406,159 @@ export interface operations {
             };
         };
     };
+    coverage_cell: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                occasion_id: string;
+                season: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CellDetailOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_challenge: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChallengeStatus"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    start_challenge: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChallengeStatus"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    stop_challenge: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     list_candidates: {
         parameters: {
             query?: never;
@@ -7956,6 +8455,68 @@ export interface operations {
             };
             /** @description Conflict */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    try_candidate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                candidate_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TryRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TryOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

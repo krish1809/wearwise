@@ -26,6 +26,9 @@ export function OutfitsContent() {
             <Link href="/worn">Wear log</Link>
           </Button>
           <Button asChild variant="secondary">
+            <Link href="/outfits/remix">Remix</Link>
+          </Button>
+          <Button asChild variant="secondary">
             <Link href="/outfits/suggest">Suggest outfits</Link>
           </Button>
           <Button asChild>

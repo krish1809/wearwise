@@ -305,15 +305,46 @@ function ThreadList({
   onOpen: (id: string | null) => void;
 }) {
   const remove = useDeleteThread();
-  async function removeThread(id: string) {
-    try {
-      await remove.mutateAsync(id);
-      if (id === current) onOpen(null);
-      toast("Conversation deleted");
-    } catch (error) {
-      toast.error(problemFrom(error).message);
-    }
+  // Deleted conversations hide at once; the deletion itself waits for the undo to pass.
+  const [hidden, setHidden] = useState<Set<string>>(new Set());
+  const shown = threads.filter((thread) => !hidden.has(thread.id));
+
+  function removeThread(id: string) {
+    setHidden((current) => new Set(current).add(id));
+    if (id === current) onOpen(null);
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      remove.mutate(id, {
+        onError: (error) => {
+          setHidden((now) => {
+            const next = new Set(now);
+            next.delete(id);
+            return next;
+          });
+          toast.error(problemFrom(error).message);
+        },
+      });
+    };
+    toast("Conversation deleted", {
+      duration: 6000,
+      action: {
+        label: "Undo",
+        onClick: () => {
+          settled = true;
+          setHidden((now) => {
+            const next = new Set(now);
+            next.delete(id);
+            return next;
+          });
+        },
+      },
+      onAutoClose: finish,
+      onDismiss: finish,
+    });
   }
+
   return (
     <nav aria-label="Conversations" className="flex flex-col gap-1">
       <Button
@@ -324,11 +355,11 @@ function ThreadList({
         <Plus aria-hidden />
         New conversation
       </Button>
-      {threads.length === 0 ? (
+      {shown.length === 0 ? (
         <p className="px-3 text-sm text-ink-soft">No conversations yet.</p>
       ) : (
         <ul className="flex flex-col gap-1">
-          {threads.map((thread) => (
+          {shown.map((thread) => (
             <li key={thread.id} className="group flex items-center gap-1">
               <Link
                 href={`/stylist?thread=${thread.id}`}
@@ -349,7 +380,7 @@ function ThreadList({
                 variant="quiet"
                 size="icon"
                 aria-label={`Delete ${thread.title}`}
-                onClick={() => void removeThread(thread.id)}
+                onClick={() => removeThread(thread.id)}
               >
                 <Trash2 aria-hidden />
               </Button>

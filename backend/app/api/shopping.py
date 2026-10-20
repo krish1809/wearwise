@@ -15,7 +15,7 @@ from app.api.errors import ApiError, error_responses
 from app.api.fields import Amount, HexColour, IdList, NoteText, ShortText, tidy_text
 from app.api.item_views import ItemBrief, Names, PhotoRef, photo_ref
 from app.engine.config import DEFAULT
-from app.models import Archetype, Candidate, Item, User
+from app.models import Archetype, Candidate, Item, Occasion, User
 from app.services import items, products, rate_limit, shopping, wear
 
 router = APIRouter(tags=["shopping"])
@@ -26,6 +26,8 @@ LINKS_PER_USER = rate_limit.Limit(attempts=30, window=timedelta(hours=1))
 GAPS_SHOWN = 8
 CAPSULE_STAGE = 3
 MAX_COMPARE = 4
+# The furthest a "wait before buying" reminder can be set.
+MAX_WAIT = timedelta(days=366)
 NEEDS_OCCASIONS = (
     "Choose the occasions you dress for (in Settings, or your usual week in My Week) so "
     "WearWise can tell what a piece would add."
@@ -40,6 +42,12 @@ def _check_url(value: str | None) -> str | None:
 
 
 Url = Annotated[str | None, AfterValidator(_check_url)]
+
+
+def _check_reminder(value: date | None) -> date | None:
+    if value is not None and not wear.today() < value <= wear.today() + MAX_WAIT:
+        raise ValueError("Choose a day after today and within a year.")
+    return value
 
 
 class CandidateFields(BaseModel):
@@ -62,6 +70,8 @@ class CandidateFields(BaseModel):
     target_price: Amount | None = None
     status: str | None = None
     notes: NoteText = None
+    # Wait before buying: the day to ask again whether it's still wanted. Null stops it.
+    remind_on: Annotated[date | None, AfterValidator(_check_reminder)] = None
     # A photo from POST /photos that isn't attached to anything yet.
     photo_id: uuid.UUID | None = None
     # The shop's own picture, from a pasted link; shown from the shop's address.
@@ -117,6 +127,9 @@ class CandidateOut(BaseModel):
     seasons: list[str]
     status: str
     notes: str | None
+    remind_on: date | None
+    # True once the reminder day has come: the shopping list asks "Still want it?".
+    reminder_due: bool
     # The wardrobe item it became, once bought.
     item_id: uuid.UUID | None
     photo: PhotoRef | None
@@ -370,7 +383,9 @@ def _needs_occasions() -> ApiError:
 
 
 _COLUMNS = [
-    name for name in CandidateOut.model_fields if name not in {"display_name", "photo", "verdict"}
+    name
+    for name in CandidateOut.model_fields
+    if name not in {"display_name", "photo", "verdict", "reminder_due"}
 ]
 
 
@@ -389,6 +404,7 @@ def candidate_outs(
                     photos.get(row.id) or (bought.get(row.item_id) if row.item_id else None)
                 ),
                 "verdict": shopping.fresh_verdict(row, s) if s else None,
+                "reminder_due": shopping.reminder_due(row, wear.today()),
             }
         )
         for row in rows
@@ -448,7 +464,7 @@ def _analysis_out(db: Session, user: User, found: dict[str, Any]) -> AnalysisOut
     )
 
 
-def _staple_outs(
+def staple_outs(
     db: Session, user: User, s: shopping.Setting, rows: list[Archetype]
 ) -> dict[str, StapleOut]:
     listed = {
@@ -669,7 +685,7 @@ def get_gaps(user: CurrentUser, db: SessionDep) -> GapsOut:
         return GapsOut(needs_occasions=True, gaps=[], covered=False)
     found = [gap for gap in shopping.gaps(db, s) if gap.coverage_gain > 0][:GAPS_SHOWN]
     rows = {row.id: row for row in shopping.staples(db, s.profile)}
-    outs = _staple_outs(db, user, s, list(rows.values()))
+    outs = staple_outs(db, user, s, list(rows.values()))
     db.commit()
     short = any(n < DEFAULT.coverage_cap for n in s.before.coverage.values())
     return GapsOut(
@@ -703,7 +719,7 @@ def plan_capsule(body: CapsuleRequest, user: CurrentUser, db: SessionDep) -> Cap
     if plan is None:
         db.commit()
         raise _needs_occasions()
-    outs = _staple_outs(db, user, s, list(plan.staples.values()))
+    outs = staple_outs(db, user, s, list(plan.staples.values()))
     db.commit()
     steps = []
     pieces = 0
@@ -766,7 +782,7 @@ def guide(user: CurrentUser, db: SessionDep) -> GuideOut:
     s = shopping.setting(db, user, today)
     entries, neutrals = shopping.colour_guide(db)
     styles = shopping.style_guides(db, user, today)
-    staples = _staple_outs(
+    staples = staple_outs(
         db, user, s, list({p.staple.id: p.staple for g in styles for p in g.pieces}.values())
     )
     owned = [p.owned for g in styles for p in g.pieces if p.owned is not None]
@@ -986,3 +1002,46 @@ def add_from_catalog(body: FromCatalog, user: CurrentUser, db: SessionDep) -> Ca
         raise ApiError(409, "too_many_candidates", message) from error
     db.commit()
     return candidate_outs(db, user, [made])[0]
+
+
+class TryRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    item_ids: Annotated[list[uuid.UUID], Field(max_length=8)]
+    occasion_id: str | None = None
+
+
+class TryOut(BaseModel):
+    """The candidate with pieces the person owns: whole or not, and if whole, its score."""
+
+    complete: bool
+    # What's still needed, when it isn't a whole outfit.
+    message: str | None
+    score: float | None
+    good: bool | None
+    reasons: list[VerdictReasonOut]
+
+
+@router.post(
+    "/candidates/{candidate_id}/try",
+    response_model=TryOut,
+    responses=error_responses(401, 403, 404, 422),
+)
+def try_candidate(
+    candidate_id: uuid.UUID, body: TryRequest, user: CurrentUser, db: SessionDep
+) -> TryOut:
+    """Put the candidate with pieces you own and see how that outfit scores, as if you'd
+    bought it. Nothing is saved."""
+    row = _owned(db, user, candidate_id)
+    s = shopping.setting(db, user, wear.today())
+    occasion = db.get(Occasion, body.occasion_id) if body.occasion_id else None
+    scored, message = shopping.try_on(db, s, row, body.item_ids, occasion)
+    if scored is None:
+        return TryOut(complete=False, message=message, score=None, good=None, reasons=[])
+    return TryOut(
+        complete=True,
+        message=None,
+        score=scored.score,
+        good=scored.score >= DEFAULT.versatility_min_score,
+        reasons=[VerdictReasonOut(code=r.code, kind=r.kind, text=r.text) for r in scored.reasons],
+    )
