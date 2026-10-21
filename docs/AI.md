@@ -18,6 +18,8 @@ class AIProvider(Protocol):
 
 (Chosen in M10: Anthropic's API with Claude Haiku 5.5 for chat and images, called over HTTPS without an SDK; off until a key is set; tagging runs only when the person asks: D47.)
 
+(From M12: the agents, the Stylist among them, call the same model through LangChain's chat-model integration, chosen by the same settings and counted against the same daily cap. Photo tagging stays on this interface: D55.)
+
 ## 2. Auto-tagging
 
 **Flow**
@@ -52,6 +54,8 @@ user message
 
 The model never touches the database. It only sees tool results.
 
+(From M12: the same loop runs as a LangGraph agent, with the grounding check as a step after the model's reply and confirmation as a pause in the run. The conversation itself stays in `chat_messages`; the checkpointer keeps only a turn that hasn't finished. Design: `docs/AGENTS.md`, section 3.)
+
 ### Tools
 
 Read tools:
@@ -69,6 +73,8 @@ Read tools:
 | `compare_candidates(candidate_ids, budget)` | Side-by-side and budget split |
 | `search_products(query)` | Results from enabled product adapters |
 | `get_style_guide(topic)` | Fabric or style profile text |
+| `get_trends(section, category, season)` | Approved trends that fit the person's sections, with their summaries and sources (M12) |
+| `get_latest_digest()` | The person's latest weekly digest: its picks, reasons, and links (M12) |
 
 Write tools (each returns a proposal that the user must confirm in the UI before it is applied):
 
@@ -78,6 +84,8 @@ Write tools (each returns a proposal that the user must confirm in the UI before
 | `plan_outfit(date, outfit_id)` | A plan entry |
 | `add_to_wishlist(candidate)` | A wishlist item |
 | `log_wear(date, item_ids)` | A wear log |
+
+(From M12, proposing pauses the run. The proposal is stored first, in its own step, so resuming never stores it twice. Confirm resumes the run with yes, and the model is told what was made; Not now resumes it with no. A new message sent while a turn is paused counts as Not now.)
 
 Tool rules:
 
@@ -143,6 +151,9 @@ A scripted set run in CI with the fake provider for plumbing, and run manually a
 | Request to view another account's items | Refused; no tool call with foreign IDs is possible |
 | Write action | Nothing is saved until the confirm endpoint is called |
 | Provider down | Chat shows "unavailable"; all other pages work |
+| "What's in fashion this monsoon?" (M12) | Answers only from `get_trends`, naming the sources; no trend that isn't approved |
+| "Why was this in my digest?" (M12) | Answers from `get_latest_digest` and the pick's reasons; no new items or prices |
+| Confirm pressed twice (M12) | The action runs once |
 
 (Built as: the plumbing rows run in CI with scripted turns (`tests/test_stylist.py`); `make eval-stylist` runs the questions against the real model by hand: D47.)
 
@@ -161,3 +172,5 @@ A scripted set run in CI with the fake provider for plumbing, and run manually a
 - Producing prices or availability.
 - Inferring body shape, gender, or skin tone.
 - Generating images of the user.
+- Inventing trends, or naming a trend without the sources it was found in (M12).
+- Choosing or scoring the weekly digest's picks (M12: engine code, `docs/AGENTS.md`).

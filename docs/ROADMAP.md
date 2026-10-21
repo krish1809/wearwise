@@ -1,8 +1,8 @@
 # WearWise roadmap
 
-Twelve milestones, M0 to M11. Each one is a vertical slice: database, API, UI, and tests for one area, deployed and usable at the end. Nothing is built as a mock-up first and wired up later.
+Thirteen milestones, M0 to M12, plus M10b, which was added along the way. Each one is a vertical slice: database, API, UI, and tests for one area, deployed and usable at the end. Nothing is built as a mock-up first and wired up later.
 
-**v1.0 is M0 to M5.** At that point WearWise is a deployed app where you catalogue your wardrobe, build outfits, and get ranked suggestions with reasons. That is already a complete portfolio project. M6 to M11 make it the full product.
+**v1.0 is M0 to M5.** At that point WearWise is a deployed app where you catalogue your wardrobe, build outfits, and get ranked suggestions with reasons. That is already a complete portfolio project. M6 to M11 make it the full product, and M12 adds agents that work on a schedule.
 
 ## Overview
 
@@ -22,6 +22,7 @@ Twelve milestones, M0 to M11. Each one is a vertical slice: database, API, UI, a
 | M10 | AI | auto-tag photos; chat with a stylist that knows your wardrobe | 7 to 10 days |
 | M10b | Interaction and polish | drag outfits together, swipe suggestions, see your colours, and use a few new everyday tools | 6 to 8 days |
 | M11 | Hardening and launch | hand the link to anyone | 5 to 7 days |
+| M12 | Agents | get a weekly email of what's worth buying, from trends found on the web and what you own | 8 to 12 days |
 
 Effort is a guess, counted in working days of two to three focused hours. Treat it as a way to notice when a milestone has grown too big, not as a deadline.
 
@@ -31,6 +32,7 @@ Effort is a guess, counted in working days of two to three focused hours. Treat 
 - M6 and M7 can swap.
 - M8 needs M5. M9 needs M8.
 - The auto-tagging half of M10 can be pulled forward to any point after M3 if adding items by hand is too slow.
+- M12 needs M8, M9, and M10. It uses M6's weather when there is a forecast, and the season otherwise.
 
 ## Before M0: things only you can do
 
@@ -320,6 +322,34 @@ Added on 2026-10-20 at the owner's request, after M9: the app works; this makes 
 - A stranger can open the link, try the demo account, and understand the product in two minutes.
 - All end-to-end tests pass against production.
 - The known limitations are written down in the README.
+
+---
+
+## M12. Agents
+
+Added on 2026-10-21 at the owner's request, after M11: agents that work on a schedule as well as in the chat. Design in `docs/AGENTS.md`.
+
+**Goal:** WearWise keeps up with what's in fashion and tells each person who asks, once a week, what is worth buying and where to look, judged against what they already own.
+
+**Build** (design in `docs/AGENTS.md`)
+- LangGraph for the agents, with checkpoints in Postgres, a scripted fake model for tests, and an optional tracing flag. Jobs in `backend/app/jobs/`, run by scheduled GitHub Actions workflows that can also be started by hand.
+- A web search adapter, and the Trend Scout: plan the queries, search, read, extract trends with their sources, validate, merge duplicates, save, and email the owner a run report. Twice a week by default.
+- Trend approval and a run log on the owner's admin pages.
+- Digest picks in the engine: trends turned into candidate pieces, judged by the purchase analyzer, plus "already in your wardrobe" outfits.
+- An email adapter: confirmed opt-in, signed unsubscribe and "not for me" links, one-click unsubscribe, an allowlist until a domain is verified, and a daily cap.
+- The weekly digest run: gather, pick, where to buy, write, check, send, log. At most one per person per week, in batches.
+- The This week page, "Send me a preview", and digest settings.
+- The Stylist moved onto LangGraph, with confirmation as a pause in the run and two new tools: trends and the latest digest.
+
+**Done when**
+- One real Trend Scout run has been reviewed by hand, and every trend it kept has at least two sources from different sites within 45 days.
+- With fixture trends and a fixture wardrobe, no pick duplicates something owned, uses an avoided colour, names another person's item, or shows a link or price that didn't come from a source (tested).
+- Running the digest twice in a week sends one email; after unsubscribing, the next run sends none; nothing goes to an unconfirmed or demo address (tested).
+- With the model down, the digest goes out in template wording, and the Trend Scout stops cleanly with a report.
+- The M10 stylist evaluation still passes on LangGraph, and nothing is saved before Confirm.
+- The search credits, tokens, and estimated cost of a Trend Scout run and of one digest are measured, a month at the default schedule is worked out from them, and both are written in `docs/PROGRESS.md`.
+
+**Learn:** state graphs and checkpoints; human approval as a pause or as a status; structured output from untrusted text; idempotent scheduled jobs; email deliverability and consent.
 
 ---
 

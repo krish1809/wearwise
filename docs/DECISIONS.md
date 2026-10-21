@@ -27,7 +27,7 @@ Format: what was decided, why, what was rejected, and when to revisit.
 
 **Why:** testable, explainable, free to run, and works when the AI is down. It also stops the chatbot inventing items.
 **Rejected:** asking a language model to pick outfits directly.
-**Revisit if:** a learned compatibility model beats the rules on the golden set (see `ENGINE.md` section 14). Even then it would sit inside the engine, not replace it with a chat model.
+**Revisit if:** a learned compatibility model beats the rules on the golden set (see `ENGINE.md` section 15). Even then it would sit inside the engine, not replace it with a chat model.
 
 ## D5. Categories, colours, occasions, style profiles, and archetypes are data
 
@@ -423,3 +423,109 @@ Next.js runs with `cacheComponents` and `partialPrefetching` on, as create-next-
 
 **Rejected:** a separate uptime service (frequent checks would keep the free server and database awake); tests that share one long-lived account (they'd depend on what the last run left).
 **Revisit if:** the suite grows past a few minutes, or the limits it stays inside change.
+
+## D55. Agents on LangGraph, with LangChain only for the model integration
+
+**Why:**
+- **What three agents need.** Graphs with conditional edges (the grounding retry; the digest's check, then template wording). Checkpoints in Postgres, so a run that dies resumes: a Trend Scout run doesn't pay for its searches twice, and a digest that died between writing and sending doesn't call the model again. Pauses for a person's yes (the Stylist's Confirm). Retries per step. One hand-written loop was fine for the chat (D47); three agents, two of them on a schedule, are a framework's job, and the graphs are the part of an agent project worth reading.
+- **Versions, checked October 2026.** langgraph 1.2.16, langchain 1.4.6, langchain-core 1.6.12, langchain-anthropic 1.7.6, langgraph-checkpoint-postgres 3.2.0, all MIT licensed. They install and run on Python 3.14: a test graph paused and resumed, although langgraph's package metadata lists Python only up to 3.13. Pinned to exact versions when added.
+- **LangChain for the model only.**
+  - It provides one chat-model interface for any provider, tool binding, and structured output.
+  - The Stylist uses `create_agent`, with middleware for its tool-call limit and its pause for confirmation.
+  - Not used: chains, vector stores, document loaders, retrievers, or memory classes.
+- **A partial reversal of D47's "no vendor SDK".** The model integration brings the provider's SDK, and langchain-core brings `langsmith`, which is installed but unused unless tracing is on. Photo tagging stays on the M10 adapter until it's next changed.
+- **The engine rule is unchanged.** Agents reach data only through services, so an agent can't answer differently from the pages.
+- **Memory.** The conversation stays in `chat_messages`, which the page, the export, and deletion already use. Checkpoints hold only an unfinished run, and are deleted when it ends. Keeping conversations in checkpoints would store a second copy of every message, written again at every step, on a 1 GB database.
+- **Tracing is off in production.** A tracing service would receive prompts that carry wardrobe data. It's allowed for Trend Scout runs, which carry no personal data, and for local runs.
+
+**Rejected:**
+- The hand-written loop for the new agents: three loops, each with its own resume and retry code.
+- LangChain's chains and memory classes: the graphs are explicit instead.
+- A hosted agent service: one more service holding wardrobe data.
+- Checkpoints as the chat's memory.
+
+**Revisit if:** new releases keep breaking the pinned versions, or a smaller library covers checkpoints and pauses.
+
+## D56. Scheduled jobs on GitHub Actions
+
+**Why:**
+- **The free server sleeps** after 15 quiet minutes, so a scheduler inside it wouldn't fire. D52 avoided needing one by tidying up whenever the server starts; the agents need to run at set times.
+- **GitHub Actions** (checked October 2026):
+  - free for public repositories on GitHub's standard runners;
+  - a manual trigger;
+  - a time zone on schedules (`Asia/Kolkata`).
+
+  The jobs run on GitHub's machine and exit, so they don't keep the free server awake or share its tenth of a CPU.
+- **Built around its limits.**
+  - Scheduled runs can be delayed or dropped at busy times, most often on the hour: hence odd minutes, and a two-day catch-up for the digest.
+  - They run only from the default branch.
+  - They switch off after 60 days without activity in a public repository; the owner's run report is how a missed run is noticed.
+  - Failure emails go to whoever last changed the schedule line.
+- **One at a time.** Each workflow has a `concurrency` group, and each job holds a "running" row per kind in `agent_runs` (a partial unique index, lapsing after 2 hours). Postgres advisory locks belong to a database session, and Neon's pooled connections don't keep one, so they aren't used.
+- **The cost.** The production database address and the keys live in a GitHub environment as well as on Render. The workflows never run on pull requests.
+
+**Rejected:**
+- A scheduler inside the API, which sleeps.
+- A paid cron service, or a paid server that never sleeps.
+- An endpoint on Render for GitHub to call: the job would run inside a request on a tenth of a CPU, and GitHub would still need a secret.
+
+**Revisit if:** the server moves to a plan that doesn't sleep, or the repository becomes private (then Actions minutes count).
+
+## D57. Email: Resend, confirmed opt-in, an allowlist until a domain is verified, and signed links
+
+**Why:**
+- **Resend** (checked October 2026): 3,000 emails a month, 100 a day, up to 3 domains on the free plan, and an `Idempotency-Key` header that is remembered for 24 hours. It sits behind an `EmailSender` adapter, with a console version and a fake.
+- **An allowlist until a domain is verified.** Without one, Resend sends only to its account owner's address, and the app's `vercel.app` address can't be verified because its DNS isn't ours. So `EMAIL_ALLOWLIST` limits all sending until a domain is bought, and the app labels digests as a preview meanwhile. The owner's run reports work from the start.
+- **Confirmed opt-in instead of verifying every sign-up.** Turning the digest on sends a confirmation link; following it sets `email_verified_at` and the opt-in time. Sign-up and the demo stay as they are, and the only people emailed are those who asked and proved the address is theirs. Demo accounts can't opt in.
+- **Links.**
+  - **Signed:** unsubscribe and "not for me" links carry a signature (`EMAIL_LINK_SECRET`) and do one thing each, so they work from the email without logging in.
+  - **Single use:** confirmation (and password reset, if built with it) uses single-use tokens stored as hashes, which expire.
+  - **One-click unsubscribe:** mail apps send it as a POST without the header the app requires against cross-site requests, so that one route is guarded by its token instead, and the route audit lists it as public.
+- **Once a week is the database's job**: one digest per person per week, by a unique key. The provider's 24-hour key only covers a retried send.
+
+**Rejected:**
+- Verifying every address at sign-up: it changes sign-up for everyone, and emails people who didn't ask.
+- Sending from a free mailbox's address through the provider: it fails the mailbox's own authentication checks.
+- An unsubscribe link carrying only the account's id.
+
+**Revisit if:** a domain is verified (then empty the allowlist), or sending nears the free plan's daily limit.
+
+## D58. The Trend Scout: Tavily, twice a week, two sources per trend, and approval as a status
+
+**Why:**
+- **Tavily** (checked October 2026) has:
+  - 1,000 credits a month free (a basic search is 1 credit, an advanced one 2);
+  - a past-month window, preferred and blocked site lists, and a country boost;
+  - the credits used, reported in each response.
+
+  It's called over HTTPS behind a `WebSearch` adapter, with a fake and no SDK. Its terms let it keep queries and train models on them, so queries carry no personal data: they're built from the season, the sections, style names with counts, and the festive calendar.
+- **Twice a week**, Tuesday and Friday early in the morning in India: fashion moves slower than news, and this leaves time to approve trends before the Sunday digests. About 8 credits a run and about 70 a month, with a monthly cap in code (`SEARCH_MONTHLY_CREDIT_CAP`) counted from what the responses report.
+- **What counts as a trend.** Two sources from different sites within 45 days, each with a quote found word for word in the text that was read; values only from the seed lists; nothing about bodies. The lists of preferred and blocked sites and the festive calendar are seed data the owner reviews.
+- **Approval is a status, not a pause.** New trends wait as pending until the owner approves or rejects each one on the admin page, and digests use approved trends only. A run paused for days would block the next scheduled run, and approving some of a run's trends doesn't fit a single resume. Pausing a run is used where it fits: the Stylist's Confirm.
+- **No article images** anywhere, because of copyright.
+- **The owner** is whoever is in `ADMIN_EMAILS` (D51), not a new column on users.
+
+**Rejected:**
+- Running every 12 hours: mostly repeats.
+- Reading shop listing pages for trends.
+- Showing trends straight from the model, without approval.
+- Holding the run open until approval.
+
+**Revisit if:** the free allowance or prices change, or approved runs are reliably right (then `TRENDS_REQUIRE_APPROVAL=false`).
+
+## D59. The checkpointer's tables: made by the library, ignored by Alembic, deleted by thread
+
+**Why:**
+- **Not an Alembic migration.** The checkpointer's `setup()` creates four tables, versions them itself, and builds indexes with `CREATE INDEX CONCURRENTLY`, which can't run inside a migration's transaction. So a start step (`scripts/agent_setup.py`, safe to repeat) calls `setup()` after the migrations, the jobs call it too, and Alembic's autogenerate is told to ignore the four tables; otherwise it would offer to drop them.
+- **It works through Neon's pooler.** It connects with autocommit and without prepared statements, the library's own default.
+- **Deletion and export.** The tables have no `user_id`, so the rule that makes deletion complete (D50) can't see them. Instead:
+  - **Thread ids name the owner:** `chat:<thread id>`, `digest:<user id>:<week>`, `scout:<run id>`.
+  - **Deleting an account** deletes the person's threads, and a test checks nothing is left.
+  - **The export** leaves them out as run state.
+  - **Clean-up:** a finished run deletes its checkpoints, and housekeeping removes any left after a day, since the library has no expiry of its own.
+
+**Rejected:**
+- An Alembic migration that calls `setup()`: it fails on the concurrent index, and wouldn't follow the library's own upgrades.
+- Keeping checkpoints indefinitely: they hold conversation state and grow at every step.
+
+**Revisit if:** the library gains a built-in expiry, or a way to create its tables inside a migration.

@@ -127,12 +127,13 @@ Sessions are opaque tokens in an `httpOnly`, `SameSite=Lax` cookie, with only a 
 | Document | Contents |
 |---|---|
 | [Product spec](docs/PRODUCT_SPEC.md) | Features, pages, principles, definition of done |
-| [Roadmap](docs/ROADMAP.md) | Milestones M0 to M11 |
+| [Roadmap](docs/ROADMAP.md) | Milestones M0 to M12 |
 | [Architecture](docs/ARCHITECTURE.md) | Structure, auth, images, conventions |
 | [Data model](docs/DATA_MODEL.md) | Tables |
 | [Engine](docs/ENGINE.md) | Scoring, generation, planner |
 | [Shopping](docs/SHOPPING.md) | Purchase analyzer, product sources |
 | [AI](docs/AI.md) | Photo tagging, the stylist |
+| [Agents](docs/AGENTS.md) | Planned for M12: a Trend Scout, a weekly email of what's worth buying, and the stylist as an agent graph |
 | [Design system](docs/DESIGN_SYSTEM.md) | Visual direction, both themes, components |
 | [Deployment](docs/DEPLOYMENT.md) | Hosting, release, observability |
 | [Decisions](docs/DECISIONS.md) | Choices made and why |

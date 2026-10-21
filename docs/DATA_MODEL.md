@@ -24,7 +24,7 @@ Reference tables use the seed file's id (a slug) as the primary key, and `positi
 
 ## Accounts (M1, M2)
 
-**`users`**: `email` (unique, lower-cased), `password_hash`, `name`, `wardrobe_version` (int), `onboarding_completed_at`, `is_demo` (set only by the demo script, D29).
+**`users`**: `email` (unique, lower-cased), `password_hash`, `name`, `wardrobe_version` (int), `onboarding_completed_at`, `is_demo` (set only by the demo script, D29, and by "Try the demo", whose accounts have addresses ending `@demo.wearwise.invalid` and are deleted a day after `created_at`, D52). `email_verified_at` arrives with M12.
 
 **`sessions`**: `user_id`, `token_hash` (unique), `expires_at`, `last_seen_at`, `user_agent`.
 
@@ -143,8 +143,42 @@ Marking a candidate bought creates the item, with the candidate's photo, through
 
 The theme choice is not stored on the server: it's a per-browser setting (D48).
 
+## Operations and launch (M11)
+
+**`error_events`**: `source` (server or browser), `request_id`, `method`, `path` (the route pattern, or the page's path without its query), `status`, `kind` (the error's type), `message`, `detail` (the end of the stack trace), `created_at` (indexed). No account is attached. Deleted after 30 days (D51).
+
+**`saved_measures`**: `user_id` (unique), `key` (a hash of the fingerprint: wardrobe version, engine version, occasions, styles, colours, reactions, seasons), `data` (json: Insights' measures). Worked out again only when the key changes (D53).
+
+**Indexes on links to a person's data.** Postgres doesn't index foreign keys by itself, so M11 added eight: `candidates.item_id`, `candidates.category_id`, `chat_actions.user_id`, `items.category_id`, `plan_days.wear_log_id`, `suggestion_feedback.item_id`, `suggestions.saved_outfit_id`, and `suggestions.wear_log_id`, partial where the column is mostly empty. A test fails for any new link to a person's data without one (D53).
+
+## Agents (M12)
+
+Planned; the design is in `docs/AGENTS.md`.
+
+**`users`** gains `email_verified_at`: set when the person follows the confirmation link sent when they turn the digest on.
+
+**`profiles`** gains `digest_opted_in_at` (null means off), `digest_weekday` (0 Monday to 6 Sunday; default 6), and `digest_unsubscribed_at`.
+
+**`trends`** (shared, no user data): `name`, `name_key` (normalised, for merging), `summary` (at most 40 words), `why_now`, `category_ids[]`, `color_families[]`, `fabrics[]`, `patterns[]`, `fits[]`, `seasons[]`, `sections[]`, `style_profile_ids[]` (all from the seed lists), `status` (pending, approved, rejected, expired), `first_seen_at`, `last_seen_at`, `decided_at`, `run_id` (the run that found it). Expires 8 weeks after `last_seen_at`.
+
+**`trend_sources`** (shared): `trend_id` (deleted with the trend), `url`, `domain`, `title`, `published_on`, `quote` (found word for word in the text that was read), `run_id`. Unique on `(trend_id, url)`.
+
+**`agent_runs`** (shared): `kind` (trend_scout, weekly_digest), `trigger` (schedule or manual), `status` (running, done, stopped, failed), `thread_id`, `started_at`, `finished_at`, `steps` (json: each step's counts and time; the queries, the sources read, and every dropped trend with its reason), `search_credits`, `tokens_in`, `tokens_out`, `cost_micro_usd`, `stopped_by` (the limit that stopped it), `errors` (json). At most one `running` row per kind (a partial unique index), which lapses after 2 hours. A digest run stores counts only (sent, nothing to send, held, failed), never who.
+
+**`digests`**: `user_id`, `week` (ISO week, such as `2026-W44`), `status` (built, sent, nothing, held, failed), `subject`, `intro`, `wording` (model or template), `season`, `sent_at`, `provider_message_id`, `error`, `tokens_in`, `tokens_out`. Unique on `(user_id, week)`: one a week, and a second run finds it.
+
+**`digest_picks`**: `digest_id` (deleted with the digest), `position`, `kind` (buy, or owned for "already in your wardrobe"), `trend_id` (null once the trend is removed), `trend_name`, `category_id`, `color_primary`, `attrs` (json), `score`, `components` (json), `reasons` (json), `item_ids[]` (the person's own pieces it names), `links` (json: the shop searches, as the adapter made them), `verdict` (null, or not_for_me), `verdict_at`.
+
+**`email_events`**: `user_id` (null for the owner's run reports, which go to `ADMIN_EMAILS`), `kind` (digest, confirm, password_reset, run_report), `digest_id`, `status` (sent, failed, held_by_allowlist, held_by_daily_cap), `provider_message_id`, `error`. Deleted after 90 days.
+
+**`email_tokens`**: `user_id`, `purpose` (confirm_email, password_reset), `token_hash` (unique), `expires_at`, `used_at`. Single use. Links that only unsubscribe or say "not for me" are signed instead and need no row.
+
+**Checkpoints.** LangGraph's Postgres checkpointer keeps its own four tables (`checkpoints`, `checkpoint_blobs`, `checkpoint_writes`, `checkpoint_migrations`) and its own schema version. Its `setup()` builds indexes concurrently, which can't run inside an Alembic migration, so the tables are created by a start step that calls `setup()` (safe to repeat), and Alembic is told to ignore them (D59). Thread ids say whose they are: `chat:<thread id>`, `digest:<user id>:<week>`, `scout:<run id>`. A thread's checkpoints are deleted when its run or turn finishes; housekeeping removes any left over after a day.
+
 ## Deletion
 
-Deleting an account removes every row above for that user and every stored image (D50). The rule that makes it complete: every table with a `user_id` points at `users` with ON DELETE CASCADE, and every table without one hangs off such a table with ON DELETE CASCADE (`chat_messages`, `outfit_items`, `trip_items`, `wear_log_items`). The same rule decides what "Download my data" exports. Every other table must be listed as shared in `app/services/export.py` (reference data, `link_previews`, `catalog_products`, `weather_forecasts`, `rate_limit_hits`, `app_meta`); a test fails for a table that is neither.
+Deleting an account removes every row above for that user and every stored image (D50). The rule that makes it complete: every table with a `user_id` points at `users` with ON DELETE CASCADE, and every table without one hangs off such a table with ON DELETE CASCADE (`chat_messages`, `outfit_items`, `trip_items`, `wear_log_items`, and from M12 `digest_picks`). The same rule decides what "Download my data" exports. Every other table must be listed as shared in `app/services/export.py` (reference data, `link_previews`, `catalog_products`, `weather_forecasts`, `rate_limit_hits`, `error_events`, `app_meta`, and from M12 `trends`, `trend_sources`, and `agent_runs`); a test fails for a table that is neither.
+
+The checkpointer's tables (M12) are the one exception to the rule, because the library owns them and they have no `user_id`. They hold only unfinished runs, and are listed in `export.py` as run state: not exported (the conversation itself is in `chat_messages`), and deleted with the account by thread id (`chat:` for each of the person's threads, `digest:<user id>:`). A test fills them for one person, deletes the account, and finds none left.
 
 Nothing personal is kept forever outside a person's own rows: rate-limit counts (which can name an IP address, or a hash of an email) are deleted within a day, and photos uploaded but never saved with anything after about a day.

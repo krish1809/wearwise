@@ -220,7 +220,7 @@ Items are nodes. Two items in different slots are connected if `P >= 0.65`.
 
 "Distinct" means after the diversity step, so ten outfits that differ only in the watch count once.
 
-These measures describe the wardrobe, not today. Compute them over every item that isn't archived or retired (ignore laundry and packed status), with rotation fixed at 1 and weather taken from the season, so the numbers don't shift from day to day. Cache all three per `wardrobe_version`. (Built as: distinct core pieces, so an accessory never makes a new outfit; an accessory's versatility is the good outfits it finishes; occasions from onboarding and the usual week; a one-sentence rescue for each orphan; cached per wardrobe version, engine version, occasions, and reactions: D43.)
+These measures describe the wardrobe, not today. Compute them over every item that isn't archived or retired (ignore laundry and packed status), with rotation fixed at 1 and weather taken from the season, so the numbers don't shift from day to day. Cache all three per `wardrobe_version`. (Built as: distinct core pieces, so an accessory never makes a new outfit; an accessory's versatility is the good outfits it finishes; occasions from onboarding and the usual week; a one-sentence rescue for each orphan; cached per wardrobe version, engine version, occasions, and reactions: D43. Since M11 the cache is a table, `saved_measures`, one row per person under that fingerprint, so it outlasts the server's sleep: D53.)
 
 ## 12. Weekly planner (M6)
 
@@ -246,6 +246,10 @@ Greedy method: start empty; repeatedly add the item that covers the most still-u
 
 This is a set-cover-style problem, so greedy is a heuristic, not a guaranteed minimum. Say "a compact list", not "the smallest possible list".
 
-## 14. Later: a learned model (stretch)
+## 14. Weekly digest picks (M12)
+
+The weekly digest's picks are engine code too: trends become candidate pieces, each judged by the purchase analyzer against the person's wardrobe, and scored mostly on what they would add (`0.60 * value + 0.25 * trend fit + 0.15 * season fit`). A trend that matches something the person already owns becomes an outfit built around that piece instead of a purchase. The model only words the result. Details and tests: `docs/AGENTS.md`, section 5.
+
+## 15. Later: a learned model (stretch)
 
 A public dataset of human-made outfits can train a small compatibility model. Compare it with the rule engine on the golden set and on a fill-in-the-blank task, and only blend it in if it wins. Check the dataset's licence before using it. This makes a good write-up either way: rules versus learned, with numbers.

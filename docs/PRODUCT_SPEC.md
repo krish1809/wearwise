@@ -45,7 +45,7 @@ Existing wardrobe apps (Whering, Acloset, Cladwell) already do cataloguing and o
 
 ## 5. Features
 
-Tiers: **Core** ships in v1.0 (milestones M0 to M5). **Next** ships in v1.x (M6 to M11). **Stretch** is optional and only after launch. Items marked *(new)* were added during planning and were not in the original list.
+Tiers: **Core** ships in v1.0 (milestones M0 to M5). **Next** ships in v1.x (M6 to M12). **Stretch** is optional and only after launch. Items marked *(new)* were added during planning and were not in the original list.
 
 ### A. Account and onboarding (M1, M2)
 
@@ -151,7 +151,7 @@ Full design in `docs/ENGINE.md`.
 | Gap analysis: the items that would add the most to your wardrobe, ranked | Next |
 | Starter capsule *(new)*: for a small wardrobe, a staged shopping plan under a budget | Next |
 | Budget split: "I have ₹3,000, what should I buy?" chosen from candidates | Next |
-| Cooling-off reminder *(new)*: wishlist items resurface after a waiting period before you buy | Stretch |
+| Cooling-off reminder *(new)*: wishlist items resurface after a waiting period before you buy | Next (M10b) |
 
 ### I. Product discovery (M9)
 
@@ -196,6 +196,37 @@ This answers the fabric, brand, and style confusion directly.
 | Download all my data as a file | Next |
 | Delete my account and every photo | Next |
 | Plain-language privacy page stating what is stored and which third parties see what | Next |
+| A demo with a sample wardrobe of your own, no sign-up, deleted a day later | Next |
+
+### M. Everyday tools and interaction (M10b)
+
+| Feature | Tier |
+|---|---|
+| Build an outfit by dragging pieces onto the board, with a live score (tap and keyboard still work) | Next |
+| Swipe suggestions on a phone: right to like, left to dislike, with undo | Next |
+| Colour map of the wardrobe by hue and lightness; tap an area to filter | Next |
+| Try a candidate on with your own pieces before buying | Next |
+| Coverage squares that open their outfits, or what's missing there | Next |
+| "Wear what you own": a 60-day challenge to wear every piece once, counted from the wear log | Next |
+| Remix: pick up to ten pieces and see every good outfit they make | Next |
+| Quick jump (Ctrl or Cmd + K), undo on destructive actions, and a dark theme | Next |
+
+### N. Agents (M12)
+
+Design in `docs/AGENTS.md`. Agents choose what to look at and how to word things; the engine and the purchase analyzer decide what matches and what is worth buying.
+
+| Feature | Tier |
+|---|---|
+| Trend Scout *(new)*: twice a week, searches fashion news for current clothing, footwear, accessory, and fragrance trends in India and the season, and keeps each trend with at least two recent sources | Next |
+| Trend approval *(new)*: the owner approves or rejects each new trend, with its sources, before anyone sees it; and a log of every run | Next |
+| A run report emailed to the owner: what was searched, what was found, what was dropped and why, and what it cost | Next |
+| Weekly digest *(new)*: up to three picks worth buying this week, from approved trends, the season, and what you own, each with its reason and shop searches; or "already in your wardrobe" with an outfit to wear it in | Next |
+| Digest settings: off until you turn it on and confirm your address; choose the day; unsubscribe in one click from any email | Next |
+| This week page: the latest digest in the app, with your own photos | Next |
+| Send me a preview: build this week's digest and see it without an email | Next |
+| "Not for me" on a pick, from the email or the page, which lowers similar picks later | Next |
+| Stylist questions about trends and the latest digest | Next |
+| Live products in the digest from an approved product API | Stretch (needs access) |
 
 ## 6. Pages
 
@@ -212,8 +243,12 @@ This answers the fabric, brand, and style confusion directly.
 | Shopping | Wishlist, candidates, analysis, gaps, capsule, discovery |
 | Insights | Wear data, versatility, coverage, style profile |
 | Stylist | AI chat |
+| This week | The latest weekly digest: picks, reasons, shop searches, "not for me" (M12) |
+| Remix | Every good outfit from up to ten chosen pieces (M10b) |
 | Style Guide | Fabrics, style profiles, colour basics, brand notebook |
-| Settings | Profile, sizes, preferences, privacy |
+| Settings | Profile, sizes, preferences, the weekly digest, your data |
+| Privacy | What is stored, who else sees what, how to take it or delete it (public) |
+| Admin | The owner's counts, errors, trend approval, and agent runs (owner only; "not found" for everyone else) |
 
 ## 7. Out of scope
 
@@ -223,6 +258,8 @@ This answers the fabric, brand, and style confusion directly.
 - Virtual try-on or generating images of the user wearing clothes.
 - Inferring body shape, gender, or skin tone from photos.
 - Bulk scraping of retailer sites (see `docs/SHOPPING.md` for why and what replaces it).
+- Article images from trend sources. Trends are shown as text and colour swatches.
+- Email to anyone who hasn't asked for it and confirmed their address.
 
 ## 8. Definition of done
 
