@@ -5,11 +5,13 @@ items, and the graph measures from the engine over the current wardrobe. Nothing
 or estimated. Rankings wait until there are enough wear logs to mean something.
 """
 
+import hashlib
 import uuid
 from collections import OrderedDict
 from dataclasses import dataclass, replace
 from datetime import date, timedelta
 from threading import Lock
+from typing import Any
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -19,6 +21,7 @@ from app.engine.generate import good_cores, season_for, suggest
 from app.engine.insights import (
     Family,
     Measures,
+    Rescue,
     WornStyle,
     measure,
     steady,
@@ -32,6 +35,7 @@ from app.models import (
     Item,
     Occasion,
     Profile,
+    SavedMeasures,
     StyleProfile,
     SuggestionFeedback,
     User,
@@ -284,6 +288,13 @@ def measures_for(
         if cached is not None:
             _measures.move_to_end(key)
             return cached
+    # The server forgets its memory whenever it sleeps; the saved copy outlasts that.
+    digest = hashlib.sha256(repr(key).encode()).hexdigest()[:32]
+    saved = db.scalar(select(SavedMeasures).where(SavedMeasures.user_id == user.id))
+    if saved is not None and saved.key == digest:
+        found = _decode(saved.data)
+        _remember(user, key, found)
+        return found
     wardrobe = suggestions.load_wardrobe(db, user, today)
     base = suggestions.base_context(db, user, profile, wardrobe, today)
     families = [
@@ -299,13 +310,42 @@ def measures_for(
         DEFAULT,
         suggestions.pair_cache_for(user),
     )
+    if saved is None:
+        db.add(SavedMeasures(user_id=user.id, key=digest, data=_encode(found)))
+    else:
+        saved.key, saved.data = digest, _encode(found)
+    db.flush()
+    _remember(user, key, found)
+    return found
+
+
+def _remember(user: User, key: tuple[object, ...], found: Measures) -> None:
     with _lock:
         for old in [k for k in _measures if k[0] == user.id]:
             del _measures[old]
         _measures[key] = found
         while len(_measures) > _CACHED:
             _measures.popitem(last=False)
-    return found
+
+
+def _encode(found: Measures) -> dict[str, Any]:
+    return {
+        "versatility": dict(found.versatility),
+        "orphans": list(found.orphans),
+        "rescues": {item: [r.code, r.text] for item, r in found.rescues.items()},
+        "coverage": [[occasion, season, n] for (occasion, season), n in found.coverage.items()],
+        "good": [[list(core), template] for core, template in found.good.items()],
+    }
+
+
+def _decode(data: dict[str, Any]) -> Measures:
+    return Measures(
+        versatility=data["versatility"],
+        orphans=tuple(data["orphans"]),
+        rescues={item: Rescue(code, words) for item, (code, words) in data["rescues"].items()},
+        coverage={(occasion, season): n for occasion, season, n in data["coverage"]},
+        good={tuple(core): template for core, template in data["good"]},
+    )
 
 
 def _worn_style(

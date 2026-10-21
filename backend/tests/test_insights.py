@@ -275,3 +275,35 @@ def test_the_wear_what_you_own_challenge_counts_from_the_wear_log(
 
     assert sam.delete(CHALLENGE).status_code == 204
     assert sam.get(CHALLENGE).json()["challenge"] is None
+
+
+def test_measures_outlast_the_servers_memory_and_follow_the_wardrobe(
+    sam: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    sam.patch("/api/v1/profile", json={"occasion_ids": ["college"]})
+    add_item(sam, "casual_shirt", "white", fabric="cotton")
+    add_item(sam, "chinos", "navy", fabric="cotton")
+    add_item(sam, "loafers", "brown", fabric="leather")
+    worked_out = []
+    from app.engine import insights as engine_insights
+
+    original = engine_insights.measure
+
+    def counting(*args: Any, **kwargs: Any) -> Any:
+        worked_out.append(1)
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(insights_service, "measure", counting)
+
+    first = sam.get(INSIGHTS).json()
+    # The server sleeps and forgets; the saved copy answers, the same as before.
+    insights_service.without_cache()
+    again = sam.get(INSIGHTS).json()
+    # A new item changes the wardrobe, so the measures are worked out afresh.
+    add_item(sam, "sneakers", "white", fabric="canvas")
+    changed = sam.get(INSIGHTS).json()
+
+    assert len(worked_out) == 2
+    assert again["coverage"] == first["coverage"]
+    assert again["versatile"] == first["versatile"]
+    assert changed["items"] == 4

@@ -16,6 +16,9 @@ from app.models import ColorFamily, ItemImage, User
 
 # The formats phones and cameras save, decided by the file's content, not its name.
 ALLOWED_FORMATS = {"JPEG": "JPEG", "PNG": "PNG", "WEBP": "WebP", "MPO": "JPEG"}
+# The only decoders Pillow tries on an upload. MPO (two-lens phone photos) is opened by the
+# JPEG decoder; no other format's parser ever sees the file.
+DECODERS = ["JPEG", "PNG", "WEBP"]
 # Refuses "decompression bombs": small files that expand to enormous images.
 MAX_PIXELS = 50_000_000
 MB = 1024 * 1024
@@ -23,6 +26,8 @@ FULL_SIZE = 1600
 THUMB_SIZE = 400
 # Photos uploaded but never saved with an item are removed after this long.
 UNATTACHED_FOR = timedelta(days=1)
+# How many of those one upload clears, so an upload never waits on a big cleanup.
+CLEANUP_BATCH = 50
 
 
 class PhotoRejected(Exception):
@@ -53,7 +58,7 @@ def process(data: bytes, max_mb: int) -> ProcessedPhoto:
     try:
         with warnings.catch_warnings():
             warnings.simplefilter("error", Image.DecompressionBombWarning)
-            opened = Image.open(io.BytesIO(data))
+            opened = Image.open(io.BytesIO(data), formats=DECODERS)
             if opened.format not in ALLOWED_FORMATS:
                 raise PhotoRejected(_NOT_A_PHOTO)
             if opened.width * opened.height > MAX_PIXELS:
@@ -142,18 +147,21 @@ def find_photo(db: Session, user: User, image_id: uuid.UUID) -> ItemImage | None
     return db.scalar(query)
 
 
-def remove_unattached(db: Session, user: User) -> list[str]:
-    """Delete this person's photos that were uploaded but never saved with an item or a
-    shopping candidate. Returns the storage keys, to delete once the change is committed."""
+def remove_unattached(db: Session, limit: int = CLEANUP_BATCH) -> list[str]:
+    """Delete photos (anyone's) that were uploaded over a day ago but never saved with an item
+    or a shopping candidate, a batch at a time. Returns the storage keys, to delete once the
+    change is committed."""
     cutoff = datetime.now(UTC) - UNATTACHED_FOR
     stale = list(
         db.scalars(
-            select(ItemImage).where(
-                ItemImage.user_id == user.id,
+            select(ItemImage)
+            .where(
                 ItemImage.item_id.is_(None),
                 ItemImage.candidate_id.is_(None),
                 ItemImage.created_at < cutoff,
             )
+            .order_by(ItemImage.created_at)
+            .limit(limit)
         )
     )
     keys = [key for image in stale for key in (image.storage_key, image.thumb_key)]

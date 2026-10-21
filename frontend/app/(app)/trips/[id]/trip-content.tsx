@@ -99,7 +99,7 @@ function TripView({ trip, reference }: { trip: Trip; reference: Reference }) {
         </p>
       </div>
 
-      <div className="grid gap-10 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
         <section aria-labelledby="pack-heading" className="flex flex-col gap-4">
           <div>
             <h2 id="pack-heading" className="text-lg font-medium">

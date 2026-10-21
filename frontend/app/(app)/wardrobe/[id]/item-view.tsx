@@ -204,7 +204,7 @@ function ItemDetails({
   return (
     <div className="flex flex-col gap-6">
       <BackLink href="/wardrobe">Wardrobe</BackLink>
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
         <div className="flex aspect-3/4 items-center justify-center rounded-xl bg-tile p-6 *:max-h-full *:max-w-full">
           <ItemPhoto
             photo={item.photo}

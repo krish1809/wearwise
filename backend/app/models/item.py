@@ -65,6 +65,8 @@ Index("ix_items_user_id_archived_at", Item.user_id, Item.archived_at)
 Index("ix_items_user_id_created_at", Item.user_id, Item.created_at)
 Index("ix_items_user_id_slot", Item.user_id, Item.slot)
 Index("ix_items_user_id_category_id", Item.user_id, Item.category_id)
+# Deleting a custom category checks that no item still uses it.
+Index("ix_items_category_id", Item.category_id)
 Index("ix_items_seasons", Item.seasons, postgresql_using="gin")
 Index("ix_items_occasion_ids", Item.occasion_ids, postgresql_using="gin")
 Index("ix_items_style_tags", Item.style_tags, postgresql_using="gin")

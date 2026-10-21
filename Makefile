@@ -1,10 +1,10 @@
 # Everyday commands. Run `make` to list them.
 .DEFAULT_GOAL := help
 
-.PHONY: help setup dev db-up db-down migrate seed demo catalog eval-stylist golden migration test lint format typecheck api-types build check
+.PHONY: help setup dev db-up db-down migrate seed demo catalog eval-stylist golden migration test lint format typecheck api-types build check audit housekeeping e2e
 
 help: ## List the commands
-	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  make %-10s %s\n", $$1, $$2}'
+	@grep -E '^[a-z0-9-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  make %-10s %s\n", $$1, $$2}'
 
 setup: ## Install dependencies and create .env from .env.example
 	@test -f .env || (cp .env.example .env && echo "Created .env from .env.example")
@@ -72,3 +72,13 @@ build: ## Production build of the web app
 	cd frontend && pnpm build
 
 check: lint typecheck test build ## Everything CI runs
+
+e2e: ## End-to-end tests in a browser, against a running app (make dev first; E2E_BASE_URL for another)
+	cd frontend && pnpm e2e
+
+housekeeping: db-up ## Remove what has expired: old demo accounts, unsaved photos, old error reports
+	cd backend && uv run python -m scripts.housekeeping
+
+audit: ## Check the packages the live app runs on for known vulnerabilities
+	cd backend && uv export --format requirements-txt --no-dev --locked --no-emit-project | uvx pip-audit --disable-pip --no-deps -r /dev/stdin
+	cd frontend && pnpm audit --prod

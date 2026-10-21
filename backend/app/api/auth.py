@@ -2,18 +2,19 @@
 
 import hashlib
 import uuid
-from datetime import timedelta
+from datetime import datetime, timedelta
+from typing import Literal
 
 from email_validator import EmailNotValidError, validate_email
 from fastapi import APIRouter, Request, Response, status
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator
 from sqlalchemy.orm import Session
 
-from app.api.deps import CurrentUser, SessionDep, SettingsDep, client_ip
+from app.api.deps import CurrentUser, SessionDep, SettingsDep, StorageDep, client_ip
 from app.api.errors import ApiError, error_responses
 from app.api.session_cookie import SESSION_COOKIE, clear_session_cookie, set_session_cookie
 from app.models.user import User
-from app.services import auth, rate_limit
+from app.services import auth, demo, rate_limit
 from app.services.password_policy import password_problem
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -21,6 +22,8 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 LOGIN_PER_EMAIL = rate_limit.Limit(attempts=10, window=timedelta(minutes=15))
 LOGIN_PER_IP = rate_limit.Limit(attempts=30, window=timedelta(minutes=15))
 REGISTER_PER_IP = rate_limit.Limit(attempts=10, window=timedelta(hours=1))
+# Each demo is a fresh account with a wardrobe, so it's limited more tightly.
+DEMO_PER_IP = rate_limit.Limit(attempts=10, window=timedelta(hours=1))
 
 
 class UserOut(BaseModel):
@@ -31,8 +34,17 @@ class UserOut(BaseModel):
     name: str | None
     # False until onboarding is finished or skipped; logging in resumes it until then.
     onboarding_completed: bool
-    # Demo accounts are made only by the demo script; the app labels them.
+    # Demo accounts are made only by "Try the demo" and the demo script; the app labels them.
     is_demo: bool
+    created_at: datetime
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def demo_ends_at(self) -> datetime | None:
+        """When a visitor's demo is deleted; null for every other account."""
+        if self.is_demo and self.email.endswith(f"@{demo.DOMAIN}"):
+            return self.created_at + demo.LIFETIME
+        return None
 
 
 class RegisterRequest(BaseModel):
@@ -141,6 +153,40 @@ def login(
         db, user, days=settings.session_days, user_agent=request.headers.get("user-agent")
     )
     db.commit()
+    set_session_cookie(response, token, settings)
+    return user
+
+
+class DemoRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    # Which staples fill the wardrobe: the app's sections, not a gender.
+    section: Literal["menswear", "womenswear"] = "menswear"
+
+
+@router.post(
+    "/demo",
+    status_code=status.HTTP_201_CREATED,
+    response_model=UserOut,
+    responses=error_responses(403, 422, 429),
+)
+def start_demo(
+    body: DemoRequest,
+    request: Request,
+    response: Response,
+    db: SessionDep,
+    settings: SettingsDep,
+    storage: StorageDep,
+) -> User:
+    """A fresh demo account, filled with a staple wardrobe, logged in at once. Only this
+    session can open it, and it's deleted a day later with everything in it."""
+    _limit(db, f"demo:ip:{client_ip(request)}", DEMO_PER_IP)
+    user, stale = demo.start_demo(db, body.section)
+    token = auth.start_session(
+        db, user, days=settings.session_days, user_agent=request.headers.get("user-agent")
+    )
+    db.commit()
+    storage.delete(stale)
     set_session_cookie(response, token, settings)
     return user
 

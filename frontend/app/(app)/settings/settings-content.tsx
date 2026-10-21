@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 import { PageLoading } from "@/components/app-shell";
@@ -27,6 +28,7 @@ import {
 } from "@/lib/profile";
 
 import { DeleteAccountDialog } from "./delete-account-dialog";
+import { DownloadData } from "./download-data";
 import { NameForm } from "./name-form";
 
 // Which profile sections each tab shows, by section id.
@@ -219,10 +221,25 @@ function AccountTab({ user }: { user: User }) {
       </Card>
 
       <Card>
+        <CardTitle>Your data</CardTitle>
+        <CardDescription className="mt-1">
+          A zip file with everything stored for your account: your items,
+          outfits, wear log, plans, shopping list, and conversations as JSON,
+          and every photo.{" "}
+          <Link href="/privacy" className="underline underline-offset-2">
+            What&apos;s stored, and who sees it
+          </Link>
+        </CardDescription>
+        <div className="mt-4">
+          <DownloadData />
+        </div>
+      </Card>
+
+      <Card>
         <CardTitle>Delete account</CardTitle>
         <CardDescription className="mt-1">
-          Removes your account and everything in it, including your profile and
-          brand notes. This can&apos;t be undone.
+          Removes your account and everything in it, including every photo,
+          straight away. This can&apos;t be undone.
         </CardDescription>
         <div className="mt-4">
           <DeleteAccountDialog email={user.email} />

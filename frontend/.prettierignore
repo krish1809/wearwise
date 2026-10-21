@@ -2,3 +2,6 @@
 pnpm-lock.yaml
 lib/api/openapi.json
 lib/api/schema.d.ts
+# Playwright writes these when it runs.
+test-results/
+playwright-report/

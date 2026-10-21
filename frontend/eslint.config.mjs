@@ -13,6 +13,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Written by Playwright when it runs.
+    "test-results/**",
+    "playwright-report/**",
     // Generated from the backend's OpenAPI schema.
     "lib/api/schema.d.ts",
   ]),

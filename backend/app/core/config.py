@@ -60,10 +60,16 @@ class Settings(BaseSettings):
     ai_daily_spend_cap_usd: float = Field(default=1.0, ge=0)
     ai_price_input_per_mtok: float = Field(default=0.0, ge=0)
     ai_price_output_per_mtok: float = Field(default=0.0, ge=0)
+    # Accounts that may open the owner's page of counts (/admin), comma-separated. Empty: nobody.
+    admin_emails: str = ""
 
     @property
     def is_production(self) -> bool:
         return self.app_env == "production"
+
+    @property
+    def admins(self) -> frozenset[str]:
+        return frozenset(e.strip().lower() for e in self.admin_emails.split(",") if e.strip())
 
     @model_validator(mode="after")
     def check_storage(self) -> Settings:

@@ -5,7 +5,9 @@ import {
   GarmentSneaker,
   GarmentTrousers,
 } from "@/components/garment-drawings";
+import { DemoButton } from "@/components/demo-button";
 import { Button } from "@/components/ui/button";
+import { focusRing } from "@/lib/utils";
 
 import { WarmUp } from "./warm-up";
 
@@ -51,10 +53,12 @@ export default function LandingPage() {
               <Button asChild>
                 <Link href="/register">Create an account</Link>
               </Button>
-              <Button asChild variant="secondary">
-                <Link href="/login">Log in</Link>
-              </Button>
+              <DemoButton />
             </div>
+            <p className="mt-3 text-sm text-ink-soft">
+              The demo is a sample wardrobe of everyday staples, yours for a
+              day. No sign-up.
+            </p>
           </div>
           <FlatLay />
         </section>
@@ -76,6 +80,14 @@ export default function LandingPage() {
           </ul>
         </section>
       </main>
+      <footer className="mx-auto max-w-5xl px-4 pb-10 text-sm text-ink-soft sm:px-8">
+        <Link
+          href="/privacy"
+          className={`rounded underline underline-offset-2 ${focusRing}`}
+        >
+          Privacy
+        </Link>
+      </footer>
       <WarmUp />
     </div>
   );

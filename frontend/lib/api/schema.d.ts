@@ -61,6 +61,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/demo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start Demo
+         * @description A fresh demo account, filled with a staple wardrobe, logged in at once. Only this
+         *     session can open it, and it's deleted a day later with everything in it.
+         */
+        post: operations["start_demo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/logout": {
         parameters: {
             query?: never;
@@ -101,6 +122,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/client-errors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Report Browser Error
+         * @description Something broke in the browser: recorded for the owner, without the account.
+         */
+        post: operations["report_browser_error"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/account": {
         parameters: {
             query?: never;
@@ -135,6 +176,26 @@ export interface paths {
          * @description Delete the account and everything in it, then log out.
          */
         post: operations["delete_account"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/account/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export Account
+         * @description Download everything stored for this account: every row, as JSON, and every photo.
+         */
+        get: operations["export_account"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1506,6 +1567,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Stats
+         * @description Counts for the owner, straight from the tables.
+         */
+        get: operations["get_stats"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1516,6 +1597,21 @@ export interface components {
             available: boolean;
             /** Reason */
             reason: string | null;
+        };
+        /** AcceptanceOut */
+        AcceptanceOut: {
+            /** Engine Version */
+            engine_version: string;
+            /** Shown */
+            shown: number;
+            /** Liked */
+            liked: number;
+            /** Saved */
+            saved: number;
+            /** Worn */
+            worn: number;
+            /** Accepted */
+            accepted: number;
         };
         /** AccountUpdate */
         AccountUpdate: {
@@ -1638,6 +1734,15 @@ export interface components {
             quality_notes?: string | null;
             /** Price Notes */
             price_notes?: string | null;
+        };
+        /** BrowserError */
+        BrowserError: {
+            /** Message */
+            message: string;
+            /** Path */
+            path: string;
+            /** Stack */
+            stack?: string | null;
         };
         /** CandidateAnalysed */
         CandidateAnalysed: {
@@ -2165,6 +2270,15 @@ export interface components {
             /** Confirm Email */
             confirm_email: string;
         };
+        /** DemoRequest */
+        DemoRequest: {
+            /**
+             * Section
+             * @default menswear
+             * @enum {string}
+             */
+            section: "menswear" | "womenswear";
+        };
         /** ErrorDetail */
         ErrorDetail: {
             /** Code */
@@ -2175,6 +2289,33 @@ export interface components {
             fields?: {
                 [key: string]: string;
             } | null;
+        };
+        /** ErrorOut */
+        ErrorOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Source */
+            source: string;
+            /** Request Id */
+            request_id: string | null;
+            /** Method */
+            method: string | null;
+            /** Path */
+            path: string | null;
+            /** Status */
+            status: number | null;
+            /** Kind */
+            kind: string;
+            /** Message */
+            message: string;
         };
         /** ErrorResponse */
         ErrorResponse: {
@@ -3436,6 +3577,41 @@ export interface components {
             /** On List */
             on_list: boolean;
         };
+        /** StatsOut */
+        StatsOut: {
+            /** Users */
+            users: number;
+            /** New Users 7D */
+            new_users_7d: number;
+            /** Demo Users */
+            demo_users: number;
+            /** Items */
+            items: number;
+            /** Photos */
+            photos: number;
+            /** Outfits */
+            outfits: number;
+            /** Wear Logs */
+            wear_logs: number;
+            /** Wear Logs 7D */
+            wear_logs_7d: number;
+            /** Acceptance */
+            acceptance: components["schemas"]["AcceptanceOut"][];
+            /** Ai Messages Today */
+            ai_messages_today: number;
+            /** Ai Images Today */
+            ai_images_today: number;
+            /** Ai Spend Today Usd */
+            ai_spend_today_usd: number;
+            /** Ai Daily Cap Usd */
+            ai_daily_cap_usd: number;
+            /** Errors 24H */
+            errors_24h: {
+                [key: string]: number;
+            };
+            /** Recent Errors */
+            recent_errors: components["schemas"]["ErrorOut"][];
+        };
         /** StyleOut */
         StyleOut: {
             /** Wears */
@@ -3740,6 +3916,16 @@ export interface components {
             onboarding_completed: boolean;
             /** Is Demo */
             is_demo: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Demo Ends At
+             * @description When a visitor's demo is deleted; null for every other account.
+             */
+            readonly demo_ends_at: string | null;
         };
         /** ValidationError */
         ValidationError: {
@@ -4052,6 +4238,57 @@ export interface operations {
             };
         };
     };
+    start_demo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DemoRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserOut"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     logout: {
         parameters: {
             query?: never;
@@ -4099,6 +4336,55 @@ export interface operations {
             };
             /** @description Unauthorized */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    report_browser_error: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BrowserError"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -4199,6 +4485,44 @@ export interface operations {
             };
             /** @description Unprocessable Content */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    export_account: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A zip file */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/zip": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -8973,6 +9297,44 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_stats: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatsOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
         };

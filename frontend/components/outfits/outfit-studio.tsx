@@ -141,7 +141,7 @@ export function OutfitStudio({
         : check.data?.message;
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
       <div className="flex flex-col gap-3 lg:sticky lg:top-24 lg:self-start">
         <div
           data-testid="board-drop"

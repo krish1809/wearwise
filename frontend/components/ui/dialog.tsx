@@ -26,8 +26,14 @@ function DialogClose(
 function DialogContent({
   className,
   children,
+  onOpenAutoFocus,
+  onCloseAutoFocus,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content>) {
+  // Where focus was when the dialog opened, so closing puts it back there. Radix does this
+  // only for a DialogTrigger; dialogs opened another way (a shortcut, a list of squares)
+  // would otherwise drop focus to the top of the page.
+  const returnTo = React.useRef<HTMLElement | null>(null);
   return (
     <DialogPrimitive.Portal>
       <DialogPrimitive.Overlay
@@ -41,6 +47,18 @@ function DialogContent({
           "data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
           className,
         )}
+        onOpenAutoFocus={(event) => {
+          returnTo.current = document.activeElement as HTMLElement | null;
+          onOpenAutoFocus?.(event);
+        }}
+        onCloseAutoFocus={(event) => {
+          onCloseAutoFocus?.(event);
+          const back = returnTo.current;
+          if (!event.defaultPrevented && back?.isConnected) {
+            event.preventDefault();
+            back.focus();
+          }
+        }}
         {...props}
       >
         {children}

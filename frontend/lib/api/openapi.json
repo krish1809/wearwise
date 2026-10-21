@@ -180,6 +180,68 @@
         }
       }
     },
+    "/api/v1/auth/demo": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Start Demo",
+        "description": "A fresh demo account, filled with a staple wardrobe, logged in at once. Only this\nsession can open it, and it's deleted a day later with everything in it.",
+        "operationId": "start_demo",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DemoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/logout": {
       "post": {
         "tags": [
@@ -226,6 +288,61 @@
           },
           "401": {
             "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/client-errors": {
+      "post": {
+        "tags": [
+          "ops"
+        ],
+        "summary": "Report Browser Error",
+        "description": "Something broke in the browser: recorded for the owner, without the account.",
+        "operationId": "report_browser_error",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BrowserError"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
             "content": {
               "application/json": {
                 "schema": {
@@ -343,6 +460,44 @@
           },
           "422": {
             "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/account/export": {
+      "get": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Export Account",
+        "description": "Download everything stored for this account: every row, as JSON, and every photo.",
+        "operationId": "export_account",
+        "responses": {
+          "200": {
+            "description": "A zip file",
+            "content": {
+              "application/zip": {}
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
             "content": {
               "application/json": {
                 "schema": {
@@ -6666,6 +6821,48 @@
           }
         }
       }
+    },
+    "/api/v1/admin/stats": {
+      "get": {
+        "tags": [
+          "ops"
+        ],
+        "summary": "Get Stats",
+        "description": "Counts for the owner, straight from the tables.",
+        "operationId": "get_stats",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatsOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -6694,6 +6891,44 @@
           "reason"
         ],
         "title": "AIStatusOut"
+      },
+      "AcceptanceOut": {
+        "properties": {
+          "engine_version": {
+            "type": "string",
+            "title": "Engine Version"
+          },
+          "shown": {
+            "type": "integer",
+            "title": "Shown"
+          },
+          "liked": {
+            "type": "integer",
+            "title": "Liked"
+          },
+          "saved": {
+            "type": "integer",
+            "title": "Saved"
+          },
+          "worn": {
+            "type": "integer",
+            "title": "Worn"
+          },
+          "accepted": {
+            "type": "integer",
+            "title": "Accepted"
+          }
+        },
+        "type": "object",
+        "required": [
+          "engine_version",
+          "shown",
+          "liked",
+          "saved",
+          "worn",
+          "accepted"
+        ],
+        "title": "AcceptanceOut"
       },
       "AccountUpdate": {
         "properties": {
@@ -7087,6 +7322,39 @@
         "type": "object",
         "title": "BrandNoteUpdate",
         "description": "Only the fields sent are changed. Null clears a note; the brand can't be cleared."
+      },
+      "BrowserError": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Message"
+          },
+          "path": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Path"
+          },
+          "stack": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 10000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stack"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "message",
+          "path"
+        ],
+        "title": "BrowserError"
       },
       "CandidateAnalysed": {
         "properties": {
@@ -8945,6 +9213,22 @@
         ],
         "title": "DeleteAccountRequest"
       },
+      "DemoRequest": {
+        "properties": {
+          "section": {
+            "type": "string",
+            "enum": [
+              "menswear",
+              "womenswear"
+            ],
+            "title": "Section",
+            "default": "menswear"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "DemoRequest"
+      },
       "ErrorDetail": {
         "properties": {
           "code": {
@@ -8976,6 +9260,89 @@
           "message"
         ],
         "title": "ErrorDetail"
+      },
+      "ErrorOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          },
+          "method": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Method"
+          },
+          "path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Path"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "created_at",
+          "source",
+          "request_id",
+          "method",
+          "path",
+          "status",
+          "kind",
+          "message"
+        ],
+        "title": "ErrorOut"
       },
       "ErrorResponse": {
         "properties": {
@@ -13451,6 +13818,98 @@
         ],
         "title": "StapleOut"
       },
+      "StatsOut": {
+        "properties": {
+          "users": {
+            "type": "integer",
+            "title": "Users"
+          },
+          "new_users_7d": {
+            "type": "integer",
+            "title": "New Users 7D"
+          },
+          "demo_users": {
+            "type": "integer",
+            "title": "Demo Users"
+          },
+          "items": {
+            "type": "integer",
+            "title": "Items"
+          },
+          "photos": {
+            "type": "integer",
+            "title": "Photos"
+          },
+          "outfits": {
+            "type": "integer",
+            "title": "Outfits"
+          },
+          "wear_logs": {
+            "type": "integer",
+            "title": "Wear Logs"
+          },
+          "wear_logs_7d": {
+            "type": "integer",
+            "title": "Wear Logs 7D"
+          },
+          "acceptance": {
+            "items": {
+              "$ref": "#/components/schemas/AcceptanceOut"
+            },
+            "type": "array",
+            "title": "Acceptance"
+          },
+          "ai_messages_today": {
+            "type": "integer",
+            "title": "Ai Messages Today"
+          },
+          "ai_images_today": {
+            "type": "integer",
+            "title": "Ai Images Today"
+          },
+          "ai_spend_today_usd": {
+            "type": "number",
+            "title": "Ai Spend Today Usd"
+          },
+          "ai_daily_cap_usd": {
+            "type": "number",
+            "title": "Ai Daily Cap Usd"
+          },
+          "errors_24h": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Errors 24H"
+          },
+          "recent_errors": {
+            "items": {
+              "$ref": "#/components/schemas/ErrorOut"
+            },
+            "type": "array",
+            "title": "Recent Errors"
+          }
+        },
+        "type": "object",
+        "required": [
+          "users",
+          "new_users_7d",
+          "demo_users",
+          "items",
+          "photos",
+          "outfits",
+          "wear_logs",
+          "wear_logs_7d",
+          "acceptance",
+          "ai_messages_today",
+          "ai_images_today",
+          "ai_spend_today_usd",
+          "ai_daily_cap_usd",
+          "errors_24h",
+          "recent_errors"
+        ],
+        "title": "StatsOut"
+      },
       "StyleOut": {
         "properties": {
           "wears": {
@@ -14306,6 +14765,25 @@
           "is_demo": {
             "type": "boolean",
             "title": "Is Demo"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "demo_ends_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Demo Ends At",
+            "description": "When a visitor's demo is deleted; null for every other account.",
+            "readOnly": true
           }
         },
         "type": "object",
@@ -14314,7 +14792,9 @@
           "email",
           "name",
           "onboarding_completed",
-          "is_demo"
+          "is_demo",
+          "created_at",
+          "demo_ends_at"
         ],
         "title": "UserOut"
       },

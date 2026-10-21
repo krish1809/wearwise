@@ -16,9 +16,10 @@ services:
         - seed/**
     buildCommand: uv sync --locked --no-dev
     # Free instances can't run a pre-deploy command, so migrations and the reference data load
-    # just before the server starts.
+    # just before the server starts. Housekeeping (expired demos and the like) runs then too:
+    # the free server sleeps when idle, so it starts often. It never stops the start.
     # --proxy-headers: take the visitor's IP from X-Forwarded-For, for rate limits.
-    startCommand: uv run --no-sync alembic upgrade head && uv run --no-sync python -m scripts.seed_reference && uv run --no-sync uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips='*'
+    startCommand: uv run --no-sync alembic upgrade head && uv run --no-sync python -m scripts.seed_reference && uv run --no-sync python -m scripts.housekeeping && uv run --no-sync uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips='*'
     # Deploy a commit on main only after its CI checks pass.
     autoDeployTrigger: checksPass
     # No healthCheckPath on purpose: the health route queries the database, and frequent checks
@@ -54,4 +55,7 @@ services:
       - key: S3_ACCESS_KEY_ID
         sync: false
       - key: S3_SECRET_ACCESS_KEY
+        sync: false
+      # The owner's page of counts (/admin) opens only for these accounts, comma-separated.
+      - key: ADMIN_EMAILS
         sync: false

@@ -5,14 +5,13 @@ The running state of the project, updated at the end of every slice. Keep it sho
 ## Now
 
 - **Last updated:** 2026-10-21
-- **Current milestone:** M10b Interaction and polish, built in the working tree on top of M10 (which is staged on `m10-ai`, waiting for your commit). The two are committed separately: M10 first, then M10b on its own branch. Next: M11 Hardening and launch. M5's last two "Done when" items (golden set, wear test) are still yours; v1.0 is tagged once they pass.
-- **Current slice:** none open. Open issue: on the live server the forecast request to Open-Meteo is refused, so days go by the season (place search works). The Render log line "Weather service unavailable: ..." says why.
+- **Current milestone:** M11 Hardening and launch, built on `m11-hardening` and waiting for your commit and merge. After it: v1.0 once the golden set and wear test (M5) pass, and anything you choose next.
+- **Current slice:** none open; all eight M11 slices are built.
 - **Next action (owner):**
-  1. Commit `m10-ai` (only what's staged), push it, open its pull request, and merge it once CI passes. The stylist stays off on the live site until step 2. Then make a branch `m10b-polish`, stage the M10b files, commit, push, and open its pull request once M10 is merged.
-  2. To switch it on: create an API key at console.anthropic.com and add some credit (check the price on its pricing page). In Render, wearwise-api > Environment, add `AI_PROVIDER=anthropic`, `AI_API_KEY` (the key, never pasted anywhere else), `AI_MODEL_CHAT=claude-haiku-5-5`, `AI_MODEL_VISION=claude-haiku-5-5`, `AI_DAILY_SPEND_CAP_USD=1`, `AI_PRICE_INPUT_PER_MTOK=0.10`, and `AI_PRICE_OUTPUT_PER_MTOK=0.50` (or the prices the page shows).
-  3. With the same values in your local `.env`, run `make eval-stylist` (a few cents) and read the answers; grounding failures must be 0. Then tag 30 of your own photos with "Fill in from the photo" and note how many categories and colours were right first time; I'll record the numbers here.
-  4. In Render's logs, search for "Weather service unavailable" and send the text after it.
-  5. The wear test and the golden set (M5), then the v1.0 release.
+  1. Commit `m11-hardening`, push it, open its pull request, and merge once CI passes (CI now also runs the end-to-end tests). Render runs the three new migrations on deploy.
+  2. In Render, wearwise-api > Environment, add `ADMIN_EMAILS` with your account's email, so `/admin` (the owner's page of counts) opens for you. Check that the service's start command now includes `python -m scripts.housekeeping` (it comes from `render.yaml`).
+  3. Once it's live, open the site and press "Try the demo". Then, in GitHub, Actions > "End-to-end against production" > Run workflow (or `E2E_BASE_URL=https://wearwise-rouge.vercel.app make e2e` locally): all tests must pass against production, the last "Done when" item of M11.
+  4. Still open from earlier: switching the stylist on (Render settings in D47), `make eval-stylist` and tagging 30 photos, the "Weather service unavailable" log line, the golden set and wear test (M5), and the demo catalogue's licence. Password reset by email needs an email provider; tell me if you want one and which.
 
 M1 slices:
 
@@ -143,7 +142,20 @@ M10b slices:
 | 7 | Sleep on it, Wear what you own, and Remix; one migration | done |
 | 8 | Browser walkthrough at 375 px and 1440 px in both themes; docs | done |
 
-- **Overall:** 12 of 13 milestones built (M0 to M10b), 10 released (M0 to M9). v1.0 (M0 to M5) waits on the golden set and the wear test.
+M11 slices:
+
+| # | Slice | State |
+|---|---|---|
+| 1 | Security: route audit, a budget for changes, headers on both apps, photo decoders, the log-in redirect, dependency audit | done |
+| 2 | Privacy: download my data, a check that deletion leaves nothing, the privacy page | done |
+| 3 | Observability: request ids, structured logs, errors recorded on both sides, an owner-only page of counts | done |
+| 4 | Demo: "Try the demo" gives each visitor a fresh copy, removed after a day | done |
+| 5 | Accessibility pass | done |
+| 6 | Performance pass | done |
+| 7 | End-to-end tests for the five main journeys, runnable against production | done |
+| 8 | README: screenshots, architecture diagram, the engine in brief, known limitations | done |
+
+- **Overall:** all 13 milestones built (M0 to M11), 12 released (M0 to M10b). v1.0 (M0 to M5) waits on the golden set and the wear test. v1.0 (M0 to M5) waits on the golden set and the wear test.
 
 Live:
 
@@ -220,9 +232,9 @@ M0 code, merged in pull request #1 and deployed:
 | M7 | Insights | see cost per wear, versatility, orphans, coverage | done | 2026-10-20 | pull request #7 (with M8) |
 | M8 | Smart Shopping I | analyse a purchase; see gaps; plan a capsule on a budget | done | 2026-10-20 | pull request #7 |
 | M9 | Smart Shopping II | find real products for a gap | done | 2026-10-20 | pull request #8 |
-| M10 | AI | auto-tag photos; chat with a stylist that knows your wardrobe | built, not merged | | off until a key is set |
-| M10b | Interaction and polish | drag outfits together, swipe suggestions, see your colours, and use a few new everyday tools | built, not merged | | added 2026-10-20 |
-| M11 | Hardening and launch | hand the link to anyone | not started | | |
+| M10 | AI | auto-tag photos; chat with a stylist that knows your wardrobe | done | 2026-10-21 | pull request #9; off until a key is set |
+| M10b | Interaction and polish | drag outfits together, swipe suggestions, see your colours, and use a few new everyday tools | done | 2026-10-21 | pull request #9 |
+| M11 | Hardening and launch | hand the link to anyone | built, not merged | | end-to-end run against production after deploy |
 
 ## Before M0 (only you can do these)
 
@@ -237,6 +249,52 @@ M0 code, merged in pull request #1 and deployed:
 ## Log
 
 Add an entry per slice, newest first.
+
+### 2026-10-21, M11 slice 8: the README, and a layout fix
+
+- Built: the README rewritten for a stranger: what it is, the live link and "Try the demo", five screenshots (`docs/screenshots/`, from a throwaway account with drawn test photos), what it does, an architecture diagram, the engine in brief, the stack, testing, security and privacy, and the known limitations (moved here from this file). Fixed: the outfit studio on a phone was wider than the screen (the page grid had no column set, so the tray's long strip of pieces widened it; my M10b change); every main page now gets an explicit single column on small screens, and the accessibility sweep fails any page that scrolls sideways (it caught this one before the fix).
+- Checked: README claims against the code and docs (the golden set is described as waiting on labels; the templates and filters as the engine has them). All 32 end-to-end tests pass, with the sideways check on twenty pages including an item's own page.
+
+### 2026-10-21, M11 slice 7: end-to-end tests
+
+- Built: `e2e/journeys.spec.ts`: sign up, add an item with a photo (a small drawn test image, so the suggested colour is known), build and save an outfit, get suggestions and like one, check a purchase, and delete the account. CI's new `e2e` job runs every end-to-end test against a fresh stack on each pull request; `.github/workflows/e2e-production.yml` runs them daily against the live site (and by hand). `make e2e`.
+- Checked: all 32 end-to-end tests (journeys, accessibility, keyboard; desktop and phone) pass against a fresh database with CI's settings and a production build, in parallel, in 49 seconds, and leave no users behind. Not yet run against production: that needs this branch deployed.
+- Decided: D54.
+
+### 2026-10-21, M11 slice 6: performance pass
+
+- Built: eight indexes on links to a person's data (suggestions to outfits and wear logs, reactions to items, planned days to wear logs, candidates to items, items and candidates to categories, proposals to their account), in one migration, and a test that every such link has one. Insights' measures saved in `saved_measures` (one row per person, under the measures' fingerprint), so they outlast the server's sleep.
+- Checked: timings and query counts for a 300-item wardrobe, and at 60 and 120 items (D53); the index test (it passed without the indexes at first, because it counted the foreign keys themselves; fixed, then it failed without them and passed with them); measures are worked out once, read back after the memory is cleared, and worked out again after a wardrobe change. A per-scorer memo was tried, measured at 2% hits, and removed. JavaScript per page measured on a production build. The accessibility and keyboard suites (20 tests) pass against the production build. Backend 508 passed, 2 skipped.
+- Decided: D53.
+
+### 2026-10-21, M11 slice 5: accessibility pass
+
+- Built: Playwright and axe for end-to-end tests (`@playwright/test` 1.64.0 and `@axe-core/playwright` 4.13.0, dev only, pinned to releases at least two weeks old; `pnpm e2e`, config in `frontend/playwright.config.ts`). `e2e/accessibility.spec.ts` runs axe (WCAG 2.1 A and AA) on the four public pages and fifteen app pages, in both themes, at desktop and phone size, from one demo per run. `e2e/keyboard.spec.ts`: the first Tab offers "Skip to content", every Tab stop on five busy pages shows a focus ring, and dialogs hold focus and give it back. Fixed: dialogs opened without a trigger (quick jump, a coverage square) dropped focus to the top of the page when they closed; the shared dialog now returns focus to wherever it was.
+- Checked: axe finds nothing on 19 pages × 2 themes × 2 sizes; the scan was mutation-checked (an image without alt text planted after the page settles is caught, and each page is checked to be the page itself, drawn, in the right theme, with axe's own checks run). The keyboard checks, 16 across both sizes, pass; the focus-return check failed before the fix. Running the suites repeatedly showed the demo limit was too tight for a test run, so the tests now make one demo per size and the limit is ten an hour per address.
+
+### 2026-10-21, M11 slice 4: the demo
+
+- Built: "Try the demo" on the landing and log-in pages (`POST /auth/demo`, public, ten an hour per address): a fresh account per visitor with the menswear or womenswear staples and the profile in `seed/demo.json`, logged in at once, deleted a day later. A note on every page of a demo says until when, and links to making an account; Home greets a demo plainly instead of with its address. `scripts/housekeeping.py` (also `make housekeeping`) removes expired demos, unsaved photos, old error reports and rate-limit counts, and ended sessions; it runs in Render's start command. `demo_ends_at` and `created_at` on the user.
+- Checked: a demo starts logged in with the section's staples, the demo profile, and suggestions ready; each visitor's copy is their own (another gets 404 for its items); limited per address; a demo over a day old goes with all its rows while a fresh one, a named demo, and real accounts stay; at most so many run at once, oldest out first; housekeeping removes only what has expired (and a session past its end logs out). In a browser at 1440 px (menswear) and 375 px (womenswear): from the landing page into Home with the note, the wardrobe's count, suggestions, and "Make your own account" to the register page. Two fixes from the screenshots: the demo label wrapped on a phone, and the wardrobe opened on toiletries.
+- Decided: D52 (a copy per visitor instead of one account reset nightly).
+
+### 2026-10-21, M11 slice 3: observability
+
+- Built: a request id on every API call (sent by the browser, kept or made by the API, returned on every answer); JSON logs in production with one line per request (route pattern, status, milliseconds; no query string or IP address); unexpected errors logged, stored in `error_events`, and answered with a 500 that gives the reference; browser errors reported from the new error pages and any unhandled error (`POST /client-errors`, public, limited); `/admin`, the owner's page of counts, for `ADMIN_EMAILS` only. One migration (`error_events`).
+- Checked: request ids made, kept, and replaced when they look wrong; an unexpected error is recorded with its route pattern and the end of its stack trace, answered with its reference and the usual headers, and shows nothing of what broke (the test caught that traces were being cut from the wrong end); one log line per request by route pattern; JSON lines; browser reports stored without the query, limited, and refused when too long; the owner's page is a 404 for anyone else, and acceptance counts each suggestion once. The route audit now has five public routes. In a browser at 1440 px and 375 px: another account gets "Page not found" (with a request id on the answer), and the owner sees the counts and a reported browser error.
+- Decided: D51.
+
+### 2026-10-21, M11 slice 2: privacy
+
+- Built: "Download my data" in Settings > Account (`GET /account/export`: a zip with `data.json`, every photo, and a README; five an hour). `app/services/export.py` decides what's a person's from the schema, for the export and for deletion. The privacy page (`/privacy`, public), linked from the landing page, the app's footer, and the new "Your data" card. Rate-limit counts are deleted within a day; photos never saved with anything are cleared for everyone, not only on their owner's next upload.
+- Checked: every table is a person's or shared; everything pointing at a user cascades; an account filled through the API exports every kind of row and its photo, without the password hash, sessions, or anyone else's rows; deleting it leaves none of its rows or photo files and leaves another account's untouched; downloads are limited; old rate-limit counts and day-old unsaved photos go (both tests fail without the change). In a browser at 1440 px and 375 px: the privacy page from the landing page without an account, the Your data card, and a real download whose zip holds the item and its photo. Backend 493 passed, 2 skipped; frontend 174 tests; lint and types on both.
+- Decided: D50.
+
+### 2026-10-21, M11 slice 1: security pass
+
+- Built: `tests/test_route_audit.py` walks every route in the API's schema (97 today): 401 without a login outside four public routes, 403 for a change without the custom header, 404 for a made-up id. A budget of 1,000 changes an hour per person on every data route (`write_budget`). Security headers: a content security policy and the usual headers on the web app (`next.config.ts`), and a locked-down policy with no-store caching on the API (`app/api/middleware.py`). Pillow 13, and uploads opened with only the JPEG, PNG, and WebP decoders. The log-in redirect now refuses "/(tab)/elsewhere" and similar. `make audit` and a weekly audit workflow.
+- Checked: the route audit, mutation-checked (taking health off the public list fails it; it first passed by walking no routes at all, which is why it now has a floor); headers on both apps and photos keeping their own caching; the budget refuses the next change with Retry-After, leaves reading alone, and is per person; the TIFF parser never sees an upload (fails without the change); the redirect bypasses. `make audit`: no known vulnerabilities in runtime packages (one development-only advisory, judged in D49). The M9, M10, and M10b browser walkthroughs pass against a production build with the new policy, with no console errors. Backend: 486 passed, 2 skipped.
+- Decided: D49.
 
 ### 2026-10-21, M10b slices 1 to 8: interaction and polish
 
@@ -394,16 +452,4 @@ After each milestone, three lines: the hardest problem, the decision you made an
 
 ## Known limitations
 
-Things that are deliberately not handled yet. Move them into the README at M11.
-
-- On Render's free plan, the first request after 15 idle minutes takes about a minute while the backend wakes. The landing and log-in pages wake it early, and every waiting screen says so.
-- No password reset by email yet: it needs an email provider. Until then, a forgotten password means a new account. Planned for M11 at the latest.
-- The email address can't be changed yet: doing it safely needs the password again. The name can be changed in Settings.
-- Without a city or a manual setting, suggestions and plans go by the season (D34, D39).
-- Shown suggestions are kept indefinitely for acceptance rates; prune unreacted ones if the table grows (D36).
-- Photos in Backblaze B2 aren't backed up. For a personal project that's acceptable.
-- iPhone HEIC photos upload from Safari, which can read them; other browsers may not.
-- Settings still sits in the main navigation while it has only two neighbours; it moves to the avatar menu alone as Outfits and My Week arrive (D22).
-- The `make` commands assume Linux or macOS. On Windows, use WSL.
-- The server's "today" is the UTC day (plans, reminders, the challenge), so in India its new day starts at 05:30 (D48).
-- Dragging pieces works with a mouse; on a phone, pieces are pressed instead (D48).
+Moved to the README at M11 (its "Known limitations" section), where visitors see them.

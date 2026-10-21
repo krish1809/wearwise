@@ -74,7 +74,7 @@ def upload_photo(
         message = str(error)
         raise ApiError(422, "photo_rejected", message, fields={"file": message}) from error
 
-    stale = photos.remove_unattached(db, user)
+    stale = photos.remove_unattached(db)
     try:
         image = photos.save_upload(db, storage, user, processed)
     except StorageError as error:

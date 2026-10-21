@@ -124,7 +124,7 @@ function Details({
   return (
     <div className="flex flex-col gap-6">
       <BackLink href="/outfits">Outfits</BackLink>
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
         <div className="flex flex-col gap-3">
           <OutfitBoard
             pieces={outfit.pieces}

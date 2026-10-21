@@ -82,6 +82,12 @@ class PlanDay(IdMixin, TimestampMixin, Base):
 
 
 Index("uq_plan_days_user_id_day", PlanDay.user_id, PlanDay.day, unique=True)
+# Deleting a wear log clears the planned day's link to it.
+Index(
+    "ix_plan_days_wear_log_id",
+    PlanDay.wear_log_id,
+    postgresql_where=PlanDay.wear_log_id.is_not(None),
+)
 
 
 class Trip(IdMixin, TimestampMixin, Base):
