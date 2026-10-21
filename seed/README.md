@@ -10,6 +10,8 @@ Reference data loaded into the database by `backend/scripts/seed_reference.py` (
 | `style_profiles.json` | 12 style profiles with the colours, fabrics, fits, and categories that signal each | M2 |
 | `archetypes.json` | 66 common wardrobe staples used by gap analysis and the starter capsule; no prices | M8 |
 | `demo.json` | The profile every demo copy starts with (occasions, usual week, styles, city), on top of the staples for the chosen section. Read by the demo code only, never loaded into reference tables | M11 |
+| `trend_sites.json` | The sites the Trend Scout may search (Indian fashion magazines and the lifestyle pages of national news sites), and the shops, marketplaces, and social networks it never reads. For the owner to review. Read by the Trend Scout's code, never loaded into reference tables | M12 |
+| `calendar.json` | The months festive and wedding seasons usually fall in, for the Trend Scout's queries: months, never dates, because festival dates move every year. Read by the Trend Scout's code | M12 |
 
 Notes:
 

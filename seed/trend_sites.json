@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "notes": "Where the Trend Scout may search (docs/AGENTS.md, section 4). It searches only the sites in 'only': Indian fashion magazines and the lifestyle pages of national news sites, chosen for the owner to review. 'blocked' is a second guard: shops, marketplaces, and social networks are never read, even if one appears on 'only' by mistake. Read by the Trend Scout's code, never loaded into reference tables. Use bare domains, without www.",
+  "only": [
+    "vogue.in",
+    "gqindia.com",
+    "elle.in",
+    "harpersbazaar.in",
+    "femina.in",
+    "vervemagazine.in",
+    "mansworldindia.com",
+    "lifestyleasia.com",
+    "hindustantimes.com",
+    "indianexpress.com",
+    "timesofindia.indiatimes.com",
+    "thehindu.com",
+    "livemint.com",
+    "ndtv.com"
+  ],
+  "blocked": [
+    "myntra.com",
+    "ajio.com",
+    "flipkart.com",
+    "amazon.in",
+    "amazon.com",
+    "nykaa.com",
+    "nykaafashion.com",
+    "meesho.com",
+    "tatacliq.com",
+    "instagram.com",
+    "facebook.com",
+    "pinterest.com",
+    "youtube.com",
+    "x.com",
+    "twitter.com",
+    "threads.net",
+    "reddit.com",
+    "quora.com",
+    "tiktok.com",
+    "linkedin.com"
+  ]
+}

@@ -9,6 +9,11 @@ dependencies = [
     "boto3>=1.43.112",
     "email-validator>=2.3.0",
     "fastapi>=0.143.0",
+    "langchain==1.4.3",
+    "langchain-anthropic==1.7.5",
+    "langchain-core==1.6.7",
+    "langgraph==1.2.14",
+    "langgraph-checkpoint-postgres==3.1.2",
     "pillow>=13.0.0",
     "psycopg[binary]>=3.3.6",
     "pydantic-settings>=2.15.0",
@@ -26,6 +31,29 @@ dev = [
     "ruff>=0.17.0",
     "types-boto3[s3]>=1.43.112",
 ]
+
+# The agent packages (D55), and every package they brought in, are held to releases at least
+# two weeks old when they were added: a brand-new release is where a bad publish shows up
+# first. Move the date on purpose when upgrading them.
+[tool.uv.exclude-newer-package]
+anthropic = "2026-10-07T00:00:00Z"
+certifi = "2026-10-07T00:00:00Z"
+jsonpatch = "2026-10-07T00:00:00Z"
+langchain = "2026-10-07T00:00:00Z"
+langchain-anthropic = "2026-10-07T00:00:00Z"
+langchain-core = "2026-10-07T00:00:00Z"
+langchain-protocol = "2026-10-07T00:00:00Z"
+langgraph = "2026-10-07T00:00:00Z"
+langgraph-checkpoint = "2026-10-07T00:00:00Z"
+langgraph-checkpoint-postgres = "2026-10-07T00:00:00Z"
+langgraph-prebuilt = "2026-10-07T00:00:00Z"
+langgraph-sdk = "2026-10-07T00:00:00Z"
+langsmith = "2026-10-07T00:00:00Z"
+orjson = "2026-10-07T00:00:00Z"
+ormsgpack = "2026-10-07T00:00:00Z"
+tenacity = "2026-10-07T00:00:00Z"
+uuid-utils = "2026-10-07T00:00:00Z"
+xxhash = "2026-10-07T00:00:00Z"
 
 [build-system]
 requires = ["hatchling"]

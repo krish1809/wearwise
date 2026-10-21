@@ -31,7 +31,19 @@ const SERVICES = [
   },
   {
     name: "Anthropic",
-    what: "Only if the stylist is switched on in this copy of WearWise, and only when you use it: your messages, the wardrobe details the stylist looks up to answer them, and a photo when you press \"Fill in from the photo\". Anthropic's commercial terms say this data isn't used to train its models.",
+    what: "Only if the stylist is switched on in this copy of WearWise, and only when you use it: your messages, the wardrobe details the stylist looks up to answer them, and a photo when you press \"Fill in from the photo\". If you turn on the weekly email, the details of the pieces it picks and your style choices, to word it: never your email address, measurements, or photos. Anthropic's commercial terms say this data isn't used to train its models.",
+  },
+  {
+    name: "Resend",
+    what: "Sends WearWise's emails: it gets your address and the email itself. That's only the weekly email if you turn it on, the link to confirm your address, and a link to set a new password if you ask for one.",
+  },
+  {
+    name: "Tavily",
+    what: "Searches the web for what's in fashion in India, for the Trend Scout. It gets only search words about fashion and the season, never anything about you.",
+  },
+  {
+    name: "GitHub",
+    what: "Runs WearWise's scheduled jobs, the Trend Scout and the weekly email, on its machines. The weekly email's job reads what it needs from the database to make each person's picks.",
   },
   {
     name: "Shops",
@@ -82,6 +94,16 @@ export default function PrivacyPage() {
             <li>
               The outfits suggested to you, and whether you liked them, so the
               suggestions can get better.
+            </li>
+            <li>
+              Your weekly picks, and whether you said &ldquo;not for me&rdquo;
+              to one. If you turn on the weekly email: when you confirmed your
+              address and asked for it, and a record of each email sent, kept 90
+              days, without the address.
+            </li>
+            <li>
+              Trends found on the web, with the pages they came from: nothing
+              about you.
             </li>
             <li>
               To stop repeated log-in attempts, a count of recent attempts by IP

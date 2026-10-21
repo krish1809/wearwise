@@ -113,7 +113,7 @@ Each sits behind an interface in `adapters/` with a fake implementation for test
 | AI | One provider behind `AIProvider` | Chosen in M10. See `AI.md`. |
 | Product sources | Adapters | See `SHOPPING.md`. |
 | Web search | Tavily (M12) | The Trend Scout only. Generic queries with no personal data, a monthly credit cap in code (D58). |
-| Email | Resend (M12) | Digests, address confirmation, the owner's run reports, and password reset if built with them. Printed to the console in development. Only to confirmed addresses, and only to an allowlist until a domain is verified (D57). |
+| Email | Resend (M12) | Digests, address confirmation, the owner's run reports, and password reset. Printed to the console in development. Only to confirmed addresses, and only to an allowlist until a domain is verified (D57). |
 
 Rules for all of them: a timeout on every call, one retry at most, a fallback when it fails, and no call inside a database transaction.
 

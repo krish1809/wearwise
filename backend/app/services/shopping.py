@@ -218,6 +218,36 @@ def staple_item(s: Setting, staple: Archetype) -> EngineItem:
     )
 
 
+def piece_item(
+    s: Setting,
+    item_id: str,
+    name: str,
+    category_id: str,
+    color: str,
+    pattern: str,
+    fabric: str | None,
+    fit: str | None,
+    seasons: list[str],
+) -> EngineItem:
+    """A piece described only by its attributes (a trend's, for the weekly picks), with the
+    category's level of dress and warmth."""
+    category = s.categories[category_id]
+    return _engine_item(
+        s,
+        item_id,
+        name,
+        category_id,
+        color,
+        None,
+        pattern,
+        fabric,
+        fit,
+        category.formality_default,
+        category.warmth,
+        seasons,
+    )
+
+
 def staples(db: Session, profile: Profile) -> list[Archetype]:
     """The staples for the person's sections (all of them when none are chosen)."""
     rows = list(db.scalars(select(Archetype).order_by(Archetype.position)))

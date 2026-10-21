@@ -11,13 +11,14 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.adapters.ai import AIUnavailable
-from app.api.deps import AIDep, CurrentUser, SessionDep, StorageDep, WeatherDep
+from app.agents import stylist as agent
+from app.api.deps import AIDep, CheckpointerDep, CurrentUser, SessionDep, StorageDep, WeatherDep
 from app.api.errors import ApiError, error_responses
 from app.api.fields import required_text
 from app.api.item_views import ItemBrief, Names
 from app.api.shopping import CandidateOut, candidate_outs
 from app.models import Archetype, ChatAction, ChatMessage, ChatThread, ColorFamily, Item, User
-from app.services import ai_usage, categories, items, shopping, stylist, tagging, wear
+from app.services import ai_usage, categories, checkpoints, items, shopping, stylist, tagging, wear
 
 router = APIRouter(tags=["stylist"])
 
@@ -303,7 +304,10 @@ def get_thread(thread_id: uuid.UUID, user: CurrentUser, db: SessionDep) -> Threa
     responses=error_responses(401, 403, 404),
 )
 def delete_thread(thread_id: uuid.UUID, user: CurrentUser, db: SessionDep) -> None:
-    db.delete(_thread(db, user, thread_id))
+    thread = _thread(db, user, thread_id)
+    # A turn still waiting for a confirmation goes with its conversation.
+    checkpoints.forget(db, thread_ids=[checkpoints.chat_thread(thread.id)])
+    db.delete(thread)
     db.commit()
 
 
@@ -313,10 +317,15 @@ def delete_thread(thread_id: uuid.UUID, user: CurrentUser, db: SessionDep) -> No
     responses=error_responses(401, 403, 404, 422, 429, 503),
 )
 def send_message(
-    body: SendRequest, user: CurrentUser, db: SessionDep, ai: AIDep, weather: WeatherDep
+    body: SendRequest,
+    user: CurrentUser,
+    db: SessionDep,
+    ai: AIDep,
+    weather: WeatherDep,
+    saver: CheckpointerDep,
 ) -> SentOut:
     """Ask the stylist. It answers from tool results only; anything it proposes to change
-    waits for the person to confirm."""
+    waits for the person to confirm. Earlier proposals still waiting become "not now"."""
     is_new = body.thread_id is None
     thread = (
         _thread(db, user, body.thread_id)
@@ -324,7 +333,7 @@ def send_message(
         else stylist.new_thread(db, user, body.text)
     )
     try:
-        asked, answer = stylist.send(db, user, ai, weather, thread, body.text, wear.today())
+        asked, answer = agent.send(db, user, ai, weather, thread, body.text, wear.today(), saver)
     except (ai_usage.AIOff, AIUnavailable) as error:
         if is_new:
             db.delete(thread)
@@ -364,7 +373,11 @@ def _action_view(db: Session, user: User, action: ChatAction) -> ActionOut:
     responses=error_responses(401, 403, 404, 409),
 )
 def confirm_action(
-    action_id: uuid.UUID, user: CurrentUser, db: SessionDep, weather: WeatherDep
+    action_id: uuid.UUID,
+    user: CurrentUser,
+    db: SessionDep,
+    weather: WeatherDep,
+    saver: CheckpointerDep,
 ) -> ActionOut:
     """Do what the stylist proposed, through the same code as the app's own buttons."""
     action = _action(db, user, action_id)
@@ -374,6 +387,7 @@ def confirm_action(
         db.rollback()
         raise ApiError(409, "action_failed", str(error)) from error
     db.commit()
+    agent.decided(action, saver)
     return _action_view(db, user, action)
 
 
@@ -382,7 +396,10 @@ def confirm_action(
     response_model=ActionOut,
     responses=error_responses(401, 403, 404),
 )
-def cancel_action(action_id: uuid.UUID, user: CurrentUser, db: SessionDep) -> ActionOut:
+def cancel_action(
+    action_id: uuid.UUID, user: CurrentUser, db: SessionDep, saver: CheckpointerDep
+) -> ActionOut:
     action = stylist.cancel(db, _action(db, user, action_id))
     db.commit()
+    agent.decided(action, saver)
     return _action_view(db, user, action)

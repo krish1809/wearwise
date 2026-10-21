@@ -1,8 +1,9 @@
-"""Register, log in, log out, and who is logged in."""
+"""Register, log in, log out, who is logged in, confirming an address, and a new password by
+email."""
 
 import hashlib
 import uuid
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Literal
 
 from email_validator import EmailNotValidError, validate_email
@@ -10,11 +11,11 @@ from fastapi import APIRouter, Request, Response, status
 from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator
 from sqlalchemy.orm import Session
 
-from app.api.deps import CurrentUser, SessionDep, SettingsDep, StorageDep, client_ip
+from app.api.deps import CurrentUser, EmailDep, SessionDep, SettingsDep, StorageDep, client_ip
 from app.api.errors import ApiError, error_responses
 from app.api.session_cookie import SESSION_COOKIE, clear_session_cookie, set_session_cookie
 from app.models.user import User
-from app.services import auth, demo, rate_limit
+from app.services import auth, demo, password_reset, rate_limit, subscriptions
 from app.services.password_policy import password_problem
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -24,6 +25,11 @@ LOGIN_PER_IP = rate_limit.Limit(attempts=30, window=timedelta(minutes=15))
 REGISTER_PER_IP = rate_limit.Limit(attempts=10, window=timedelta(hours=1))
 # Each demo is a fresh account with a wardrobe, so it's limited more tightly.
 DEMO_PER_IP = rate_limit.Limit(attempts=10, window=timedelta(hours=1))
+# Each asks for an email to go out, so per address as well as per IP.
+RESET_PER_IP = rate_limit.Limit(attempts=10, window=timedelta(hours=1))
+RESET_PER_EMAIL = rate_limit.Limit(attempts=3, window=timedelta(hours=1))
+# Using a link: the tokens can't be guessed, but nothing is free to try at speed.
+LINKS_PER_IP = rate_limit.Limit(attempts=30, window=timedelta(hours=1))
 
 
 class UserOut(BaseModel):
@@ -205,3 +211,80 @@ def logout(request: Request, response: Response, db: SessionDep, settings: Setti
 def me(user: CurrentUser) -> User:
     """Who is logged in."""
     return user
+
+
+class ConfirmEmail(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    token: str = Field(max_length=200)
+
+
+class ResetRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    email: str = Field(max_length=320)
+
+
+class NewPassword(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    token: str = Field(max_length=200)
+    password: str = Field(max_length=1024)
+
+    @field_validator("password")
+    @classmethod
+    def check_password(cls, value: str) -> str:
+        problem = password_problem(value)
+        if problem:
+            raise ValueError(problem)
+        return value
+
+
+def _link_expired() -> ApiError:
+    return ApiError(400, "link_expired", "That link has expired or was already used. Ask again.")
+
+
+@router.post(
+    "/confirm-email",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses=error_responses(400, 403, 422, 429),
+)
+def confirm_email(body: ConfirmEmail, request: Request, db: SessionDep) -> None:
+    """Follow the link sent when turning the weekly email on: the address is confirmed and the
+    email turned on. Works without logging in: the link is the proof."""
+    _limit(db, f"email-links:ip:{client_ip(request)}", LINKS_PER_IP)
+    if subscriptions.confirm(db, body.token, datetime.now(UTC)) is None:
+        db.commit()
+        raise _link_expired()
+    db.commit()
+
+
+@router.post(
+    "/password-reset",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses=error_responses(403, 422, 429),
+)
+def ask_for_password_reset(
+    body: ResetRequest, request: Request, db: SessionDep, sender: EmailDep
+) -> None:
+    """Send a link to set a new password. The answer is the same whether or not the address
+    has an account."""
+    _limit(db, f"reset:ip:{client_ip(request)}", RESET_PER_IP)
+    _limit(db, _email_bucket("reset", auth.normalize_email(body.email)), RESET_PER_EMAIL)
+    password_reset.request(db, sender, body.email, datetime.now(UTC))
+    db.commit()
+
+
+@router.post(
+    "/password-reset/confirm",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses=error_responses(400, 403, 422, 429),
+)
+def reset_password(body: NewPassword, request: Request, db: SessionDep) -> None:
+    """Set the new password from the link. Every session is logged out, in case someone else
+    had the old password."""
+    _limit(db, f"email-links:ip:{client_ip(request)}", LINKS_PER_IP)
+    if password_reset.reset(db, body.token, body.password, datetime.now(UTC)) is None:
+        db.commit()
+        raise _link_expired()
+    db.commit()

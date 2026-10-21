@@ -18,7 +18,17 @@ PUBLIC = {
     ("POST", "/api/v1/auth/logout"),
     ("POST", "/api/v1/auth/demo"),
     ("POST", "/api/v1/client-errors"),
+    # Links sent by email, which work without logging in: each is guarded by its token.
+    ("POST", "/api/v1/auth/confirm-email"),
+    ("POST", "/api/v1/auth/password-reset"),
+    ("POST", "/api/v1/auth/password-reset/confirm"),
+    ("POST", "/api/v1/email/unsubscribe"),
+    ("POST", "/api/v1/email/not-for-me"),
+    ("POST", "/api/v1/email/unsubscribe/one-click"),
 }
+# Changes that can't carry the custom header: a mail app's one-click unsubscribe button posts
+# from the mail provider's servers (RFC 8058). Its signed token guards it instead (D57).
+NO_HEADER = {("POST", "/api/v1/email/unsubscribe/one-click")}
 STATE_CHANGING = {"POST", "PUT", "PATCH", "DELETE"}
 # A floor, so the checks can't pass by walking nothing.
 AT_LEAST = 90
@@ -73,7 +83,7 @@ def test_every_change_needs_the_csrf_header(app: FastAPI) -> None:
     unguarded = []
     with TestClient(app) as bare:
         for method, path, operation in _routes(app):
-            if method not in STATE_CHANGING:
+            if method not in STATE_CHANGING or (method, path) in NO_HEADER:
                 continue
             response = bare.request(method, _filled(path, operation))
             if response.status_code != 403 or response.json()["error"]["code"] != "missing_header":
@@ -94,3 +104,11 @@ def test_an_id_that_isnt_there_is_404(app: FastAPI, sam: TestClient, method: str
             wrong.append(f"{method} {path}: {response.status_code}")
 
     assert wrong == []
+
+
+def test_every_schema_has_a_name_of_its_own(app: FastAPI) -> None:
+    """Two models with one name get long made-up names in the schema, which renames them in the
+    frontend's generated types and breaks the code that uses them."""
+    clashes = [name for name in app.openapi()["components"]["schemas"] if name.startswith("app__")]
+
+    assert clashes == []

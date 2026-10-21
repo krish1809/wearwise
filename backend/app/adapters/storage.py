@@ -20,7 +20,7 @@ import boto3
 from botocore.config import Config
 from botocore.exceptions import BotoCoreError, ClientError
 
-from app.core.config import Settings, get_settings
+from app.core.config import ConfigError, Settings, get_settings
 
 if TYPE_CHECKING:
     from types_boto3_s3 import S3Client
@@ -167,4 +167,7 @@ def get_storage() -> Storage:
     settings = get_settings()
     if settings.storage_backend == "s3":
         return S3Storage(settings)
+    if settings.storage_backend == "none":
+        # The scheduled jobs never touch photos; anything that tries is a mistake.
+        raise ConfigError("STORAGE_BACKEND=none: this process doesn't store photos")
     return LocalStorage(settings.storage_local_dir)

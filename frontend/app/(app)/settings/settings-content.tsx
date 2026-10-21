@@ -29,6 +29,7 @@ import {
 
 import { DeleteAccountDialog } from "./delete-account-dialog";
 import { DownloadData } from "./download-data";
+import { WeeklyEmail } from "./weekly-email";
 import { NameForm } from "./name-form";
 
 // Which profile sections each tab shows, by section id.
@@ -219,6 +220,8 @@ function AccountTab({ user }: { user: User }) {
           </div>
         </div>
       </Card>
+
+      <WeeklyEmail isDemo={user.is_demo} />
 
       <Card>
         <CardTitle>Your data</CardTitle>

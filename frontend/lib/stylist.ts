@@ -53,12 +53,27 @@ export function useThread(id: string | null) {
   });
 }
 
+/** Whether a proposal in the conversation still waits for a yes or a no. */
+function waits(thread: ThreadDetail | undefined): boolean {
+  return (thread?.messages ?? []).some((message) =>
+    message.cards.some((card) => card.action?.status === "pending"),
+  );
+}
+
 export function useSend() {
   const queryClient = useQueryClient();
+  // A new message answers proposals still waiting with "not now", so a conversation that had
+  // any is fetched again to show it.
+  const waitingIn = (threadId: string | null | undefined) =>
+    Boolean(threadId) &&
+    waits(queryClient.getQueryData<ThreadDetail>(threadKey(threadId ?? "")));
+  const refresh = (threadId: string) =>
+    queryClient.invalidateQueries({ queryKey: threadKey(threadId) });
   return useMutation({
     mutationFn: (body: { thread_id?: string | null; text: string }) =>
       ok(api.POST("/api/v1/chat/messages", { body })),
     onSuccess: async (sent) => {
+      const answered = waitingIn(sent.thread.id);
       queryClient.setQueryData<ThreadDetail>(
         threadKey(sent.thread.id),
         (current) => ({
@@ -66,11 +81,17 @@ export function useSend() {
           messages: [...(current?.messages ?? []), ...sent.messages],
         }),
       );
-      await queryClient.invalidateQueries({ queryKey: threadsKey });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: threadsKey }),
+        answered && refresh(sent.thread.id),
+      ]);
     },
-    onError: async () => {
+    onError: async (_, body) => {
       // A failure may have been the day's cap: check again.
-      await queryClient.invalidateQueries({ queryKey: statusKey });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: statusKey }),
+        body.thread_id && waitingIn(body.thread_id) && refresh(body.thread_id),
+      ]);
     },
   });
 }

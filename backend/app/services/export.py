@@ -20,10 +20,14 @@ from sqlalchemy.orm import Session
 
 from app.adapters.storage import Storage
 from app.models import Base, ItemImage, User
+from app.services import checkpoints
 
-# Tables that hold nothing of any one person's: reference data, shared caches, and the
-# rate-limit counters (which only count, and expire within the hour).
+# Tables that hold nothing of any one person's: reference data, shared caches, the
+# rate-limit counters (which only count, and expire within the hour), the agents' run log
+# (counts, queries, and sources, never who a digest went to), and the trends the Trend Scout
+# found on the web.
 SHARED = {
+    "agent_runs",
     "app_meta",
     "archetypes",
     "catalog_products",
@@ -36,11 +40,18 @@ SHARED = {
     "outfit_templates",
     "rate_limit_hits",
     "style_profiles",
+    "trend_sources",
+    "trends",
     "vocabulary_terms",
     "weather_forecasts",
 }
-# Kept out of the export: login sessions (only hashes of their tokens) and the password hash.
-LEFT_OUT_TABLES = {"sessions"}
+# Kept out of the export: login sessions and links sent by email (only hashes of their tokens),
+# and the password hash.
+LEFT_OUT_TABLES = {"email_tokens", "sessions"}
+# Not in the models at all: the agents' checkpoint tables, which their library owns. They hold
+# only runs that haven't finished (the conversation itself is in chat_messages), so they're left
+# out of the export, and deleted with the account by thread id (app/services/checkpoints.py; D59).
+RUN_STATE = set(checkpoints.TABLES)
 LEFT_OUT_COLUMNS = {"users": {"password_hash"}}
 # Spill to disk past this, so a large wardrobe doesn't sit in memory.
 IN_MEMORY = 16 * 1024 * 1024

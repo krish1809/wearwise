@@ -1,0 +1,59 @@
+name: Weekly email
+
+# Emails each person who turned it on their weekly picks, on their day (docs/AGENTS.md,
+# sections 5 and 6), and catches up anyone whose day was in the last two days and whose email
+# hasn't gone. Started by hand from the Actions tab for now; its daily schedule (08:07 India
+# time) is added once a real Trend Scout run has been reviewed and trends approved. Settings
+# come from the "production" environment (docs/DEPLOYMENT.md, Scheduled jobs). Logs here are
+# public, so the job writes counts and error types only, never who.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One run at a time; the job also holds a "running" row in the database (D56).
+concurrency:
+  group: weekly-digest
+  cancel-in-progress: false
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      APP_ENV: production
+      # The jobs never touch photos.
+      STORAGE_BACKEND: none
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      AI_PROVIDER: ${{ vars.AI_PROVIDER }}
+      AI_API_KEY: ${{ secrets.AI_API_KEY }}
+      AI_MODEL_CHAT: ${{ vars.AI_MODEL_CHAT }}
+      AI_MODEL_VISION: ${{ vars.AI_MODEL_VISION }}
+      AI_PRICE_INPUT_PER_MTOK: ${{ vars.AI_PRICE_INPUT_PER_MTOK }}
+      AI_PRICE_OUTPUT_PER_MTOK: ${{ vars.AI_PRICE_OUTPUT_PER_MTOK }}
+      AI_DAILY_SPEND_CAP_USD: ${{ vars.AI_DAILY_SPEND_CAP_USD }}
+      EMAIL_PROVIDER: ${{ vars.EMAIL_PROVIDER || 'console' }}
+      EMAIL_API_KEY: ${{ secrets.EMAIL_API_KEY }}
+      EMAIL_FROM: ${{ vars.EMAIL_FROM }}
+      EMAIL_DAILY_CAP: ${{ vars.EMAIL_DAILY_CAP }}
+      # The same secret as on Render, which checks the links these emails carry.
+      EMAIL_LINK_SECRET: ${{ secrets.EMAIL_LINK_SECRET }}
+      # Email addresses are secrets here, so they're masked in the public logs.
+      EMAIL_ALLOWLIST: ${{ secrets.EMAIL_ALLOWLIST }}
+      ADMIN_EMAILS: ${{ secrets.ADMIN_EMAILS }}
+      APP_URL: ${{ vars.APP_URL }}
+      DIGEST_BATCH_CAP: ${{ vars.DIGEST_BATCH_CAP }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.12.23"
+          enable-cache: true
+      - run: uv sync --locked --no-dev
+      - name: Send the weekly emails that are due
+        run: uv run --no-sync python -m app.jobs.weekly_digest

@@ -1,0 +1,59 @@
+name: Trend Scout
+
+# Searches the web for what's in fashion in India, keeps trends with two recent sources, and
+# emails the owner a run report (docs/AGENTS.md, section 4). Started by hand from the Actions
+# tab for now; its schedule (Tuesday and Friday, 05:41 India time) is added once a real run has
+# been reviewed. Settings come from the "production" environment (docs/DEPLOYMENT.md, Scheduled
+# jobs). Logs here are public, so the job never writes anything personal to them.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One run at a time; the job also holds a "running" row in the database (D56).
+concurrency:
+  group: trend-scout
+  cancel-in-progress: false
+
+jobs:
+  scout:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      APP_ENV: production
+      # The jobs never touch photos.
+      STORAGE_BACKEND: none
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      AI_PROVIDER: ${{ vars.AI_PROVIDER }}
+      AI_API_KEY: ${{ secrets.AI_API_KEY }}
+      AI_MODEL_CHAT: ${{ vars.AI_MODEL_CHAT }}
+      AI_MODEL_VISION: ${{ vars.AI_MODEL_VISION }}
+      AI_PRICE_INPUT_PER_MTOK: ${{ vars.AI_PRICE_INPUT_PER_MTOK }}
+      AI_PRICE_OUTPUT_PER_MTOK: ${{ vars.AI_PRICE_OUTPUT_PER_MTOK }}
+      AI_DAILY_SPEND_CAP_USD: ${{ vars.AI_DAILY_SPEND_CAP_USD }}
+      SEARCH_PROVIDER: tavily
+      SEARCH_API_KEY: ${{ secrets.SEARCH_API_KEY }}
+      SEARCH_MONTHLY_CREDIT_CAP: ${{ vars.SEARCH_MONTHLY_CREDIT_CAP }}
+      TRENDS_REQUIRE_APPROVAL: ${{ vars.TRENDS_REQUIRE_APPROVAL }}
+      # Resend once it's set up; until then the run report isn't sent, and the run log has it.
+      EMAIL_PROVIDER: ${{ vars.EMAIL_PROVIDER || 'console' }}
+      EMAIL_API_KEY: ${{ secrets.EMAIL_API_KEY }}
+      EMAIL_FROM: ${{ vars.EMAIL_FROM }}
+      # Email addresses are secrets here, so they're masked in the public logs.
+      EMAIL_ALLOWLIST: ${{ secrets.EMAIL_ALLOWLIST }}
+      ADMIN_EMAILS: ${{ secrets.ADMIN_EMAILS }}
+      APP_URL: ${{ vars.APP_URL }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.12.23"
+          enable-cache: true
+      - run: uv sync --locked --no-dev
+      - name: Run the Trend Scout
+        run: uv run --no-sync python -m app.jobs.trend_scout

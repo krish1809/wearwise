@@ -112,7 +112,7 @@ Sessions are opaque tokens in an `httpOnly`, `SameSite=Lax` cookie, with only a 
 ## Known limitations
 
 - On Render's free plan the API sleeps after 15 quiet minutes, so the first request afterwards takes up to a minute; the site says so while it waits. The free plan's small CPU also makes Insights slow the first time after a change on a large wardrobe (a few hundred pieces); later visits use a saved copy.
-- No password reset by email yet: it needs an email provider. Until then, a forgotten password means a new account.
+- Email (the weekly picks, confirming an address, a new password) goes out only once its provider is set up, and, until WearWise has its own email domain, only to the owner's address. Until then, the weekly picks are on their page, and a forgotten password means a new account.
 - The email address can't be changed yet; the name can.
 - Without a city or a weather setting, suggestions and plans go by the season.
 - The server's "today" is the UTC day, so in India its new day starts at 05:30.

@@ -4,7 +4,7 @@ import { afterEach, expect, it, vi } from "vitest";
 import { makeProfile, REFERENCE } from "@/components/profile/test-data";
 import { brief } from "@/components/shopping/test-data";
 import { api } from "@/lib/api/client";
-import type { ChatMessage } from "@/lib/stylist";
+import type { ChatMessage, ThreadDetail } from "@/lib/stylist";
 import { apiAnswer, renderWithQueries, sentBody } from "@/lib/test-utils";
 
 import { StylistContent } from "./stylist-content";
@@ -77,10 +77,15 @@ function answer(): ChatMessage[] {
   ];
 }
 
-function show(status: { available: boolean; reason: string | null }) {
+function show(
+  status: { available: boolean; reason: string | null },
+  thread?: () => ThreadDetail,
+) {
   vi.spyOn(api, "GET").mockImplementation(async (path) => {
     if (path === "/api/v1/ai/status") return apiAnswer(200, status) as never;
     if (path === "/api/v1/chat/threads") return apiAnswer(200, []) as never;
+    if (path === "/api/v1/chat/threads/{thread_id}" && thread)
+      return apiAnswer(200, thread()) as never;
     if (path === "/api/v1/reference") return apiAnswer(200, REFERENCE) as never;
     if (path === "/api/v1/profile")
       return apiAnswer(200, makeProfile()) as never;
@@ -168,4 +173,66 @@ it("keeps the question when the stylist can't answer", async () => {
   expect((screen.getByLabelText("Message") as HTMLTextAreaElement).value).toBe(
     "Something for a wedding?",
   );
+});
+
+it("shows a proposal still waiting as not done once another message is sent", async () => {
+  const thread = {
+    id: "t1",
+    title: "College",
+    updated_at: "2026-10-20T10:00:01Z",
+  };
+  const later: ChatMessage[] = [
+    {
+      id: "m3",
+      role: "user",
+      text: "Something warmer?",
+      cards: [],
+      created_at: "2026-10-20T10:01:00Z",
+    },
+    {
+      id: "m4",
+      role: "assistant",
+      text: "Then a jacket over the shirt.",
+      cards: [],
+      created_at: "2026-10-20T10:01:01Z",
+    },
+  ];
+  let sent = 0;
+  // What the server holds: the new message answered the waiting proposal with "not now".
+  const held = (): ThreadDetail => {
+    const [asked, answered] = answer();
+    if (sent < 2 || !asked || !answered)
+      return { ...thread, messages: answer() };
+    const cards = answered.cards.map((card) =>
+      card.action
+        ? { ...card, action: { ...card.action, status: "cancelled" } }
+        : card,
+    );
+    return { ...thread, messages: [asked, { ...answered, cards }, ...later] };
+  };
+  show({ available: true, reason: null }, held);
+  vi.spyOn(api, "POST").mockImplementation(async () => {
+    sent += 1;
+    return apiAnswer(200, {
+      thread,
+      messages: sent === 1 ? answer() : later,
+    }) as never;
+  });
+  fireEvent.click(
+    await screen.findByRole("button", {
+      name: "What should I wear to college tomorrow?",
+    }),
+  );
+  expect(await screen.findByRole("button", { name: "Confirm" })).toBeDefined();
+
+  fireEvent.change(screen.getByLabelText("Message"), {
+    target: { value: "Something warmer?" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Send" }));
+
+  expect(
+    await screen.findByText("Then a jacket over the shirt."),
+  ).toBeDefined();
+  expect(await screen.findByText("Not done.")).toBeDefined();
+  expect(screen.queryByRole("button", { name: "Confirm" })).toBeNull();
 });

@@ -16,10 +16,11 @@ services:
         - seed/**
     buildCommand: uv sync --locked --no-dev
     # Free instances can't run a pre-deploy command, so migrations and the reference data load
-    # just before the server starts. Housekeeping (expired demos and the like) runs then too:
+    # just before the server starts. The agents' checkpoint tables follow the migrations: their
+    # library makes them itself (D59). Housekeeping (expired demos and the like) runs then too:
     # the free server sleeps when idle, so it starts often. It never stops the start.
     # --proxy-headers: take the visitor's IP from X-Forwarded-For, for rate limits.
-    startCommand: uv run --no-sync alembic upgrade head && uv run --no-sync python -m scripts.seed_reference && uv run --no-sync python -m scripts.housekeeping && uv run --no-sync uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips='*'
+    startCommand: uv run --no-sync alembic upgrade head && uv run --no-sync python -m scripts.agent_setup && uv run --no-sync python -m scripts.seed_reference && uv run --no-sync python -m scripts.housekeeping && uv run --no-sync uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips='*'
     # Deploy a commit on main only after its CI checks pass.
     autoDeployTrigger: checksPass
     # No healthCheckPath on purpose: the health route queries the database, and frequent checks
@@ -59,3 +60,20 @@ services:
       # The owner's page of counts (/admin) opens only for these accounts, comma-separated.
       - key: ADMIN_EMAILS
         sync: false
+      # Email (M12): confirming an address and a new password. Until EMAIL_PROVIDER is resend,
+      # with its key and sender, the app sends nothing and says email isn't set up yet.
+      - key: EMAIL_PROVIDER
+        sync: false
+      - key: EMAIL_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      # Until a domain is verified: only these addresses get email (your own).
+      - key: EMAIL_ALLOWLIST
+        sync: false
+      # Signs unsubscribe and "not for me" links; the same value in GitHub's environment.
+      - key: EMAIL_LINK_SECRET
+        sync: false
+      # For links in emails.
+      - key: APP_URL
+        value: https://wearwise-rouge.vercel.app

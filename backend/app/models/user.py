@@ -19,6 +19,8 @@ class User(IdMixin, TimestampMixin, Base):
     onboarding_completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     # Only the demo script creates demo accounts, and it touches no other account.
     is_demo: Mapped[bool] = mapped_column(default=False, server_default=false())
+    # When the person proved the address is theirs, by following a link sent to it (M12).
+    email_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     @property
     def onboarding_completed(self) -> bool:

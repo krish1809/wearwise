@@ -8,7 +8,14 @@ import { deleteAccount, startDemo } from "./helpers";
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
 const THEMES = ["light", "dark"] as const;
 
-const PUBLIC = ["/", "/login", "/register", "/privacy"];
+const PUBLIC = [
+  "/",
+  "/login",
+  "/register",
+  "/privacy",
+  "/forgot-password",
+  "/unsubscribe",
+];
 const SIGNED_IN = [
   "/home",
   "/wardrobe",
@@ -22,6 +29,7 @@ const SIGNED_IN = [
   "/trips",
   "/shopping",
   "/shopping/plan",
+  "/picks",
   "/insights",
   "/guide",
   "/settings",

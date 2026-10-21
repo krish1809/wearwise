@@ -1,15 +1,18 @@
 """Dependencies that routes declare in their signatures."""
 
 from datetime import timedelta
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import Depends, Request
+from langgraph.checkpoint.base import BaseCheckpointSaver
 from sqlalchemy.orm import Session
 
 from app.adapters.ai import AIProvider, get_ai
+from app.adapters.email import EmailSender, get_email_sender
 from app.adapters.products import PageReader, get_page_reader
 from app.adapters.storage import Storage, get_storage
 from app.adapters.weather import WeatherProvider, get_weather
+from app.agents.checkpoint import get_checkpointer
 from app.api.errors import ApiError
 from app.api.session_cookie import SESSION_COOKIE, clear_session_cookie_headers
 from app.core.config import Settings, get_settings
@@ -24,6 +27,9 @@ WeatherDep = Annotated[WeatherProvider, Depends(get_weather)]
 PagesDep = Annotated[PageReader, Depends(get_page_reader)]
 # None when AI features are off.
 AIDep = Annotated[AIProvider | None, Depends(get_ai)]
+EmailDep = Annotated[EmailSender, Depends(get_email_sender)]
+# Where a stylist turn waiting for a confirmation is kept (app/agents/stylist.py).
+CheckpointerDep = Annotated[BaseCheckpointSaver[Any], Depends(get_checkpointer)]
 
 
 def get_current_user(request: Request, db: SessionDep, settings: SettingsDep) -> User:

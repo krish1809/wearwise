@@ -11,6 +11,7 @@ import {
   Shirt,
   ShoppingBag,
   Sparkles,
+  TrendingUp,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -42,6 +43,7 @@ const NAV = [
   { href: "/outfits", label: "Outfits", icon: Layers },
   { href: "/week", label: "My Week", icon: CalendarDays },
   { href: "/shopping", label: "Shopping", icon: ShoppingBag },
+  { href: "/picks", label: "Weekly picks", icon: TrendingUp },
   { href: "/insights", label: "Insights", icon: ChartColumn },
   { href: "/guide", label: "Style Guide", icon: BookOpen },
   { href: "/stylist", label: "Stylist", icon: Sparkles },

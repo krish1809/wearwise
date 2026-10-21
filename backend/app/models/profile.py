@@ -79,6 +79,12 @@ class Profile(IdMixin, TimestampMixin, Base):
     laundry_weekday: Mapped[int | None] = mapped_column(SmallInteger)
     # The day the "wear what you own" challenge began; null when none is running.
     challenge_started_on: Mapped[date | None] = mapped_column(Date)
+    # The weekly email (docs/AGENTS.md, section 5): off until the person turns it on and
+    # confirms their address, then on until they turn it off or unsubscribe.
+    digest_opted_in_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # The day it comes, 0 (Monday) to 6 (Sunday).
+    digest_weekday: Mapped[int] = mapped_column(SmallInteger, default=6, server_default="6")
+    digest_unsubscribed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class BrandNote(IdMixin, TimestampMixin, Base):

@@ -428,12 +428,13 @@ Next.js runs with `cacheComponents` and `partialPrefetching` on, as create-next-
 
 **Why:**
 - **What three agents need.** Graphs with conditional edges (the grounding retry; the digest's check, then template wording). Checkpoints in Postgres, so a run that dies resumes: a Trend Scout run doesn't pay for its searches twice, and a digest that died between writing and sending doesn't call the model again. Pauses for a person's yes (the Stylist's Confirm). Retries per step. One hand-written loop was fine for the chat (D47); three agents, two of them on a schedule, are a framework's job, and the graphs are the part of an agent project worth reading.
-- **Versions, checked October 2026.** langgraph 1.2.16, langchain 1.4.6, langchain-core 1.6.12, langchain-anthropic 1.7.6, langgraph-checkpoint-postgres 3.2.0, all MIT licensed. They install and run on Python 3.14: a test graph paused and resumed, although langgraph's package metadata lists Python only up to 3.13. Pinned to exact versions when added.
+- **Versions, checked October 2026.** The newest were langgraph 1.2.16, langchain 1.4.6, langchain-core 1.6.12, langchain-anthropic 1.7.6, and langgraph-checkpoint-postgres 3.2.0, all MIT licensed. They install and run on Python 3.14: a test graph paused and resumed, although langgraph's package metadata lists Python only up to 3.13. Pinned instead, in M12 slice 1, to the newest that were at least two weeks old (langgraph 1.2.14, langchain 1.4.3, langchain-core 1.6.7, langchain-anthropic 1.7.5, langgraph-checkpoint-postgres 3.1.2). Every package they bring in is held to the same date (`exclude-newer-package` in `pyproject.toml`), because a brand-new release is where a bad publish shows up first.
 - **LangChain for the model only.**
   - It provides one chat-model interface for any provider, tool binding, and structured output.
-  - The Stylist uses `create_agent`, with middleware for its tool-call limit and its pause for confirmation.
+  - The Trend Scout and the weekly email use it.
+  - The Stylist doesn't (changed in M12 slice 7; the plan was `create_agent` with middleware). It keeps the M10 adapter inside a graph built by hand. The adapter is tested, needs no SDK, and forces the final reply; porting the loop and the model together would have changed two things at once, and with the adapter kept, the M10 tests check the port unchanged. Middleware would also have hidden the grounding retry, which as graph steps is visible and tested.
   - Not used: chains, vector stores, document loaders, retrievers, or memory classes.
-- **A partial reversal of D47's "no vendor SDK".** The model integration brings the provider's SDK, and langchain-core brings `langsmith`, which is installed but unused unless tracing is on. Photo tagging stays on the M10 adapter until it's next changed.
+- **A partial reversal of D47's "no vendor SDK".** The model integration brings the provider's SDK, and langchain-core brings `langsmith`, which is installed but unused unless tracing is on. Photo tagging and the Stylist stay on the M10 adapter until they're next changed.
 - **The engine rule is unchanged.** Agents reach data only through services, so an agent can't answer differently from the pages.
 - **Memory.** The conversation stays in `chat_messages`, which the page, the export, and deletion already use. Checkpoints hold only an unfinished run, and are deleted when it ends. Keeping conversations in checkpoints would store a second copy of every message, written again at every step, on a 1 GB database.
 - **Tracing is off in production.** A tracing service would receive prompts that carry wardrobe data. It's allowed for Trend Scout runs, which carry no personal data, and for local runs.
@@ -479,9 +480,16 @@ Next.js runs with `cacheComponents` and `partialPrefetching` on, as create-next-
 - **Confirmed opt-in instead of verifying every sign-up.** Turning the digest on sends a confirmation link; following it sets `email_verified_at` and the opt-in time. Sign-up and the demo stay as they are, and the only people emailed are those who asked and proved the address is theirs. Demo accounts can't opt in.
 - **Links.**
   - **Signed:** unsubscribe and "not for me" links carry a signature (`EMAIL_LINK_SECRET`) and do one thing each, so they work from the email without logging in.
-  - **Single use:** confirmation (and password reset, if built with it) uses single-use tokens stored as hashes, which expire.
+  - **Single use:** confirmation and password reset use single-use tokens stored as hashes, which expire.
   - **One-click unsubscribe:** mail apps send it as a POST without the header the app requires against cross-site requests, so that one route is guarded by its token instead, and the route audit lists it as public.
 - **Once a week is the database's job**: one digest per person per week, by a unique key. The provider's 24-hour key only covers a retried send.
+- **The owner's answers (2026-10-21):** password reset is built with the same pieces; no domain for now, so sending stays on the allowlist.
+- **Built as (M12 slice 5):**
+  - **Not on the allowlist:** turning the email on is refused with a plain reason when the address isn't on the allowlist, since a confirmation link to it would never arrive.
+  - **Clicks, not visits:** unsubscribe and "not for me" pages wait for a click, so link-checking mail apps can't act for the person.
+  - **Password reset:** it logs out every session.
+  - **One-click unsubscribe:** it's mounted outside the custom-header check, listed in the route audit as the only change without the header.
+  - **The email sender:** an injectable dependency, so tests read an outbox instead of sending.
 
 **Rejected:**
 - Verifying every address at sign-up: it changes sign-up for everyone, and emails people who didn't ask.

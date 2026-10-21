@@ -18,7 +18,7 @@ class AIProvider(Protocol):
 
 (Chosen in M10: Anthropic's API with Claude Haiku 5.5 for chat and images, called over HTTPS without an SDK; off until a key is set; tagging runs only when the person asks: D47.)
 
-(From M12: the agents, the Stylist among them, call the same model through LangChain's chat-model integration, chosen by the same settings and counted against the same daily cap. Photo tagging stays on this interface: D55.)
+(From M12: the Trend Scout and the weekly email call the same model through LangChain's chat-model integration, chosen by the same settings and counted against the same daily cap. The Stylist and photo tagging stay on this interface: D55.)
 
 ## 2. Auto-tagging
 
@@ -54,7 +54,7 @@ user message
 
 The model never touches the database. It only sees tool results.
 
-(From M12: the same loop runs as a LangGraph agent, with the grounding check as a step after the model's reply and confirmation as a pause in the run. The conversation itself stays in `chat_messages`; the checkpointer keeps only a turn that hasn't finished. Design: `docs/AGENTS.md`, section 3.)
+(From M12: the same loop runs as a LangGraph graph around this interface, with the grounding check as a step after the model's reply and confirmation as a pause in the run. The conversation itself stays in `chat_messages`; the checkpointer keeps only a turn that hasn't finished. Design: `docs/AGENTS.md`, section 3.)
 
 ### Tools
 
@@ -73,8 +73,8 @@ Read tools:
 | `compare_candidates(candidate_ids, budget)` | Side-by-side and budget split |
 | `search_products(query)` | Results from enabled product adapters |
 | `get_style_guide(topic)` | Fabric or style profile text |
-| `get_trends(section, category, season)` | Approved trends that fit the person's sections, with their summaries and sources (M12) |
-| `get_latest_digest()` | The person's latest weekly digest: its picks, reasons, and links (M12) |
+| `get_trends(category_id, season)` | Approved trends for the person's sections, with their summaries and the sites they were seen on (M12) |
+| `get_latest_digest()` | The person's latest weekly picks: each piece, why, and the person's own pieces it names (M12) |
 
 Write tools (each returns a proposal that the user must confirm in the UI before it is applied):
 
@@ -85,7 +85,7 @@ Write tools (each returns a proposal that the user must confirm in the UI before
 | `add_to_wishlist(candidate)` | A wishlist item |
 | `log_wear(date, item_ids)` | A wear log |
 
-(From M12, proposing pauses the run. The proposal is stored first, in its own step, so resuming never stores it twice. Confirm resumes the run with yes, and the model is told what was made; Not now resumes it with no. A new message sent while a turn is paused counts as Not now.)
+(From M12, a turn that proposes something pauses once its reply is saved. The proposal is stored first, in its own step, so resuming never stores it twice. Confirm and Not now resume the run, which ends once nothing it proposed is still waiting; the model hears how each one ended with the next message. A new message counts as Not now for anything still waiting.)
 
 Tool rules:
 

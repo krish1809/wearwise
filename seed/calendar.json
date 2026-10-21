@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "notes": "Seasons in India that change what people buy, by the months they usually fall in, for the Trend Scout's search queries (docs/AGENTS.md, section 4). Approximate on purpose: festival dates move with the lunar calendar every year, so this names months, never dates. Read by the Trend Scout's code, never loaded into reference tables.",
+  "windows": [
+    {
+      "id": "festive",
+      "name": "festive season",
+      "about": "Navratri, Durga Puja, and Diwali",
+      "months": [9, 10, 11]
+    },
+    {
+      "id": "wedding",
+      "name": "wedding season",
+      "about": "the busiest months for weddings",
+      "months": [11, 12, 1, 2]
+    }
+  ]
+}

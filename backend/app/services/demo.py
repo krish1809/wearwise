@@ -19,7 +19,7 @@ from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
 from app.models import Item, ItemImage, User
-from app.services import auth, items, profile
+from app.services import auth, checkpoints, items, profile
 from app.services.reference_seed import SEED_DIR
 
 Section = Literal["menswear", "womenswear", "both"]
@@ -115,7 +115,9 @@ def _remove(db: Session, user_ids: list[uuid.UUID]) -> list[str]:
         return []
     images = db.scalars(select(ItemImage).where(ItemImage.user_id.in_(user_ids)))
     keys = [key for image in images for key in (image.storage_key, image.thumb_key)]
-    # Everything of theirs goes with them (ON DELETE CASCADE; D50).
+    # Everything of theirs goes with them (ON DELETE CASCADE; D50), the agents' checkpoints by
+    # thread first (D59).
+    checkpoints.forget_people(db, user_ids)
     db.execute(delete(User).where(User.id.in_(user_ids), User.is_demo))
     db.flush()
     return keys

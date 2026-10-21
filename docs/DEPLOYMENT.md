@@ -148,9 +148,18 @@ The Trend Scout and the weekly digest run on GitHub Actions, not on Render: the 
 | `trend-scout.yml` | Tuesday and Friday at 05:41 | `python -m app.jobs.trend_scout` |
 | `weekly-digest.yml` | Daily at 08:07, for the people whose day it is, plus anyone missed in the last two days | `python -m app.jobs.weekly_digest` |
 
-- **By hand.** Both can also be run from the Actions tab (`workflow_dispatch`). The schedules are added only after one real Trend Scout run, started by hand, has been reviewed.
+- **By hand.** Both can also be run from the Actions tab (`workflow_dispatch`), and the Trend Scout locally with `make trend-scout`. The schedules are added only after one real Trend Scout run, started by hand, has been reviewed: until then, `trend-scout.yml` has no schedule.
 - **Settings.**
-  - **Where they live:** the jobs need the backend's production settings. Put them in a GitHub environment called `production` (Settings > Environments): secrets for `DATABASE_URL` (Neon's pooled string), `AI_API_KEY`, `SEARCH_API_KEY`, `EMAIL_API_KEY`, and `EMAIL_LINK_SECRET`, and variables for the rest.
+  - **Where they live:** a GitHub environment called `production` (Settings > Environments > New environment).
+  - **Secrets:**
+    - `DATABASE_URL` (Neon's pooled string)
+    - `AI_API_KEY`, `SEARCH_API_KEY`, `EMAIL_API_KEY`, `EMAIL_LINK_SECRET`
+    - `ADMIN_EMAILS` and `EMAIL_ALLOWLIST`: email addresses are kept as secrets, so they're masked in the logs, which are public in a public repository.
+  - **Variables:**
+    - `AI_PROVIDER`, `AI_MODEL_CHAT`, `AI_MODEL_VISION`, `AI_PRICE_INPUT_PER_MTOK`, `AI_PRICE_OUTPUT_PER_MTOK`, `AI_DAILY_SPEND_CAP_USD` (the same values as on Render)
+    - `EMAIL_PROVIDER` (`resend` once it's set up; until then the jobs send nothing and the run log says so), `EMAIL_FROM`, `APP_URL`
+    - optionally `SEARCH_MONTHLY_CREDIT_CAP`, `TRENDS_REQUIRE_APPROVAL`, `EMAIL_DAILY_CAP`, and `DIGEST_BATCH_CAP`
+  - **Set by the workflows themselves:** `APP_ENV=production`, `STORAGE_BACKEND=none` (the jobs never touch photos, so they need no Backblaze settings, and the API refuses `none`), and the search provider.
   - **Same values as Render:** `EMAIL_LINK_SECRET` must match Render's, because Render checks the links the jobs sign.
   - **Who can reach them:** the workflows run only on their schedule and by hand, never on a pull request, so a pull request from someone else's copy of the repository can't reach the secrets.
 - **One at a time.** Each workflow has a `concurrency` group, and each job also holds a "running" row in `agent_runs`, which lapses after 2 hours.
@@ -162,7 +171,7 @@ The Trend Scout and the weekly digest run on GitHub Actions, not on Render: the 
 
 ## Email (M12)
 
-- **Provider.** Resend, behind the `EmailSender` adapter (`EMAIL_PROVIDER=resend`, `EMAIL_API_KEY`, `EMAIL_FROM`). In development, emails are printed to the console.
+- **Provider.** Resend, behind the `EmailSender` adapter (`EMAIL_PROVIDER=resend`, `EMAIL_API_KEY`, `EMAIL_FROM`), set on Render (for confirming an address and a new password) and in GitHub's environment (for the weekly email and the run reports). In development, emails are printed to the console. In production without a provider, nothing is sent and nothing about the email is logged; Settings says email isn't set up yet.
 - **Before a domain.**
   - **Who can receive email:** Resend's shared sender reaches only your own Resend account address. Set `EMAIL_ALLOWLIST` to that address. Everything else is held and logged, and the app labels digests as a preview.
   - **Run reports:** the owner's run reports work from the start.

@@ -17,6 +17,9 @@ export default function LoginPage() {
       <Suspense>
         <LoginForm />
       </Suspense>
+      <p className="mt-4">
+        <TextLink href="/forgot-password">Forgot your password?</TextLink>
+      </p>
       <p className="mt-8 text-ink-soft">
         New to WearWise? <TextLink href="/register">Create an account</TextLink>
         , or try a sample wardrobe first:

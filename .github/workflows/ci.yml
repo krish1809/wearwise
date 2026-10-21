@@ -52,6 +52,8 @@ jobs:
         run: uv run mypy
       - name: Migrations apply to an empty database
         run: uv run alembic upgrade head
+      - name: Agent checkpoint tables set up, twice
+        run: uv run python -m scripts.agent_setup && uv run python -m scripts.agent_setup
       - name: Reference data loads, twice
         run: uv run python -m scripts.seed_reference && uv run python -m scripts.seed_reference
       - name: Tests
@@ -160,7 +162,7 @@ jobs:
         working-directory: frontend
       - name: Database
         working-directory: backend
-        run: uv run alembic upgrade head && uv run python -m scripts.seed_reference
+        run: uv run alembic upgrade head && uv run python -m scripts.agent_setup && uv run python -m scripts.seed_reference
       - name: Start the API
         working-directory: backend
         run: uv run uvicorn app.main:app --port 8000 > api.log 2>&1 &
