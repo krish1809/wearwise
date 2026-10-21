@@ -5,13 +5,14 @@ The running state of the project, updated at the end of every slice. Keep it sho
 ## Now
 
 - **Last updated:** 2026-10-21
-- **Current milestone:** M11 Hardening and launch, built on `m11-hardening` and waiting for your commit and merge. After it: v1.0 once the golden set and wear test (M5) pass, and anything you choose next.
+- **Current milestone:** M11 Hardening and launch, built on `m11-hardening` and waiting for your merge. Next: M12 Agents, planned (design in `docs/AGENTS.md`, decisions D55 to D59; the doc changes are on `m12-agents-plan`). v1.0 still waits on the golden set and wear test (M5).
 - **Current slice:** none open; all eight M11 slices are built.
 - **Next action (owner):**
-  1. Commit `m11-hardening`, push it, open its pull request, and merge once CI passes (CI now also runs the end-to-end tests). Render runs the three new migrations on deploy.
+  1. `m11-hardening` is committed and pushed: open its pull request, and merge once CI passes (CI now also runs the end-to-end tests). Render runs the three new migrations on deploy.
   2. In Render, wearwise-api > Environment, add `ADMIN_EMAILS` with your account's email, so `/admin` (the owner's page of counts) opens for you. Check that the service's start command now includes `python -m scripts.housekeeping` (it comes from `render.yaml`).
   3. Once it's live, open the site and press "Try the demo". Then, in GitHub, Actions > "End-to-end against production" > Run workflow (or `E2E_BASE_URL=https://wearwise-rouge.vercel.app make e2e` locally): all tests must pass against production, the last "Done when" item of M11.
-  4. Still open from earlier: switching the stylist on (Render settings in D47), `make eval-stylist` and tagging 30 photos, the "Weather service unavailable" log line, the golden set and wear test (M5), and the demo catalogue's licence. Password reset by email needs an email provider; tell me if you want one and which.
+  4. Commit `m12-agents-plan` (docs only) and merge it after M11. Before M12's first slice: decide on a domain for email (D57), and create free Tavily and Resend accounts; their keys go into Render and a GitHub environment called `production`, never into chat.
+  5. Still open from earlier: switching the stylist on (Render settings in D47), `make eval-stylist` and tagging 30 photos, the "Weather service unavailable" log line, the golden set and wear test (M5), and the demo catalogue's licence. Password reset by email can be built in M12's email slice with the same pieces (D57): say yes or no.
 
 M1 slices:
 
@@ -155,7 +156,7 @@ M11 slices:
 | 7 | End-to-end tests for the five main journeys, runnable against production | done |
 | 8 | README: screenshots, architecture diagram, the engine in brief, known limitations | done |
 
-- **Overall:** all 13 milestones built (M0 to M11), 12 released (M0 to M10b). v1.0 (M0 to M5) waits on the golden set and the wear test. v1.0 (M0 to M5) waits on the golden set and the wear test.
+- **Overall:** 13 milestones built (M0 to M11), 12 released (M0 to M10b), and M12 (agents) planned. v1.0 (M0 to M5) waits on the golden set and the wear test.
 
 Live:
 
@@ -235,6 +236,7 @@ M0 code, merged in pull request #1 and deployed:
 | M10 | AI | auto-tag photos; chat with a stylist that knows your wardrobe | done | 2026-10-21 | pull request #9; off until a key is set |
 | M10b | Interaction and polish | drag outfits together, swipe suggestions, see your colours, and use a few new everyday tools | done | 2026-10-21 | pull request #9 |
 | M11 | Hardening and launch | hand the link to anyone | built, not merged | | end-to-end run against production after deploy |
+| M12 | Agents | get a weekly email of what's worth buying, from trends found on the web and what you own | planned | | design in `docs/AGENTS.md`; D55 to D59 |
 
 ## Before M0 (only you can do these)
 
@@ -249,6 +251,24 @@ M0 code, merged in pull request #1 and deployed:
 ## Log
 
 Add an entry per slice, newest first.
+
+### 2026-10-21, M12 planned: the agents
+
+- Planned: a new milestone, M12 Agents, at the owner's request. It covers the Trend Scout (scheduled web search for trends in India, each with two recent sources, approved by the owner), an opt-in weekly digest email of what's worth buying and where to look, judged by the purchase analyzer against the person's wardrobe, and the Stylist moved onto LangGraph. New `docs/AGENTS.md`. The roadmap, product spec, AI, architecture, data model, deployment, and engine docs, `.env.example`, and the README's docs table are updated. The docs now also cover what M10b and M11 added (the M10b features in the spec, `error_events`, `saved_measures`, and the indexes in the data model, the security and operations notes in the architecture doc).
+- Checked against each source's current docs (October 2026):
+  - LangGraph 1.2.16 and LangChain 1.4.6 install and run on Python 3.14 (a test graph paused and resumed in a scratch environment, outside the project).
+  - The Postgres checkpointer creates its tables with concurrent indexes, so not through Alembic.
+  - Tavily: 1,000 free credits a month, 1 per basic search, and its terms allow it to keep queries.
+  - Resend: 100 emails a day free, and only to the account's own address without a verified domain.
+  - GitHub Actions schedules: they now take a time zone, can be dropped at busy times, and switch off after 60 days without activity.
+- Changed from the request:
+  - It's numbered M12, because M11 was already built.
+  - Trend approval is a status rather than a paused run.
+  - Stylist memory stays in `chat_messages`.
+  - Addresses are confirmed at opt-in, not at sign-up.
+  - There's no `is_admin` column (D51).
+  - Shop links carry no price cap (D46).
+- Decided: D55 to D59.
 
 ### 2026-10-21, M11 slice 8: the README, and a layout fix
 

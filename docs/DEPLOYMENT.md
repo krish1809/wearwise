@@ -11,6 +11,9 @@ Deploy in M0 and keep deploying. Every merge to `main` goes live, so a broken de
 | Database | Neon, Free plan | 1 GB storage per project; 100 compute-hours a month; pauses after 5 minutes idle | Plenty for this app. First query after a pause is slightly slow. |
 | Images | Backblaze B2 | 10 GB storage free, no card needed; downloads free up to three times the average stored each month, then $0.01 per GB; without a card on file, Backblaze refuses requests past a free limit rather than charging | About 0.25 MB per item with its thumbnail. The API serves each photo with a one-year browser cache, so each device downloads it about once. |
 | Weather | Open-Meteo | No key; non-commercial; 10,000 calls a day; attribution required | Cache per city per day. Credit Open-Meteo in the footer. |
+| Web search (M12) | Tavily | 1,000 credits a month, no card; a basic search is 1 credit, an advanced one 2; past the plan, $0.008 a credit. Its terms let it keep queries and train on them | About 8 credits a Trend Scout run, about 70 a month at twice a week. Queries carry no personal data. A monthly cap in code. |
+| Email (M12) | Resend | 3,000 emails a month and 100 a day (a UTC day); up to 3 domains. Without a verified domain it sends only to the account owner's own address. Bounces above 4% or spam reports above 0.08% can pause sending | The owner's run reports work at once. Anyone else needs a domain of your own. Stay under 100 a day. |
+| Scheduled jobs (M12) | GitHub Actions | Free for public repositories on GitHub's standard runners. Schedules run only from the default branch, can be delayed or dropped at busy times (most often on the hour), and switch off after 60 days without activity in a public repository | Off-hour schedules, a catch-up for the digest, and a run report to notice a missed run. |
 
 Do not use Render's free Postgres: it expires 30 days after creation.
 
@@ -74,7 +77,9 @@ Any S3-compatible service works with the same five settings. Cloudflare R2, for 
 | Database | Postgres in Docker | Neon |
 | Images | `./.storage` folder | Backblaze B2 bucket |
 | AI | Off by default; `AI_PROVIDER=fake` for a test round trip | Off until `AI_PROVIDER=anthropic` and its key, models, and prices are set (D47); the fake is refused |
-| Email | Printed to the console | Real provider |
+| Email | Printed to the console | Resend from M12; only to `EMAIL_ALLOWLIST` until a domain is verified (D57) |
+| Web search | Off, or `SEARCH_PROVIDER=fake` for recorded results | Tavily from M12 |
+| Scheduled jobs | Started by hand: `python -m app.jobs.trend_scout`, `python -m app.jobs.weekly_digest` | GitHub Actions from M12 |
 
 Vercel also builds a preview for every pull request. Point previews at the production backend only for read-only checks, or give them their own Neon branch.
 
@@ -100,6 +105,7 @@ The browser never calls the Render URL directly, so the session cookie is first-
 
 - Every schema change is an Alembic migration, committed with the code that needs it.
 - The backend's start command runs `alembic upgrade head`, loads the reference data from `seed/` (`python -m scripts.seed_reference`), runs housekeeping (`python -m scripts.housekeeping`: expired demo copies, unsaved photos, old error reports and rate-limit counts, ended sessions; it never stops the start), and then starts the server, so every deploy migrates and reseeds first. The free server sleeps when idle, so it starts, and tidies, often. `render.yaml` lists `backend/**` and `seed/**` as build filters, so a change to either deploys.
+- From M12, the start command also runs `python -m scripts.agent_setup` after the migrations: it creates or updates the agents' checkpoint tables, which the checkpointer library owns and versions itself, so they aren't an Alembic migration (D59). The scheduled jobs run the same step before they start.
 - Migrations must work on a database that already has data. Add a column as nullable or with a default, backfill, then tighten.
 - Never edit a migration that has run in production. Write a new one.
 
@@ -132,6 +138,45 @@ Neon keeps a short history for restores on the free plan; check the current wind
 - **Errors.** Anything the API didn't expect is logged with its stack trace, stored in `error_events` (route, error type, message, the end of the stack trace; no account), and answered with a plain 500. The browser reports its own errors (from the error pages and any unhandled error) to `POST /api/v1/client-errors`, at most five per page load and thirty an hour per address. Events go after 30 days.
 - **The owner's page.** `/admin` shows people, demo accounts, items, photos, outfits, wear logs, suggestion acceptance by engine version, the stylist's use and spend today, and the latest errors. Set `ADMIN_EMAILS` on Render to your account's email; everyone else gets "not found". It isn't linked anywhere.
 - **Uptime.** No pinger: frequent checks would keep the free server and database awake and use up their hours. The end-to-end run against production (M11) doubles as a daily check, and GitHub emails you when it fails.
+
+## Scheduled jobs (M12)
+
+The Trend Scout and the weekly digest run on GitHub Actions, not on Render: the free server sleeps, so a scheduler inside it wouldn't fire (D56). Each job runs on GitHub's machine against the production database, then exits.
+
+| Workflow | Schedule (`timezone: "Asia/Kolkata"`) | What it runs |
+|---|---|---|
+| `trend-scout.yml` | Tuesday and Friday at 05:41 | `python -m app.jobs.trend_scout` |
+| `weekly-digest.yml` | Daily at 08:07, for the people whose day it is, plus anyone missed in the last two days | `python -m app.jobs.weekly_digest` |
+
+- **By hand.** Both can also be run from the Actions tab (`workflow_dispatch`). The schedules are added only after one real Trend Scout run, started by hand, has been reviewed.
+- **Settings.**
+  - **Where they live:** the jobs need the backend's production settings. Put them in a GitHub environment called `production` (Settings > Environments): secrets for `DATABASE_URL` (Neon's pooled string), `AI_API_KEY`, `SEARCH_API_KEY`, `EMAIL_API_KEY`, and `EMAIL_LINK_SECRET`, and variables for the rest.
+  - **Same values as Render:** `EMAIL_LINK_SECRET` must match Render's, because Render checks the links the jobs sign.
+  - **Who can reach them:** the workflows run only on their schedule and by hand, never on a pull request, so a pull request from someone else's copy of the repository can't reach the secrets.
+- **One at a time.** Each workflow has a `concurrency` group, and each job also holds a "running" row in `agent_runs`, which lapses after 2 hours.
+- **Known limits.**
+  - **Delays and dropped runs:** scheduled runs start from the default branch's latest commit, and can be late or dropped at busy times, most often on the hour, hence the odd minutes and the digest's catch-up.
+  - **Switched off after 60 days:** in a public repository, schedules switch off after 60 days without activity. Turn them back on from the Actions tab.
+  - **Who hears about failures:** GitHub emails a failure to whoever last changed the schedule line.
+- **Noticing a missed run.** The owner's run report doesn't arrive, and `/admin/runs` shows when each job last ran and how it ended.
+
+## Email (M12)
+
+- **Provider.** Resend, behind the `EmailSender` adapter (`EMAIL_PROVIDER=resend`, `EMAIL_API_KEY`, `EMAIL_FROM`). In development, emails are printed to the console.
+- **Before a domain.**
+  - **Who can receive email:** Resend's shared sender reaches only your own Resend account address. Set `EMAIL_ALLOWLIST` to that address. Everything else is held and logged, and the app labels digests as a preview.
+  - **Run reports:** the owner's run reports work from the start.
+- **To email anyone else.**
+  1. Buy a domain.
+  2. Add the DNS records Resend lists for it, and wait for Resend to verify it.
+  3. Set `EMAIL_FROM` to an address on that domain.
+  4. Then empty `EMAIL_ALLOWLIST`.
+
+  A `vercel.app` address can't be used, because its DNS isn't yours.
+- **Limits.** `EMAIL_DAILY_CAP` (90 by default) keeps under the free plan's 100 a day. Anyone held by it is sent to the next day. Keep bounces and spam reports low: Resend pauses sending past 4% and 0.08%.
+- **Consent.**
+  - **Who receives it:** only people who turned the digest on and confirmed their address. Demo accounts never do.
+  - **Unsubscribing:** every digest has an unsubscribe link and the one-click `List-Unsubscribe` headers.
 
 ## If the project becomes commercial
 
