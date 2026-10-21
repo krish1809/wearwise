@@ -37,10 +37,18 @@ export function HomeContent() {
         <h1 className="font-display text-2xl font-semibold tracking-tight">
           {firstName ? `Hello, ${firstName}` : "Hello"}
         </h1>
-        <p className="mt-3 max-w-prose text-ink-soft">
-          You&apos;re logged in as {user.email}. Your profile, sizes, and
-          account are in <TextLink href="/settings">Settings</TextLink>.
-        </p>
+        {user.demo_ends_at ? (
+          <p className="mt-3 max-w-prose text-ink-soft">
+            Start with an outfit for today, look through the{" "}
+            <TextLink href="/wardrobe">wardrobe</TextLink>, or plan the week.
+            Everything works as it would with your own clothes.
+          </p>
+        ) : (
+          <p className="mt-3 max-w-prose text-ink-soft">
+            You&apos;re logged in as {user.email}. Your profile, sizes, and
+            account are in <TextLink href="/settings">Settings</TextLink>.
+          </p>
+        )}
       </div>
       <Today />
       <OneInsight />

@@ -99,7 +99,7 @@ The browser never calls the Render URL directly, so the session cookie is first-
 ## Migrations
 
 - Every schema change is an Alembic migration, committed with the code that needs it.
-- The backend's start command runs `alembic upgrade head`, loads the reference data from `seed/` (`python -m scripts.seed_reference`), and then starts the server, so every deploy migrates and reseeds first. `render.yaml` lists `backend/**` and `seed/**` as build filters, so a change to either deploys.
+- The backend's start command runs `alembic upgrade head`, loads the reference data from `seed/` (`python -m scripts.seed_reference`), runs housekeeping (`python -m scripts.housekeeping`: expired demo copies, unsaved photos, old error reports and rate-limit counts, ended sessions; it never stops the start), and then starts the server, so every deploy migrates and reseeds first. The free server sleeps when idle, so it starts, and tidies, often. `render.yaml` lists `backend/**` and `seed/**` as build filters, so a change to either deploys.
 - Migrations must work on a database that already has data. Add a column as nullable or with a default, backfill, then tighten.
 - Never edit a migration that has run in production. Write a new one.
 
@@ -127,10 +127,11 @@ Neon keeps a short history for restores on the free plan; check the current wind
 
 ## Observability (M11)
 
-- Structured logs on the backend with a request ID that the frontend also logs.
-- An error tracker on both sides.
-- An uptime check on `/api/v1/health`.
-- A simple page of counts for yourself: users, items, suggestions shown, acceptance rate, AI spend today.
+- **Logs.** In production the API writes one JSON object per line: time, level, message, and the request's id, plus fields such as the route, status, and milliseconds for the line every request ends with. Routes are logged as patterns (`/api/v1/items/{item_id}`), never with the query string or the visitor's IP address (uvicorn's own access log is off). Search Render's logs for a request id to see everything that request did.
+- **Request ids.** The browser sends a fresh `X-Request-ID` with each API call; the API keeps it if it looks like one, or makes its own, and returns it on every answer. A 500 tells the person "mention reference ...", so a report can be matched to its log lines.
+- **Errors.** Anything the API didn't expect is logged with its stack trace, stored in `error_events` (route, error type, message, the end of the stack trace; no account), and answered with a plain 500. The browser reports its own errors (from the error pages and any unhandled error) to `POST /api/v1/client-errors`, at most five per page load and thirty an hour per address. Events go after 30 days.
+- **The owner's page.** `/admin` shows people, demo accounts, items, photos, outfits, wear logs, suggestion acceptance by engine version, the stylist's use and spend today, and the latest errors. Set `ADMIN_EMAILS` on Render to your account's email; everyone else gets "not found". It isn't linked anywhere.
+- **Uptime.** No pinger: frequent checks would keep the free server and database awake and use up their hours. The end-to-end run against production (M11) doubles as a daily check, and GitHub emails you when it fails.
 
 ## If the project becomes commercial
 

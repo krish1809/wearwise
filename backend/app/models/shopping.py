@@ -60,6 +60,9 @@ class Candidate(IdMixin, TimestampMixin, Base):
 
 
 Index("ix_candidates_user_id_created_at", Candidate.user_id, Candidate.created_at)
+Index("ix_candidates_category_id", Candidate.category_id)
+# Deleting an item clears the bought candidate's link to it.
+Index("ix_candidates_item_id", Candidate.item_id, postgresql_where=Candidate.item_id.is_not(None))
 
 
 class LinkPreview(IdMixin, TimestampMixin, Base):

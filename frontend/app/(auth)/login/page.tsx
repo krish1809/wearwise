@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
+import { DemoButton } from "@/components/demo-button";
 import { TextLink } from "@/components/text-link";
 
 import { LoginForm } from "./login-form";
@@ -18,7 +19,11 @@ export default function LoginPage() {
       </Suspense>
       <p className="mt-8 text-ink-soft">
         New to WearWise? <TextLink href="/register">Create an account</TextLink>
+        , or try a sample wardrobe first:
       </p>
+      <div className="mt-3">
+        <DemoButton />
+      </div>
     </>
   );
 }

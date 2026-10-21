@@ -145,4 +145,6 @@ The theme choice is not stored on the server: it's a per-browser setting (D48).
 
 ## Deletion
 
-Deleting an account removes every row above for that user and every stored image. Write this as one service function in M1 and extend it in each milestone, so M11's "delete my account" is already complete.
+Deleting an account removes every row above for that user and every stored image (D50). The rule that makes it complete: every table with a `user_id` points at `users` with ON DELETE CASCADE, and every table without one hangs off such a table with ON DELETE CASCADE (`chat_messages`, `outfit_items`, `trip_items`, `wear_log_items`). The same rule decides what "Download my data" exports. Every other table must be listed as shared in `app/services/export.py` (reference data, `link_previews`, `catalog_products`, `weather_forecasts`, `rate_limit_hits`, `app_meta`); a test fails for a table that is neither.
+
+Nothing personal is kept forever outside a person's own rows: rate-limit counts (which can name an IP address, or a hash of an email) are deleted within a day, and photos uploaded but never saved with anything after about a day.

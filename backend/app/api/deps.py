@@ -1,5 +1,6 @@
 """Dependencies that routes declare in their signatures."""
 
+from datetime import timedelta
 from typing import Annotated
 
 from fastapi import Depends, Request
@@ -14,7 +15,7 @@ from app.api.session_cookie import SESSION_COOKIE, clear_session_cookie_headers
 from app.core.config import Settings, get_settings
 from app.core.db import get_session
 from app.models.user import User
-from app.services import auth
+from app.services import auth, rate_limit
 
 SessionDep = Annotated[Session, Depends(get_session)]
 SettingsDep = Annotated[Settings, Depends(get_settings)]
@@ -60,3 +61,25 @@ def require_requested_with(request: Request) -> None:
         raise ApiError(
             403, "missing_header", "Requests that change data need an X-Requested-With header."
         )
+
+
+# Every change a person makes counts against one budget, far above what anyone does by hand,
+# so a script can't fill the database. The costly routes have tighter limits of their own.
+WRITES_PER_USER = rate_limit.Limit(attempts=1000, window=timedelta(hours=1))
+
+
+def write_budget(request: Request, user: CurrentUser, db: SessionDep) -> None:
+    if request.method not in _STATE_CHANGING:
+        return
+    try:
+        rate_limit.hit(db, f"writes:user:{user.id}", WRITES_PER_USER)
+    except rate_limit.RateLimited as error:
+        db.commit()
+        minutes = max(1, round(error.retry_after_seconds / 60))
+        raise ApiError(
+            429,
+            "rate_limited",
+            f"That's a lot of changes in an hour. Try again in {minutes} minutes.",
+            headers={"Retry-After": str(error.retry_after_seconds)},
+        ) from error
+    db.commit()

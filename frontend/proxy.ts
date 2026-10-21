@@ -30,5 +30,6 @@ export const config = {
     "/stylist/:path*",
     "/settings/:path*",
     "/onboarding/:path*",
+    "/admin/:path*",
   ],
 };

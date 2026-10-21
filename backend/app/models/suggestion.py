@@ -43,6 +43,17 @@ class Suggestion(IdMixin, TimestampMixin, Base):
 
 
 Index("ix_suggestions_user_id_created_at", Suggestion.user_id, Suggestion.created_at)
+# Deleting an outfit or a wear log clears these links; most rows have neither.
+Index(
+    "ix_suggestions_saved_outfit_id",
+    Suggestion.saved_outfit_id,
+    postgresql_where=Suggestion.saved_outfit_id.is_not(None),
+)
+Index(
+    "ix_suggestions_wear_log_id",
+    Suggestion.wear_log_id,
+    postgresql_where=Suggestion.wear_log_id.is_not(None),
+)
 
 
 class SuggestionFeedback(IdMixin, TimestampMixin, Base):
@@ -67,3 +78,11 @@ class SuggestionFeedback(IdMixin, TimestampMixin, Base):
     # The one item a dislike is about, when the reason is the item.
     item_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("items.id", ondelete="SET NULL"))
     engine_version: Mapped[str]
+
+
+# Deleting an item clears it from reactions about it.
+Index(
+    "ix_suggestion_feedback_item_id",
+    SuggestionFeedback.item_id,
+    postgresql_where=SuggestionFeedback.item_id.is_not(None),
+)

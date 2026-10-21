@@ -114,7 +114,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               Check your connection and try again.
             </ErrorState>
           ) : (
-            children
+            <>
+              {user?.demo_ends_at && <DemoNote endsAt={user.demo_ends_at} />}
+              {children}
+            </>
           )}
           <Credits />
         </main>
@@ -129,6 +132,27 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 }
 
 /** The weather and place data come with a licence that asks for credit. */
+/** A visitor's demo: whose it is, how long it lasts, and the way to keep going. */
+function DemoNote({ endsAt }: { endsAt: string }) {
+  const until = new Date(endsAt).toLocaleString("en-IN", {
+    weekday: "short",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+  return (
+    <p className="mb-6 rounded-xl bg-surface px-4 py-3 text-sm">
+      You&apos;re trying WearWise with a sample wardrobe. It&apos;s yours until{" "}
+      {until}, then it&apos;s deleted with anything you add.{" "}
+      <Link
+        href="/register"
+        className={cn("font-medium underline underline-offset-2", focusRing)}
+      >
+        Make your own account
+      </Link>
+    </p>
+  );
+}
+
 function Credits() {
   return (
     <footer className="mt-16 text-xs text-ink-soft">
@@ -153,7 +177,13 @@ function Credits() {
       >
         GeoNames
       </a>
-      .
+      .{" "}
+      <Link
+        href="/privacy"
+        className={cn("underline underline-offset-2", focusRing)}
+      >
+        Privacy
+      </Link>
     </footer>
   );
 }
@@ -263,8 +293,8 @@ function TopBar({ user }: { user: User | undefined }) {
       <Wordmark className="lg:hidden" />
       {user && <QuickJump />}
       {user?.is_demo && (
-        <span className="mr-3 rounded-full bg-consider/15 px-3 py-1 text-sm font-medium text-ink">
-          Demo account
+        <span className="mr-3 rounded-full bg-consider/15 px-3 py-1 text-sm font-medium whitespace-nowrap text-ink">
+          Demo<span className="hidden sm:inline"> account</span>
         </span>
       )}
       {user ? (

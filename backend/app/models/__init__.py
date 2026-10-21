@@ -3,7 +3,9 @@
 from app.models.app_meta import AppMeta
 from app.models.base import Base
 from app.models.chat import AIUsage, ChatAction, ChatMessage, ChatThread
+from app.models.insights import SavedMeasures
 from app.models.item import Item, ItemImage
+from app.models.ops import ErrorEvent
 from app.models.outfit import Outfit, OutfitItem, WearLog, WearLogItem
 from app.models.planning import Event, PlanDay, Trip, TripItem, WeatherForecast
 from app.models.profile import BrandNote, Profile
@@ -38,6 +40,7 @@ __all__ = [
     "ChatMessage",
     "ChatThread",
     "ColorFamily",
+    "ErrorEvent",
     "Event",
     "GuideEntry",
     "Item",
@@ -50,6 +53,7 @@ __all__ = [
     "PlanDay",
     "Profile",
     "RateLimitHit",
+    "SavedMeasures",
     "StyleProfile",
     "Suggestion",
     "SuggestionFeedback",

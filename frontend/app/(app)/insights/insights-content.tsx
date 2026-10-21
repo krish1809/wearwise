@@ -60,7 +60,7 @@ export function InsightsContent() {
           Check your connection and try again.
         </ErrorState>
       ) : !insights.data ? (
-        <div aria-busy="true" className="grid gap-6 md:grid-cols-2">
+        <div aria-busy="true" className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {[0, 1, 2, 3].map((key) => (
             <Skeleton key={key} className="h-56" />
           ))}
@@ -119,7 +119,7 @@ function Sections({
 
       <ChallengeCard familyHex={familyHex} />
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {data.enough && (
           <>
             <Card>
@@ -175,7 +175,7 @@ function Sections({
           The price you paid divided by the times you&apos;ve worn it, for
           pieces with a price.
         </p>
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <Card>
             <CardTitle>Best value</CardTitle>
             {data.cheapest.length === 0 ? (
@@ -237,7 +237,7 @@ function Sections({
               Counted over everything you own except retired pieces, as if all
               of it were clean, for the occasions you dress for.
             </p>
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <Card>
                 <CardTitle>Most versatile</CardTitle>
                 <CardDescription className="mt-1">
@@ -729,7 +729,7 @@ function StyleSection({
       <p className="max-w-prose text-sm text-ink-soft">
         From {style.wears} wears of clothes and shoes.
       </p>
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <Card>
           <CardTitle>Your colours</CardTitle>
           <div className="mt-4">

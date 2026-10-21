@@ -10,6 +10,7 @@ from app.api import (
     health,
     insights,
     items,
+    ops,
     outfits,
     photos,
     places,
@@ -22,25 +23,34 @@ from app.api import (
     trips,
     wear_logs,
 )
-from app.api.deps import require_requested_with
+from app.api.deps import require_requested_with, write_budget
 
 api_router = APIRouter(prefix="/api/v1", dependencies=[Depends(require_requested_with)])
+# Open to anyone: the health check, logging in and out, and the browser's error reports (each
+# with its own limits).
 api_router.include_router(health.router)
 api_router.include_router(auth.router)
-api_router.include_router(account.router)
-api_router.include_router(reference.router)
-api_router.include_router(profile.router)
-api_router.include_router(places.router)
-api_router.include_router(brand_notes.router)
-api_router.include_router(categories.router)
-api_router.include_router(photos.router)
-api_router.include_router(items.router)
-api_router.include_router(suggestions.suggest_router)
-api_router.include_router(outfits.router)
-api_router.include_router(suggestions.router)
-api_router.include_router(wear_logs.router)
-api_router.include_router(plan.router)
-api_router.include_router(trips.router)
-api_router.include_router(insights.router)
-api_router.include_router(shopping.router)
-api_router.include_router(stylist.router)
+api_router.include_router(ops.reports)
+# Everything else is a person's own data, and every change counts against their budget. The
+# order matters: /outfits/suggest must come before /outfits/{outfit_id}.
+for router in (
+    account.router,
+    reference.router,
+    profile.router,
+    places.router,
+    brand_notes.router,
+    categories.router,
+    photos.router,
+    items.router,
+    suggestions.suggest_router,
+    outfits.router,
+    suggestions.router,
+    wear_logs.router,
+    plan.router,
+    trips.router,
+    insights.router,
+    shopping.router,
+    stylist.router,
+    ops.admin,
+):
+    api_router.include_router(router, dependencies=[Depends(write_budget)])

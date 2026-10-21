@@ -9,6 +9,10 @@ from sqlalchemy.orm import Session
 
 from app.models.rate_limit import RateLimitHit
 
+# Buckets can name an IP address, so nothing is kept longer than this, even for a visitor who
+# never comes back. Every limit's window is shorter.
+KEPT_FOR = timedelta(days=1)
+
 
 @dataclass(frozen=True)
 class Limit:
@@ -38,10 +42,11 @@ def hit(db: Session, bucket: str, limit: Limit, now: datetime | None = None) -> 
         )
         .returning(RateLimitHit.count)
     )
-    # Earlier windows for this bucket no longer matter.
+    # Earlier windows for this bucket no longer matter, nor anyone's from over a day ago.
     db.execute(
         delete(RateLimitHit).where(
-            RateLimitHit.bucket == bucket, RateLimitHit.window_start < window_start
+            (RateLimitHit.bucket == bucket) & (RateLimitHit.window_start < window_start)
+            | (RateLimitHit.window_start < now - KEPT_FOR)
         )
     )
 

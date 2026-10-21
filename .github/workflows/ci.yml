@@ -115,3 +115,75 @@ jobs:
             echo "::error::The API types are out of date. Run 'make api-types' and commit the result."
             exit 1
           }
+
+  e2e:
+    name: End-to-end (journeys, accessibility, keyboard)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: wearwise
+          POSTGRES_PASSWORD: wearwise
+          POSTGRES_DB: wearwise
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U wearwise -d wearwise"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 15
+    env:
+      DATABASE_URL: postgresql+psycopg://wearwise:wearwise@localhost:5432/wearwise
+      # Nothing outside the runner: canned weather and pages, the stylist off.
+      WEATHER_PROVIDER: fake
+      PAGE_READER: fake
+      AI_PROVIDER: "off"
+      BACKEND_URL: http://localhost:8000
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.12.23"
+          enable-cache: true
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          package_json_file: frontend/package.json
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - run: uv sync --locked
+        working-directory: backend
+      - run: pnpm install --frozen-lockfile
+        working-directory: frontend
+      - name: Database
+        working-directory: backend
+        run: uv run alembic upgrade head && uv run python -m scripts.seed_reference
+      - name: Start the API
+        working-directory: backend
+        run: uv run uvicorn app.main:app --port 8000 > api.log 2>&1 &
+      - name: Build and start the website
+        working-directory: frontend
+        run: pnpm build && (pnpm start > web.log 2>&1 &)
+      - name: Wait for both
+        run: |
+          for i in $(seq 1 60); do
+            curl -fs http://localhost:3000/api/v1/health && exit 0
+            sleep 2
+          done
+          exit 1
+      - run: pnpm exec playwright install --with-deps chromium
+        working-directory: frontend
+      - run: pnpm e2e
+        working-directory: frontend
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: e2e-report
+          path: |
+            frontend/playwright-report
+            backend/api.log
+            frontend/web.log
+          retention-days: 7

@@ -31,18 +31,25 @@ export function useCurrentUser() {
   return hydrated ? query : { ...query, data: undefined };
 }
 
-/** Where to go after logging in. Only a path on this site, so a link can't send people elsewhere. */
+// Any origin will do: the path is resolved against it only to see whether it stays there.
+const HERE = "https://wearwise.invalid";
+
+/**
+ * Where to go after logging in. Only a path on this site, so a link can't send people elsewhere.
+ * The path is read the way the browser will read it (which drops tabs and line breaks, so
+ * "/\t/elsewhere" becomes "//elsewhere"), and refused unless it stays on this site.
+ */
 export function safeNextPath(
   next: string | null | undefined,
   fallback = "/home",
 ): string {
-  if (
-    !next ||
-    !next.startsWith("/") ||
-    next.startsWith("//") ||
-    next.startsWith("/\\")
-  ) {
+  if (!next || !next.startsWith("/")) return fallback;
+  try {
+    const url = new URL(next, HERE);
+    return url.origin === HERE
+      ? `${url.pathname}${url.search}${url.hash}`
+      : fallback;
+  } catch {
     return fallback;
   }
-  return next;
 }

@@ -9,6 +9,7 @@ Reference data loaded into the database by `backend/scripts/seed_reference.py` (
 | `occasions.json` | 12 occasions with formality ranges | M2 |
 | `style_profiles.json` | 12 style profiles with the colours, fabrics, fits, and categories that signal each | M2 |
 | `archetypes.json` | 66 common wardrobe staples used by gap analysis and the starter capsule; no prices | M8 |
+| `demo.json` | The profile every demo copy starts with (occasions, usual week, styles, city), on top of the staples for the chosen section. Read by the demo code only, never loaded into reference tables | M11 |
 
 Notes:
 

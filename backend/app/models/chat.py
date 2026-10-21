@@ -76,5 +76,6 @@ class AIUsage(IdMixin, TimestampMixin, Base):
     cost_micro_usd: Mapped[int] = mapped_column(BigInteger, default=0, server_default="0")
 
 
+Index("ix_chat_actions_user_id", ChatAction.user_id)
 Index("uq_ai_usage_user_id_day", AIUsage.user_id, AIUsage.day, unique=True)
 Index("ix_ai_usage_day", AIUsage.day)

@@ -354,3 +354,72 @@ Next.js runs with `cacheComponents` and `partialPrefetching` on, as create-next-
 
 **Rejected:** a drag-and-drop or gesture library (two dependencies for what the browser does); a chart library for one plot; keeping the theme on the account; push or email reminders; storing challenge progress (it would drift from the wear log).
 **Revisit if:** people want to drag with a finger (that needs pointer-based dragging), reminders need to reach people outside the app (that needs an email service), or days should follow the person's time zone (the server counts days in UTC, so in India a new day starts at 05:30).
+
+## D49. The security pass: checks that walk every route, headers on both apps, and narrower photo decoding
+
+**Why:**
+- **Every route, checked by walking them all.** A test reads the API's own schema (the list of every route it serves) and calls each one: without a login, every route outside a short public list (health, register, log in, log out) must answer 401; without the custom header, every change must answer 403; and a made-up id must answer 404, never 500. A new route that forgets any of these fails CI. A floor on the number of routes stops the test passing by walking nothing (it once did, when FastAPI started including routers lazily).
+- **A budget for changes.** Every change a person makes counts against 1,000 an hour, far above use by hand; the costly routes (uploads, suggestions, plans, place search, shopping, links, the stylist) keep their tighter limits. It's counted in Postgres like the other limits, so it survives restarts.
+- **Headers.** The web app sends a content security policy: scripts, styles, fonts, and requests only from this site, no framing, forms only to this site, no plugins. Scripts may be inline, because Next.js puts its page data in inline scripts; the strict alternative (a fresh nonce per request) would make every page render on demand and lose the cached pages. Images may come from any https address, because shop pictures are shown from the shop. Also: no MIME sniffing, no framing, a strict referrer policy, no camera, microphone, or location, and HSTS. The API sends a policy that allows nothing at all (it serves JSON and images), no-store caching except for photos (which set their own private caching), and same-origin resource policy. The interactive docs get no policy, since they load from a CDN.
+- **Photos.** Pillow 13 (eight advisories in 12.x, all in decoders for formats we refuse). Uploads are now opened with only the JPEG, PNG, and WebP decoders; before, Pillow tried every decoder it has to identify the file, and only then did we refuse anything that wasn't a photo. A test proves the TIFF parser never sees an upload.
+- **The log-in redirect** is resolved the way the browser will resolve it, then refused unless it stays on this site. The old prefix check passed "/(tab)/elsewhere", which browsers turn into "//elsewhere".
+- **Dependency audit.** `make audit` checks the packages the live app runs on (`pip-audit` through `uvx`, and `pnpm audit --prod`; neither is added to the project). It runs weekly in GitHub Actions and by hand, not on pull requests, so a new advisory can't block unrelated changes and deploys. Development-only advisories are read and judged: today's one (braces, inside Next's lint plugin, with no fixed release) only ever sees our own file patterns.
+
+**Rejected:** nonce-based CSP (loses static and cached pages); per-route rate limits everywhere (one budget is simpler and the costly routes already have their own); auditing on every pull request.
+**Revisit if:** Next.js can attach nonces without dynamic rendering, or an advisory lands in a runtime package.
+
+## D50. Privacy: an export read from the schema, one rule for what's a person's, and nothing personal kept forever
+
+**Why:**
+- **What's a person's is decided by one rule**, read from the schema: a table with a `user_id` pointing at `users`, or a table that hangs off such a table and is deleted with it. Both "Download my data" and "Delete account" follow it, so a table added later is exported and deleted without anyone remembering to. A test fails if a table is neither the person's nor listed as shared, and another if anything pointing at a user doesn't cascade. A third fills an account through the API (items, photos, outfits, the wear log, suggestions and reactions, events, the plan, a trip, the shopping list, a conversation), deletes it, and checks that none of its rows and none of its photo files are left, while another account's are untouched.
+- **The export** is a zip: `data.json` (every row, one list per table, with the app's own column names), every photo at the stored size, and a README explaining the format. It leaves out the password hash and login sessions. It's built in a temporary file that moves to disk past 16 MB, so a large wardrobe doesn't sit in the server's memory, and streamed in chunks. Five a hour per person, since it reads every photo.
+- **Nothing personal is kept forever by accident.** Rate-limit counts can name an IP address; they were deleted only when the same visitor came back, so now every count also removes anything over a day old. Photos uploaded but never saved were cleared only by their owner's next upload; now any upload clears everyone's day-old leftovers, fifty at a time.
+- **The privacy page** says in plain words what's stored, what's in the browser (one session cookie and the theme choice), which service sees what (Vercel, Render, Neon, Backblaze, Open-Meteo, Anthropic only when the stylist is on and used, and shops only for pasted links and their own pictures), and how to download or delete. It links to the public repository for questions.
+
+**Rejected:** a list of tables kept by hand (it would drift); exporting photos as links (they're private, and links would expire); keeping rate-limit rows until their visitor returns.
+**Revisit if:** exports grow past what a request can build in time (then build it in the background and send a link), or the project gets a contact address of its own.
+
+## D51. Observability without another service: request ids, JSON logs, errors in a table, and an owner's page
+
+**Why:**
+- **No error-tracking service.** A hosted tracker (Sentry, for example) is the usual answer, but it adds two SDKs, a third service that would receive stack traces and page addresses, and an account to keep; at this size, the database already in use does the job. Unexpected server errors and browser errors go to `error_events` with no account attached, are kept 30 days, and show on the owner's page.
+- **One id per request**, made in the browser and kept by the server (or made there), on every log line, every answer, and every recorded error. A person who sees a 500 sees "mention reference ...", which finds the log lines. The server's answer to an unexpected error says nothing about what broke.
+- **Logs as JSON in production** (readable text in development), with the route's pattern instead of the path, and no query string or IP address, so the logs hold no ids, searches, or addresses. The browser's error reports keep only the page's path for the same reason.
+- **The owner's page** is for accounts listed in `ADMIN_EMAILS`; everyone else gets the same 404 as a missing page, so nobody learns it exists. A setting rather than a role in the database: there is one owner, and a database flag would need a way to set it. Acceptance per engine version counts each suggestion once if it was liked, saved, or worn, from the suggestions table itself.
+
+**Rejected:** a hosted error tracker for now; logging IP addresses and query strings; an admin role in the database.
+**Revisit if:** there are enough people that grouping and alerting errors are worth a service.
+
+## D52. The demo: a fresh copy for each visitor, deleted a day later, tidied when the server starts
+
+**Why:**
+- **A copy each, not one shared account.** The roadmap asked for one demo account reset nightly. With one account, every visitor sees what the last one changed (or deleted), and the reset needs a scheduled job, which the free plans don't offer. Instead, "Try the demo" makes a fresh account for the visitor: the staples for the section they choose (menswear or womenswear: the app's sections, not a gender), and the profile in `seed/demo.json` (occasions, usual week, styles, city). It's logged in at once with a session cookie; its address ends in `.invalid` and its password is random and never shown, so the cookie is the only way in. Nothing is shared between visitors.
+- **Deleted a day later**, with everything in it, by the same cascade as account deletion (D50). The app says so in a note at the top of every page, with the time, and links to making a real account. The demo script's named demo accounts are left alone.
+- **Bounded.** Ten demos an hour per address, and at most 300 running; past that, the oldest goes first. Demo accounts already have lower stylist limits (D47).
+- **Housekeeping without a scheduler.** Expired demos, unsaved photos, old error reports and rate-limit counts, and ended sessions are removed by `scripts/housekeeping.py`, which runs in the start command (and never stops the start). The free server sleeps after a quiet spell, so it starts, and tidies, often; starting a demo also clears expired ones first.
+
+**Rejected:** one shared demo account (visitors would see each other's changes); a paid cron job or an outside scheduler for one tidy-up; logging in to a demo with a shared password.
+**Revisit if:** the server stops sleeping (a paid plan), so starts become rare: then run housekeeping on a schedule.
+
+## D53. The performance pass: indexes for every link to a person's data, measures kept in the database, and numbers written down
+
+**Why:**
+- **Measured first.** A wardrobe of 300 items, 100 outfits, a year of wear logs, and about 480 suggestions, timed through the API with its SQL queries counted (locally, so production on a tenth of a CPU will be slower): lists, an item, outfits, and the wear log answer in 20 to 40 ms with 6 to 13 queries, the same number of queries however long the list; a suggestion 0.2 s; checking or remixing an outfit 40 to 60 ms; Insights 3.4 s the first time after a change and 70 ms after; a candidate's analysis 1.8 s first, then stored; planning the week 1.1 s; the export 0.1 s; deleting the account 60 ms. At 60 items Insights takes 0.5 s and the analysis 0.3 s; at 120, 1.2 s and 0.6 s.
+- **Indexes for every link to a person's data.** Postgres doesn't index foreign keys by itself, so deleting an outfit, a wear log, an item, a custom category, or an account had to scan whole tables for what pointed at them (suggestions, kept indefinitely, the largest). Eight indexes, partial where most rows are empty, and a test that every link to a person's data has one.
+- **Insights' measures kept in the database.** They were cached in the server's memory, which the free server loses whenever it sleeps (after 15 quiet minutes), so most visits worked them out again. Now the latest measures are saved per person under the same fingerprint (wardrobe version, engine version, occasions, styles, colours, reactions, seasons); they're worked out again only when one of those changes.
+- **Tried and dropped:** remembering scores inside each scorer. Profiling showed 340,000 scorings for 42,000 different outfits, but the repeats are across the sixteen occasion and season searches, not within one (2% hits), so it changed nothing and was taken out. Sharing the pair part of the score across those searches would save about 40% of the first Insights load; it's left for when a large wardrobe needs it.
+- **Pages.** Photos already load as 400 px WebP thumbnails, lazily, with their size set; full size only on an item's own page. JavaScript, compressed: about 240 KB on the landing page, of which about 150 KB is React and Next.js itself, and 380 to 410 KB on app pages. Nothing stood out to cut without restructuring.
+
+**Rejected:** a cache service (Redis is on the not-used list, and Postgres does it); memoizing scores per scorer (measured, no gain).
+**Revisit if:** wardrobes past a few hundred items become common, or the server moves off the free plan's tenth of a CPU (then the first Insights load and the week plan are the places to work on).
+
+## D54. End-to-end tests: the five journeys, accessibility, and keyboard, on every pull request and daily against production
+
+**Why:**
+- **Playwright with axe**, the tools the architecture doc named, as development-only packages pinned to releases at least two weeks old (`@playwright/test` 1.64.0, `@axe-core/playwright` 4.13.0): a brand-new release is where a bad publish would show up first.
+- **What runs.** The five journeys from the architecture doc in order, by one new person (sign up, add an item with a photo, build and save an outfit, get suggestions and like one, check a purchase), then deleting the account through Settings; axe (WCAG 2.1 A and AA) on four public and fifteen app pages in both themes; and keyboard checks (skip link, a focus ring on every Tab stop of five busy pages, dialogs that hold and return focus). Each at desktop and phone size: 32 tests, under a minute.
+- **Few accounts, nothing left behind.** Each run makes one account and one demo per size and deletes them, so it stays inside the sign-up and demo limits and leaves an empty database (checked: zero users after a full run on a fresh stack).
+- **Where.** On every pull request, against a fresh stack in CI (Postgres, the API with canned weather and pages and the stylist off, and a production build of the site), so Render deploys only after they pass. Daily against the live site, which also serves as the uptime check: a failure emails the owner, and one run a day doesn't keep the free server awake. Locally, `make e2e` against `make dev`; `E2E_CHANNEL=chrome` uses Chrome already on the machine instead of downloading Playwright's.
+
+**Rejected:** a separate uptime service (frequent checks would keep the free server and database awake); tests that share one long-lived account (they'd depend on what the last run left).
+**Revisit if:** the suite grows past a few minutes, or the limits it stays inside change.
