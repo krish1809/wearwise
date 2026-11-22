@@ -4,6 +4,10 @@ The running state of the project, updated at the end of every slice. Keep it sho
 
 ## Now
 
+- **Production fixes (2026-11-22), on `fix-production`, cut from `main`:**
+  - Slice 1 is built: Next.js 16.4.5, which fixes two critical advisories against 16.4.0, and patched `dnspython` and `opentelemetry-api`. The weekly dependency audit failed on these.
+  - Next come slice 2 (guardrails: the migration revision in health, a smoke test after each deploy) and slice 3 (pages wait while the free server wakes, instead of failing on Render's 429).
+  - The M12 notes below are on `m12-agents`.
 - **Last updated:** 2026-10-21
 - **Current milestone:** M11 Hardening and launch, built on `m11-hardening` and waiting for your merge. Next: M12 Agents, planned (design in `docs/AGENTS.md`, decisions D55 to D59; the doc changes are on `m12-agents-plan`). v1.0 still waits on the golden set and wear test (M5).
 - **Current slice:** none open; all eight M11 slices are built.
@@ -251,6 +255,19 @@ M0 code, merged in pull request #1 and deployed:
 ## Log
 
 Add an entry per slice, newest first.
+
+### 2026-11-22, production fix, slice 1: patch the vulnerable packages
+
+- Why:
+  - The weekly "Dependency audit" workflow had failed every Monday since 2026-10-26.
+  - `pnpm audit --prod` flagged `next` 16.4.0, which the live site runs: two critical remote code execution advisories (GHSA-2464-fhr4-w9xw, GHSA-673q-mjm6-r5xr), a high denial of service, and five moderate ones, all fixed in 16.4.5.
+  - From 2026-11-16, pip-audit also flagged `dnspython` 2.9.0 (CVE-2026-128089; it comes in through `email-validator`) and `opentelemetry-api` 1.45.1 (CVE-2026-126360; it comes in through `fastapi`). That failure stopped the run before the frontend was checked.
+- Changed: `next` and `eslint-config-next` 16.4.0 to 16.4.5. In `uv.lock`, only `dnspython` (2.9.2) and `opentelemetry-api` (1.45.2) moved.
+- Checked:
+  - `make audit`: "No known vulnerabilities found" for both sides, exit 0. Before the change: exit 2.
+  - Backend: ruff and format clean, mypy clean (161 files), pytest 508 passed and 2 skipped, the same as before.
+  - Frontend: lint, format, and types clean; 40 files and 179 tests passed, the same as before. The production build is Next.js 16.4.5 with 41 pages and no vulnerability warning.
+  - A production build run locally (`next build` and `next start` against a local API on a fresh database), through `/api` as a browser does: register 201, log out 204, `me` 401, log in 200, `me` 200, items 200, the Wardrobe page 200, log out 204, items 401.
 
 ### 2026-10-21, M12 planned: the agents
 
