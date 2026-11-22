@@ -9927,6 +9927,17 @@
               "error"
             ],
             "title": "Database"
+          },
+          "migration": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Migration"
           }
         },
         "type": "object",

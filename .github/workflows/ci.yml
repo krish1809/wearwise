@@ -81,7 +81,22 @@ jobs:
         run: pnpm typecheck
       - name: Tests
         run: pnpm test
-      - name: Build
+      - name: On Vercel, the build stops without BACKEND_URL
+        run: |
+          if VERCEL=1 pnpm build > "$RUNNER_TEMP/no-backend.log" 2>&1; then
+            echo "::error::A Vercel build without BACKEND_URL succeeded; the live site would point at localhost."
+            exit 1
+          fi
+          grep -q "BACKEND_URL is not set" "$RUNNER_TEMP/no-backend.log" || {
+            cat "$RUNNER_TEMP/no-backend.log"
+            echo "::error::The build failed, but not with the BACKEND_URL message."
+            exit 1
+          }
+      # The settings Vercel builds with: VERCEL set, and a backend address that isn't localhost.
+      - name: Build as Vercel does
+        env:
+          VERCEL: "1"
+          BACKEND_URL: https://backend.invalid
         run: pnpm build
 
   api-types:

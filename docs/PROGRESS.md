@@ -5,8 +5,9 @@ The running state of the project, updated at the end of every slice. Keep it sho
 ## Now
 
 - **Production fixes (2026-11-22), on `fix-production`, cut from `main`:**
-  - Slice 1 is built: Next.js 16.4.5, which fixes two critical advisories against 16.4.0, and patched `dnspython` and `opentelemetry-api`. The weekly dependency audit failed on these.
-  - Next come slice 2 (guardrails: the migration revision in health, a smoke test after each deploy) and slice 3 (pages wait while the free server wakes, instead of failing on Render's 429).
+  - Slice 1 is merged (PR #12): Next.js 16.4.5, which fixes two critical advisories against 16.4.0, and patched `dnspython` and `opentelemetry-api`. The weekly dependency audit failed on these.
+  - Slice 2 is built: health reports the database's migration revision, a smoke test runs after each production deploy, and CI builds the frontend the way Vercel does.
+  - Next is slice 3: pages wait while the free server wakes, instead of failing on Render's 429.
   - The M12 notes below are on `m12-agents`.
 - **Last updated:** 2026-10-21
 - **Current milestone:** M11 Hardening and launch, built on `m11-hardening` and waiting for your merge. Next: M12 Agents, planned (design in `docs/AGENTS.md`, decisions D55 to D59; the doc changes are on `m12-agents-plan`). v1.0 still waits on the golden set and wear test (M5).
@@ -255,6 +256,21 @@ M0 code, merged in pull request #1 and deployed:
 ## Log
 
 Add an entry per slice, newest first.
+
+### 2026-11-22, production fix, slice 2: checks that catch a broken deploy
+
+- Why: nothing ran after a deploy, so a broken production showed up only at the next daily run, or when someone tried the site.
+- Changed:
+  - `GET /api/v1/health` also returns `migration`, the Alembic revision the database is at (an optional field, so existing callers are unaffected). API types regenerated.
+  - New workflow `smoke-production.yml`. Vercel and Render both report their deploys to GitHub; when either reports a successful production deploy, it wakes the backend directly, checks `/api/v1/health` through the site (status, database), checks that `/`, `/login`, `/register`, and `/privacy` load, and, after Render's deploy or a run by hand, that the backend is at this commit's migration head and version. It can be run by hand from the Actions tab.
+  - CI's frontend job builds with Vercel's settings (`VERCEL=1` and a non-local `BACKEND_URL`) and checks that a Vercel build without `BACKEND_URL` stops with the "BACKEND_URL is not set" message.
+  - A test that startup names every bad setting in one message (a missing `DATABASE_URL` and an invalid `APP_ENV` together).
+- Checked:
+  - Backend: ruff and format clean, mypy clean (161 files), pytest 509 passed and 2 skipped (one more test than slice 1).
+  - Frontend: lint, format, and types clean; 40 files and 179 tests passed.
+  - `VERCEL=1 pnpm build` without `BACKEND_URL` exits 1 with the message; with `BACKEND_URL=https://backend.invalid` it builds 41 pages.
+  - The smoke test's checks, run by hand against production today: every page 200, health 200 through the site and directly. Today's production has no `migration` field yet, so the commit check would fail until this slice is deployed, as intended.
+  - The workflow itself can only run on GitHub; it is checked after the merge.
 
 ### 2026-11-22, production fix, slice 1: patch the vulnerable packages
 
