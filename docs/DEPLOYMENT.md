@@ -138,6 +138,7 @@ Neon keeps a short history for restores on the free plan; check the current wind
 - **Errors.** Anything the API didn't expect is logged with its stack trace, stored in `error_events` (route, error type, message, the end of the stack trace; no account), and answered with a plain 500. The browser reports its own errors (from the error pages and any unhandled error) to `POST /api/v1/client-errors`, at most five per page load and thirty an hour per address. Events go after 30 days.
 - **The owner's page.** `/admin` shows people, demo accounts, items, photos, outfits, wear logs, suggestion acceptance by engine version, the stylist's use and spend today, and the latest errors. Set `ADMIN_EMAILS` on Render to your account's email; everyone else gets "not found". It isn't linked anywhere.
 - **Uptime.** No pinger: frequent checks would keep the free server and database awake and use up their hours. The end-to-end run against production (M11) doubles as a daily check, and GitHub emails you when it fails.
+- **After each deploy.** Vercel and Render report their deploys to GitHub, and a successful production deploy starts the "Smoke test after deploy" workflow. It wakes the backend directly, checks health through the site and that the main pages load, and, after Render's deploy, that the backend reports this commit's migration revision (`migration` in `/api/v1/health`) and version. A failure emails you. It can also be run by hand from the Actions tab.
 
 ## Scheduled jobs (M12)
 
