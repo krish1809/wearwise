@@ -6,8 +6,9 @@ The running state of the project, updated at the end of every slice. Keep it sho
 
 - **Production fixes (2026-11-22), on `fix-production`, cut from `main`:**
   - Slice 1 is merged (PR #12): Next.js 16.4.5, which fixes two critical advisories against 16.4.0, and patched `dnspython` and `opentelemetry-api`. The weekly dependency audit failed on these.
-  - Slice 2 is built: health reports the database's migration revision, a smoke test runs after each production deploy, and CI builds the frontend the way Vercel does.
-  - Next is slice 3: pages wait while the free server wakes, instead of failing on Render's 429.
+  - Slice 2 is merged (PR #13): health reports the database's migration revision, a smoke test runs after each production deploy, and CI builds the frontend the way Vercel does.
+  - Slice 3 is built: pages wait while the free server wakes, instead of failing on Render's 429. It needs `NEXT_PUBLIC_BACKEND_WAKE_URL` on Vercel.
+  - Then the owner checks the live site after 20 quiet minutes.
   - The M12 notes below are on `m12-agents`.
 - **Last updated:** 2026-10-21
 - **Current milestone:** M11 Hardening and launch, built on `m11-hardening` and waiting for your merge. Next: M12 Agents, planned (design in `docs/AGENTS.md`, decisions D55 to D59; the doc changes are on `m12-agents-plan`). v1.0 still waits on the golden set and wear test (M5).
@@ -256,6 +257,21 @@ M0 code, merged in pull request #1 and deployed:
 ## Log
 
 Add an entry per slice, newest first.
+
+### 2026-11-22, production fix, slice 3: survive a sleeping backend
+
+- Why: after 15 quiet minutes the free backend sleeps, and while it starts Render answers requests through Vercel with HTTP 429 (`x-render-routing: hibernate-rate-limited`). The app gave up after a few seconds, so a first visitor saw nothing load. The daily end-to-end run's wake step also went through Vercel, which very likely explains its failure on 8 November.
+- Changed (D61):
+  - The API client's fetch (`lib/api/waking.ts`): a 429 that isn't our own JSON error waits for the server (one shared wait: health every 5 to 10 seconds, up to two minutes), then the request is sent once more. Our own rate limits are unchanged.
+  - A banner, "Waking up the server, about a minute…", at the bottom, where toasts go.
+  - The browser wakes the backend directly once (`no-cors`, nothing read) from the landing, login, and register pages and when a wait starts. New public variable `NEXT_PUBLIC_BACKEND_WAKE_URL`; the CSP's `connect-src` lists its origin only when set. The CSP moved into `lib/csp.ts` so it can be tested.
+  - `render.yaml`: migrations still run before the server; the reference data and housekeeping run in the background once it is starting.
+  - The daily end-to-end run wakes Render directly, then checks through the site.
+- Checked:
+  - Frontend: lint, format, and types clean; 43 files and 193 tests passed (14 new: the waking fetch, the banner, the CSP).
+  - Backend: ruff and format clean, mypy clean (161 files), pytest 509 passed and 2 skipped.
+  - In Chrome against a local production build, with a stand-in for Render's edge that answered 429 `hibernate-rate-limited` for 15 seconds: after "Try the demo", the banner showed within 2.3 s, the demo request was sent again once health answered 200, and the page reached `/home` after about 24 s, at 1440 px and at 375 px. The browser woke the stand-in directly twice (the landing page and the wait).
+  - The new start command, run locally: the port answered in 3.2 s, and the reference data and housekeeping finished in the background.
 
 ### 2026-11-22, production fix, slice 2: checks that catch a broken deploy
 

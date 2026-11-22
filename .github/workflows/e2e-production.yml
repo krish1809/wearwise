@@ -16,6 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       E2E_BASE_URL: https://wearwise-rouge.vercel.app
+      API_URL: https://wearwise-api-kzj4.onrender.com
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
@@ -28,12 +29,27 @@ jobs:
           cache-dependency-path: frontend/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
         working-directory: frontend
-      - name: Wake the server (the free plan sleeps when quiet)
+      # The free plan sleeps when quiet. While it wakes, requests through the site get 429 for a
+      # while, so it is woken directly first, then checked through the site.
+      - name: Wake the server directly
         run: |
-          for i in $(seq 1 30); do
-            curl -fs --max-time 20 "$E2E_BASE_URL/api/v1/health" && exit 0
-            sleep 5
+          for i in $(seq 1 12); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 70 "$API_URL/api/v1/health" || true)
+            echo "attempt $i: $code"
+            [ "$code" = "200" ] && exit 0
+            sleep 10
           done
+          echo "::error::The backend at $API_URL did not answer 200."
+          exit 1
+      - name: The site reaches it
+        run: |
+          for i in $(seq 1 18); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "$E2E_BASE_URL/api/v1/health" || true)
+            echo "attempt $i: $code"
+            [ "$code" = "200" ] && exit 0
+            sleep 10
+          done
+          echo "::error::$E2E_BASE_URL/api/v1/health never answered 200."
           exit 1
       - run: pnpm exec playwright install --with-deps chromium
         working-directory: frontend
