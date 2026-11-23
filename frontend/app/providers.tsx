@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
+import { WakingBanner } from "@/components/waking-banner";
 import { reportError } from "@/lib/report-error";
 
 // TanStack Query caches what the API returns (who is logged in, and later the wardrobe),
@@ -27,5 +28,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
       window.removeEventListener("unhandledrejection", onRejection);
     };
   }, []);
-  return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
+  return (
+    <QueryClientProvider client={client}>
+      <WakingBanner />
+      {children}
+    </QueryClientProvider>
+  );
 }

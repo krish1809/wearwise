@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+import { contentSecurityPolicy } from "./lib/csp";
+
 // The browser only talks to this app. Requests to /api/* are forwarded to the backend, so the
 // session cookie (M1) stays first-party and no CORS setup is needed.
 // Locally and in CI the backend is on localhost. On Vercel (which sets VERCEL during builds) a
@@ -16,25 +18,14 @@ if (!backendUrl) {
 
 const dev = process.env.NODE_ENV === "development";
 
-// Next.js puts its page data in inline scripts, so scripts may be inline; but they may only
-// come from this site, nothing can frame it, and forms post only here (D49). Development adds
-// what hot reloading needs. Shop pictures come from the shops' own addresses, so any https
-// image is allowed.
-const contentSecurityPolicy = [
-  "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${dev ? " 'unsafe-eval'" : ""}`,
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https:",
-  "font-src 'self'",
-  `connect-src 'self'${dev ? " ws:" : ""}`,
-  "object-src 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  "frame-ancestors 'none'",
-].join("; ");
+// The browser may call the backend directly only to wake it (lib/api/waking.ts).
+const contentSecurityPolicyValue = contentSecurityPolicy({
+  dev,
+  wakeUrl: process.env.NEXT_PUBLIC_BACKEND_WAKE_URL || undefined,
+});
 
 const securityHeaders = [
-  { key: "Content-Security-Policy", value: contentSecurityPolicy },
+  { key: "Content-Security-Policy", value: contentSecurityPolicyValue },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
