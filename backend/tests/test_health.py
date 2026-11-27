@@ -1,5 +1,8 @@
 from collections.abc import Iterator
+from pathlib import Path
 
+from alembic.config import Config
+from alembic.script import ScriptDirectory
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -10,10 +13,20 @@ from app.core.db import get_session
 
 
 def test_health_reports_api_and_database_ok(client: TestClient) -> None:
+    # The test database is migrated to the newest revision in the code, so that's what it reports.
+    alembic_ini = Path(__file__).resolve().parents[1] / "alembic.ini"
+    head = ScriptDirectory.from_config(Config(alembic_ini)).get_current_head()
+
     response = client.get("/api/v1/health")
 
     assert response.status_code == 200
-    assert response.json() == {"status": "ok", "version": __version__, "database": "ok"}
+    assert head
+    assert response.json() == {
+        "status": "ok",
+        "version": __version__,
+        "database": "ok",
+        "migration": head,
+    }
 
 
 def test_health_reports_an_unreachable_database(app: FastAPI, client: TestClient) -> None:
@@ -29,4 +42,9 @@ def test_health_reports_an_unreachable_database(app: FastAPI, client: TestClient
     response = client.get("/api/v1/health")
 
     assert response.status_code == 503
-    assert response.json() == {"status": "degraded", "version": __version__, "database": "error"}
+    assert response.json() == {
+        "status": "degraded",
+        "version": __version__,
+        "database": "error",
+        "migration": None,
+    }

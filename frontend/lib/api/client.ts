@@ -1,6 +1,7 @@
 import createClient, { type Middleware } from "openapi-fetch";
 
 import type { paths } from "@/lib/api/schema";
+import { createWakingFetch } from "@/lib/api/waking";
 import { newRequestId } from "@/lib/report-error";
 
 /**
@@ -13,6 +14,8 @@ export const api = createClient<paths>({
   // The API refuses state-changing requests without this header; other sites can't add it,
   // which blocks forged requests (CSRF).
   headers: { "X-Requested-With": "fetch" },
+  // A request that finds the free server asleep waits for it to wake, then is sent again.
+  fetch: createWakingFetch(),
 });
 
 // Each request carries an id the server logs; an error the server returns quotes it.

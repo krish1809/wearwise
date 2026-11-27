@@ -2896,6 +2896,8 @@ export interface components {
              * @enum {string}
              */
             database: "ok" | "error";
+            /** Migration */
+            migration?: string | null;
         };
         /** InsightsOut */
         InsightsOut: {

@@ -1,0 +1,93 @@
+name: Smoke test after deploy
+
+# Vercel and Render each report their deploys to GitHub. When either says a production deploy
+# succeeded, this checks the live site end to end, so a broken deploy shows up within minutes
+# rather than at the next daily run. It can also be run by hand from the Actions tab.
+on:
+  deployment_status:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  SITE_URL: https://wearwise-rouge.vercel.app
+  API_URL: https://wearwise-api-kzj4.onrender.com
+
+jobs:
+  smoke:
+    # Vercel calls its production environment "Production"; Render names its "<branch> - <service>".
+    # Previews and failed or in-progress deploys are skipped.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.deployment_status.state == 'success' &&
+       (github.event.deployment.environment == 'Production' ||
+        github.event.deployment.environment == 'main - wearwise-api'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.12.23"
+          enable-cache: true
+      - name: What the code expects
+        working-directory: backend
+        run: |
+          uv sync --locked
+          head=$(uv run alembic heads | awk '{print $1}')
+          version=$(uv run python -c 'from importlib.metadata import version; print(version("wearwise-backend"))')
+          echo "Expecting migration $head and version $version"
+          echo "EXPECTED_MIGRATION=$head" >> "$GITHUB_ENV"
+          echo "EXPECTED_VERSION=$version" >> "$GITHUB_ENV"
+
+      # A sleeping free instance answers requests that arrive through Vercel with 429 until it is
+      # awake, so it is woken directly first. Waking takes about a minute.
+      - name: Wake the backend directly
+        run: |
+          for i in $(seq 1 12); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 70 "$API_URL/api/v1/health" || true)
+            echo "attempt $i: $code"
+            [ "$code" = "200" ] && exit 0
+            sleep 10
+          done
+          echo "::error::The backend at $API_URL did not answer 200 within about 15 minutes."
+          exit 1
+
+      - name: The API answers through the site
+        run: |
+          for i in $(seq 1 18); do
+            body=$(curl -s --max-time 30 -w '\n%{http_code}' "$SITE_URL/api/v1/health" || true)
+            code=$(echo "$body" | tail -n1)
+            echo "attempt $i: $code"
+            if [ "$code" = "200" ]; then
+              echo "$body" | head -n -1 > health.json
+              break
+            fi
+            sleep 10
+          done
+          [ -f health.json ] || { echo "::error::$SITE_URL/api/v1/health never answered 200."; exit 1; }
+          cat health.json; echo
+          jq -e '.status == "ok" and .database == "ok"' health.json > /dev/null \
+            || { echo "::error::The API is up but reports a problem."; exit 1; }
+
+      # Vercel usually finishes before Render, so only Render's report (or a run by hand) can
+      # expect the new backend to be live.
+      - name: The backend runs this commit's migrations and version
+        if: github.event_name == 'workflow_dispatch' || github.event.deployment.environment != 'Production'
+        run: |
+          migration=$(jq -r '.migration' health.json)
+          version=$(jq -r '.version' health.json)
+          [ "$migration" = "$EXPECTED_MIGRATION" ] \
+            || { echo "::error::The database is at $migration; the code expects $EXPECTED_MIGRATION."; exit 1; }
+          [ "$version" = "$EXPECTED_VERSION" ] \
+            || { echo "::error::The backend reports version $version; the code is $EXPECTED_VERSION."; exit 1; }
+          echo "Migration $migration and version $version match."
+
+      - name: Pages load
+        run: |
+          for path in / /login /register /privacy; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "$SITE_URL$path")
+            echo "$path: $code"
+            [ "$code" = "200" ] || { echo "::error::$SITE_URL$path answered $code."; exit 1; }
+          done

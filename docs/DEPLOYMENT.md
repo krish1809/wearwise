@@ -45,8 +45,9 @@ Paste both exactly as Neon gives them (`postgresql://...`); the backend adds the
 1. Sign in with GitHub. **Add New > Project**, then import `wearwise`.
 2. Set **Root Directory** to `frontend`. Vercel detects Next.js and pnpm.
 3. Under **Environment Variables**, add `BACKEND_URL` with the Render URL from step 2 (no trailing slash), for Production and Preview.
-4. Deploy. If `BACKEND_URL` is missing, the build stops with a message naming it.
-5. Open the Vercel URL. Within a minute, while the backend wakes up, it should say **API ok, database ok**.
+4. Also add `NEXT_PUBLIC_BACKEND_WAKE_URL` with the same Render URL, for Production and Preview. The browser calls it once, only to wake a sleeping backend (D61).
+5. Deploy. If `BACKEND_URL` is missing, the build stops with a message naming it.
+6. Open the Vercel URL. Within a minute, while the backend wakes up, it should say **API ok, database ok**.
 
 **4. Backblaze B2 (photos, before merging M3)**
 
@@ -100,7 +101,7 @@ browser -> https://<app>.vercel.app/api/v1/...
         -> https://<api>.onrender.com/api/v1/...
 ```
 
-The browser never calls the Render URL directly, so the session cookie is first-party and no CORS setup is needed. `BACKEND_URL` is a server-side variable on Vercel.
+Every API call goes through Vercel, so the session cookie is first-party and no CORS setup is needed. `BACKEND_URL` is a server-side variable on Vercel. The one exception is a wake-up call: the browser calls `NEXT_PUBLIC_BACKEND_WAKE_URL/api/v1/health` with `no-cors`, sends no cookies, and never reads the answer (D61).
 
 ## Migrations
 
@@ -124,7 +125,8 @@ For each milestone, before merging to `main`:
 
 A sleeping backend plus a paused database makes the first request after a break take up to a minute.
 
-- The frontend shows "Waking the server, this takes up to a minute" when the health check is slow, instead of an error.
+- While the backend starts, Render answers requests that come through Vercel with HTTP 429. The browser treats that as "waking": it calls the backend directly once to wake it, shows "Waking up the server, about a minute…", checks health every 5 to 10 seconds for up to two minutes, then sends the waiting requests again (D61).
+- Migrations run before the server starts; the reference data and housekeeping run in the background once it is starting, so the port opens sooner.
 - Don't rely on a third-party pinger to keep it awake around the clock; 750 hours covers one always-on service for a month with nothing to spare.
 - If the delay hurts a demo, open the site a minute beforehand, or move the backend to a small paid instance for that month.
 
@@ -139,6 +141,7 @@ Neon keeps a short history for restores on the free plan; check the current wind
 - **Errors.** Anything the API didn't expect is logged with its stack trace, stored in `error_events` (route, error type, message, the end of the stack trace; no account), and answered with a plain 500. The browser reports its own errors (from the error pages and any unhandled error) to `POST /api/v1/client-errors`, at most five per page load and thirty an hour per address. Events go after 30 days.
 - **The owner's page.** `/admin` shows people, demo accounts, items, photos, outfits, wear logs, suggestion acceptance by engine version, the stylist's use and spend today, and the latest errors. Set `ADMIN_EMAILS` on Render to your account's email; everyone else gets "not found". It isn't linked anywhere.
 - **Uptime.** No pinger: frequent checks would keep the free server and database awake and use up their hours. The end-to-end run against production (M11) doubles as a daily check, and GitHub emails you when it fails.
+- **After each deploy.** Vercel and Render report their deploys to GitHub, and a successful production deploy starts the "Smoke test after deploy" workflow. It wakes the backend directly, checks health through the site and that the main pages load, and, after Render's deploy, that the backend reports this commit's migration revision (`migration` in `/api/v1/health`) and version. A failure emails you. It can also be run by hand from the Actions tab.
 
 ## Scheduled jobs (M12)
 

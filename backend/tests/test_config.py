@@ -12,6 +12,19 @@ def test_a_missing_database_url_stops_startup_and_names_the_variable(
         load_settings(env_file=None)
 
 
+def test_every_problem_is_named_in_the_one_message(monkeypatch: pytest.MonkeyPatch) -> None:
+    # A host's logs show only the first crash, so fixing settings one restart at a time is slow.
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    monkeypatch.setenv("APP_ENV", "staging")
+
+    with pytest.raises(ConfigError) as caught:
+        load_settings(env_file=None)
+
+    message = str(caught.value)
+    assert "APP_ENV (invalid)" in message
+    assert "DATABASE_URL (missing)" in message
+
+
 def test_plain_postgres_urls_get_the_psycopg_driver() -> None:
     # Neon's dashboard hands out postgresql:// URLs; they should work when pasted as they are.
     settings = Settings(

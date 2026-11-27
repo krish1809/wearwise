@@ -15,12 +15,14 @@ services:
         - backend/**
         - seed/**
     buildCommand: uv sync --locked --no-dev
-    # Free instances can't run a pre-deploy command, so migrations and the reference data load
-    # just before the server starts. The agents' checkpoint tables follow the migrations: their
-    # library makes them itself (D59). Housekeeping (expired demos and the like) runs then too:
-    # the free server sleeps when idle, so it starts often. It never stops the start.
+    # Free instances can't run a pre-deploy command, so migrations run just before the server
+    # starts, and a failed migration stops the start. The agents' checkpoint tables follow the
+    # migrations (their library makes them itself, D59), also before the server, since the stylist
+    # needs them. The free server sleeps when idle and starts often, and a visitor waits for the
+    # port to open, so the reference data and housekeeping (expired demos and the like) run in
+    # the background once the server is starting. Both are safe to repeat and never stop the start.
     # --proxy-headers: take the visitor's IP from X-Forwarded-For, for rate limits.
-    startCommand: uv run --no-sync alembic upgrade head && uv run --no-sync python -m scripts.agent_setup && uv run --no-sync python -m scripts.seed_reference && uv run --no-sync python -m scripts.housekeeping && uv run --no-sync uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips='*'
+    startCommand: uv run --no-sync alembic upgrade head && uv run --no-sync python -m scripts.agent_setup && { (uv run --no-sync python -m scripts.seed_reference; uv run --no-sync python -m scripts.housekeeping) & } && exec uv run --no-sync uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips='*'
     # Deploy a commit on main only after its CI checks pass.
     autoDeployTrigger: checksPass
     # No healthCheckPath on purpose: the health route queries the database, and frequent checks

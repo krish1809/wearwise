@@ -564,3 +564,19 @@ Next.js runs with `cacheComponents` and `partialPrefetching` on, as create-next-
 - **A Gemini-specific integration** (Google's SDK, or `langchain-google-genai`): it would tie WearWise to one free tier.
 
 **Revisit if:** Gemini's free tier shrinks or its answers fail the evaluation (switch `AI_BASE_URL` and the models, for example to Groq for chat); WearWise gets real users who aren't the owner's friends (a paid tier keeps their data out of training); or a provider stops accepting the format.
+
+## D61. A sleeping free backend: wait and retry in the browser, wake it directly, open the port sooner
+
+**Why:**
+- **What a first visitor met.** After 15 quiet minutes Render's free instance sleeps. Requests that arrive through Vercel while it starts get HTTP 429 from Render's edge (`x-render-routing: hibernate-rate-limited`), for up to a minute or more. The app's requests failed after a few seconds, so the first visitor saw errors. A request straight to Render waited about a minute and then got 200.
+- **Wait, then send again.** The API client's fetch (`lib/api/waking.ts`) treats a 429 that isn't our own JSON error as "the server is waking". Every such request shares one wait: health is checked through the site every 5 to 10 seconds for up to two minutes, then each request is sent once more. Those requests never reached the API, so sending them again (even a POST) is safe. A banner says "Waking up the server, about a minute…". Our own rate limits answer with JSON and are left alone.
+- **Wake it directly from the browser.** Pages that will need the API, and the wait itself, also call Render's own address once with `mode: "no-cors"`. Render wakes a sleeping server for a direct visitor, and the answer is never read, so no cookies or data cross over. The address is the public `NEXT_PUBLIC_BACKEND_WAKE_URL`, and the CSP's `connect-src` lists its origin only when it is set. Everything else still goes through Vercel, so the session cookie stays first-party.
+- **Open the port sooner.** Migrations still run before the server starts, so the schema always matches the code. The reference data and housekeeping now run in the background once the server is starting. Both are safe to repeat and never stop the start.
+- **Checks wake it directly too.** The smoke test and the daily end-to-end run call Render first, then check through the site.
+
+**Rejected:**
+- A pinger to keep the server awake: it would use up the free hours of the server and the database (see Cold starts in `DEPLOYMENT.md`).
+- Retrying in TanStack Query only: it retries each query on its own and gives up after a few seconds, and doesn't cover form posts.
+- A paid instance: against the free-only rule.
+
+**Revisit if:** the backend moves to a host or plan that doesn't sleep; then the direct wake-up and its CSP entry can go.

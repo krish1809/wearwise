@@ -4,6 +4,11 @@ The running state of the project, updated at the end of every slice. Keep it sho
 
 ## Now
 
+- **Production fixes (2026-11-22 to 23), merged into `main`:**
+  - Slice 1 (PR #12): Next.js 16.4.5, which fixes two critical advisories against 16.4.0, and patched `dnspython` and `opentelemetry-api`. The weekly dependency audit failed on these.
+  - Slice 2 (PR #13): health reports the database's migration revision, a smoke test runs after each production deploy, and CI builds the frontend the way Vercel does.
+  - Slice 3 (PR #14): pages wait while the free server wakes, instead of failing on Render's 429. `NEXT_PUBLIC_BACKEND_WAKE_URL` is set on Vercel.
+  - Left: the owner's check on the live site after 20 quiet minutes.
 - **Last updated:** 2026-10-23
 - **Current milestone:** M12 Agents, on `m12-agents` (design in `docs/AGENTS.md`, decisions D55 to D60). M11 and the M12 plan are merged (pull requests #10 and #11). v1.0 still waits on the golden set and wear test (M5).
 - **Current slice:** M12 slice 9, evaluation and measured usage. Slices 1 to 8 are built; slice 8 replaced the paid model with a free one (Gemini's free tier through the OpenAI-compatible request, D60), since nothing in WearWise may cost money. What's left needs real runs, and so your free keys (below): one Trend Scout run (slice 3), the stylist evaluation, and one weekly email, whose requests and tokens the run log records. The schedules wait on the reviewed Trend Scout run.
@@ -271,6 +276,49 @@ M0 code, merged in pull request #1 and deployed:
 ## Log
 
 Add an entry per slice, newest first.
+
+### 2026-11-22, production fix, slice 3: survive a sleeping backend
+
+- Why: after 15 quiet minutes the free backend sleeps, and while it starts Render answers requests through Vercel with HTTP 429 (`x-render-routing: hibernate-rate-limited`). The app gave up after a few seconds, so a first visitor saw nothing load. The daily end-to-end run's wake step also went through Vercel, which very likely explains its failure on 8 November.
+- Changed (D61):
+  - The API client's fetch (`lib/api/waking.ts`): a 429 that isn't our own JSON error waits for the server (one shared wait: health every 5 to 10 seconds, up to two minutes), then the request is sent once more. Our own rate limits are unchanged.
+  - A banner, "Waking up the server, about a minute…", at the bottom, where toasts go.
+  - The browser wakes the backend directly once (`no-cors`, nothing read) from the landing, login, and register pages and when a wait starts. New public variable `NEXT_PUBLIC_BACKEND_WAKE_URL`; the CSP's `connect-src` lists its origin only when set. The CSP moved into `lib/csp.ts` so it can be tested.
+  - `render.yaml`: migrations still run before the server; the reference data and housekeeping run in the background once it is starting.
+  - The daily end-to-end run wakes Render directly, then checks through the site.
+- Checked:
+  - Frontend: lint, format, and types clean; 43 files and 193 tests passed (14 new: the waking fetch, the banner, the CSP).
+  - Backend: ruff and format clean, mypy clean (161 files), pytest 509 passed and 2 skipped.
+  - In Chrome against a local production build, with a stand-in for Render's edge that answered 429 `hibernate-rate-limited` for 15 seconds: after "Try the demo", the banner showed within 2.3 s, the demo request was sent again once health answered 200, and the page reached `/home` after about 24 s, at 1440 px and at 375 px. The browser woke the stand-in directly twice (the landing page and the wait).
+  - The new start command, run locally: the port answered in 3.2 s, and the reference data and housekeeping finished in the background.
+
+### 2026-11-22, production fix, slice 2: checks that catch a broken deploy
+
+- Why: nothing ran after a deploy, so a broken production showed up only at the next daily run, or when someone tried the site.
+- Changed:
+  - `GET /api/v1/health` also returns `migration`, the Alembic revision the database is at (an optional field, so existing callers are unaffected). API types regenerated.
+  - New workflow `smoke-production.yml`. Vercel and Render both report their deploys to GitHub; when either reports a successful production deploy, it wakes the backend directly, checks `/api/v1/health` through the site (status, database), checks that `/`, `/login`, `/register`, and `/privacy` load, and, after Render's deploy or a run by hand, that the backend is at this commit's migration head and version. It can be run by hand from the Actions tab.
+  - CI's frontend job builds with Vercel's settings (`VERCEL=1` and a non-local `BACKEND_URL`) and checks that a Vercel build without `BACKEND_URL` stops with the "BACKEND_URL is not set" message.
+  - A test that startup names every bad setting in one message (a missing `DATABASE_URL` and an invalid `APP_ENV` together).
+- Checked:
+  - Backend: ruff and format clean, mypy clean (161 files), pytest 509 passed and 2 skipped (one more test than slice 1).
+  - Frontend: lint, format, and types clean; 40 files and 179 tests passed.
+  - `VERCEL=1 pnpm build` without `BACKEND_URL` exits 1 with the message; with `BACKEND_URL=https://backend.invalid` it builds 41 pages.
+  - The smoke test's checks, run by hand against production today: every page 200, health 200 through the site and directly. Today's production has no `migration` field yet, so the commit check would fail until this slice is deployed, as intended.
+  - The workflow itself can only run on GitHub; it is checked after the merge.
+
+### 2026-11-22, production fix, slice 1: patch the vulnerable packages
+
+- Why:
+  - The weekly "Dependency audit" workflow had failed every Monday since 2026-10-26.
+  - `pnpm audit --prod` flagged `next` 16.4.0, which the live site runs: two critical remote code execution advisories (GHSA-2464-fhr4-w9xw, GHSA-673q-mjm6-r5xr), a high denial of service, and five moderate ones, all fixed in 16.4.5.
+  - From 2026-11-16, pip-audit also flagged `dnspython` 2.9.0 (CVE-2026-128089; it comes in through `email-validator`) and `opentelemetry-api` 1.45.1 (CVE-2026-126360; it comes in through `fastapi`). That failure stopped the run before the frontend was checked.
+- Changed: `next` and `eslint-config-next` 16.4.0 to 16.4.5. In `uv.lock`, only `dnspython` (2.9.2) and `opentelemetry-api` (1.45.2) moved.
+- Checked:
+  - `make audit`: "No known vulnerabilities found" for both sides, exit 0. Before the change: exit 2.
+  - Backend: ruff and format clean, mypy clean (161 files), pytest 508 passed and 2 skipped, the same as before.
+  - Frontend: lint, format, and types clean; 40 files and 179 tests passed, the same as before. The production build is Next.js 16.4.5 with 41 pages and no vulnerability warning.
+  - A production build run locally (`next build` and `next start` against a local API on a fresh database), through `/api` as a browser does: register 201, log out 204, `me` 401, log in 200, `me` 200, items 200, the Wardrobe page 200, log out 204, items 401.
 
 ### 2026-10-23, M12 slice 8: a free model
 

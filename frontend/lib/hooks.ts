@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useSyncExternalStore } from "react";
 
+import { wakeBackendDirectly } from "@/lib/api/waking";
 import { checkHealth } from "@/lib/health";
 
 /** True once `active` has stayed true for a while: time to say the server is waking up. */
@@ -24,6 +25,7 @@ export function useSlow(active: boolean, afterMs = 3_000): boolean {
  */
 export function useWarmUpBackend(): void {
   useEffect(() => {
+    wakeBackendDirectly();
     void checkHealth();
   }, []);
 }
