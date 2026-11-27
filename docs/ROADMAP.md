@@ -338,7 +338,7 @@ Added on 2026-10-21 at the owner's request, after M11: agents that work on a sch
 - Digest picks in the engine: trends turned into candidate pieces, judged by the purchase analyzer, plus "already in your wardrobe" outfits.
 - An email adapter: confirmed opt-in, signed unsubscribe and "not for me" links, one-click unsubscribe, an allowlist until a domain is verified, and a daily cap.
 - The weekly digest run: gather, pick, where to buy, write, check, send, log. At most one per person per week, in batches.
-- The This week page, "Send me a preview", and digest settings.
+- The Weekly picks page, "Show this week's picks" (a preview without email), and digest settings.
 - The Stylist moved onto LangGraph, with confirmation as a pause in the run and two new tools: trends and the latest digest.
 
 **Done when**

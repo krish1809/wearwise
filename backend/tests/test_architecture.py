@@ -1,4 +1,6 @@
-"""The engine stays pure: it must not import the web, database, or adapter layers."""
+"""The layers stay apart. The engine is pure: it imports no web, database, adapter, or agent
+code. Agents reach data through services, never through the web layer. Services know nothing
+of the agents or the jobs that run them (docs/AGENTS.md, section 2)."""
 
 import ast
 from pathlib import Path
@@ -6,7 +8,13 @@ from pathlib import Path
 import pytest
 
 APP_DIR = Path(__file__).resolve().parents[1] / "app"
-FORBIDDEN = ("app.api", "app.models", "app.services", "app.adapters")
+FORBIDDEN = ("app.api", "app.models", "app.services", "app.adapters", "app.agents", "app.jobs")
+# Each layer, and the parts of the app it must never import.
+LAYERS = {
+    "engine": FORBIDDEN,
+    "agents": ("app.api", "app.jobs"),
+    "services": ("app.api", "app.agents", "app.jobs"),
+}
 
 
 def imported_modules(source: str, package: str) -> set[str]:
@@ -25,21 +33,23 @@ def imported_modules(source: str, package: str) -> set[str]:
     return found
 
 
-def is_forbidden(module: str) -> bool:
-    return any(module == name or module.startswith(name + ".") for name in FORBIDDEN)
+def is_forbidden(module: str, forbidden: tuple[str, ...] = FORBIDDEN) -> bool:
+    return any(module == name or module.startswith(name + ".") for name in forbidden)
 
 
-def test_engine_imports_nothing_from_the_app_layers() -> None:
+@pytest.mark.parametrize("layer", sorted(LAYERS))
+def test_each_layer_imports_only_what_it_may(layer: str) -> None:
+    files = sorted((APP_DIR / layer).rglob("*.py"))
     violations = []
-    for path in sorted((APP_DIR / "engine").rglob("*.py")):
+    for path in files:
         package = ".".join(path.parent.relative_to(APP_DIR.parent).parts)
         violations += [
             f"{path.relative_to(APP_DIR.parent)} imports {module}"
             for module in sorted(imported_modules(path.read_text(), package))
-            if is_forbidden(module)
+            if is_forbidden(module, LAYERS[layer])
         ]
 
-    assert violations == []
+    assert files and violations == []
 
 
 @pytest.mark.parametrize(

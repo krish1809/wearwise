@@ -1,5 +1,6 @@
 """Remove what has expired: visitors' demo accounts over a day old, photos never saved, old
-error reports and rate-limit counts, and ended sessions (app/services/housekeeping.py).
+error reports and rate-limit counts, ended sessions, and agent checkpoints left behind
+(app/services/housekeeping.py).
 
 Runs before the server starts on Render. It never stops the start: a failure is printed and
 the server starts anyway, and the next start tries again.

@@ -1,13 +1,14 @@
 """The language model behind the stylist chat and photo tagging (docs/AI.md).
 
-One interface, three settings: the real provider (anthropic.py), a fake with scripted
-replies for tests (fake.py), and none at all (AI_PROVIDER=off), when the features say
-they're unavailable and everything else works. Nothing about a vendor leaks out of this
+One interface, three settings: the real provider (compatible.py, any service that takes the
+OpenAI-compatible request, such as Gemini's free tier), a fake with scripted replies for tests
+(fake.py), and none at all (AI_PROVIDER=off), when the features say they're unavailable and
+everything else works. Nothing about a vendor leaks out of this
 package: the rest of the app sees plain messages, tool calls, and token counts.
 """
 
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import lru_cache
 from typing import Any, Literal, Protocol
 
@@ -35,6 +36,9 @@ class ToolCall:
     id: str
     name: str
     arguments: dict[str, Any]
+    # Anything else the provider attached to the call, sent back with it unchanged (Gemini's
+    # thought signature, for one, which it requires).
+    extra: dict[str, Any] = field(default_factory=dict, compare=False)
 
 
 @dataclass(frozen=True)
@@ -97,10 +101,11 @@ def get_ai() -> AIProvider | None:
         from app.adapters.ai.fake import FakeAI
 
         return FakeAI()
-    if settings.ai_provider == "anthropic":
-        from app.adapters.ai.anthropic import AnthropicProvider
+    if settings.ai_provider == "openai-compatible":
+        from app.adapters.ai.compatible import CompatibleProvider
 
-        return AnthropicProvider(
+        return CompatibleProvider(
+            base_url=settings.ai_base_url or "",
             key=settings.ai_api_key or "",
             chat_model=settings.ai_model_chat or "",
             vision_model=settings.ai_model_vision or "",

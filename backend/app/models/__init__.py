@@ -1,8 +1,11 @@
 """SQLAlchemy tables. Import every model here so Alembic's autogenerate can see it."""
 
+from app.models.agents import AgentRun
 from app.models.app_meta import AppMeta
 from app.models.base import Base
 from app.models.chat import AIUsage, ChatAction, ChatMessage, ChatThread
+from app.models.digests import Digest, DigestPick
+from app.models.email import EmailEvent, EmailToken
 from app.models.insights import SavedMeasures
 from app.models.item import Item, ItemImage
 from app.models.ops import ErrorEvent
@@ -23,11 +26,13 @@ from app.models.reference import (
 )
 from app.models.shopping import Candidate, CatalogProduct, LinkPreview
 from app.models.suggestion import Suggestion, SuggestionFeedback
+from app.models.trends import Trend, TrendSource
 from app.models.user import User
 from app.models.user_session import UserSession
 
 __all__ = [
     "AIUsage",
+    "AgentRun",
     "AppMeta",
     "Archetype",
     "Base",
@@ -40,6 +45,10 @@ __all__ = [
     "ChatMessage",
     "ChatThread",
     "ColorFamily",
+    "Digest",
+    "DigestPick",
+    "EmailEvent",
+    "EmailToken",
     "ErrorEvent",
     "Event",
     "GuideEntry",
@@ -57,6 +66,8 @@ __all__ = [
     "StyleProfile",
     "Suggestion",
     "SuggestionFeedback",
+    "Trend",
+    "TrendSource",
     "Trip",
     "TripItem",
     "User",

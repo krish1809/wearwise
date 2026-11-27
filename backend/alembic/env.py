@@ -7,6 +7,7 @@ from sqlalchemy import create_engine, pool
 
 from app.core.config import get_settings
 from app.models import Base
+from app.services.checkpoints import include_name
 
 config = context.config
 
@@ -32,6 +33,7 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        include_name=include_name,
     )
     with context.begin_transaction():
         context.run_migrations()
@@ -40,7 +42,10 @@ def run_migrations_offline() -> None:
 def run_migrations_online() -> None:
     engine = create_engine(database_url(), poolclass=pool.NullPool)
     with engine.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata)
+        # The agents' checkpoint tables belong to their library, not to the migrations (D59).
+        context.configure(
+            connection=connection, target_metadata=target_metadata, include_name=include_name
+        )
         with context.begin_transaction():
             context.run_migrations()
     engine.dispose()

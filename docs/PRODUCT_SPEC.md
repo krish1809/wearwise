@@ -51,7 +51,7 @@ Tiers: **Core** ships in v1.0 (milestones M0 to M5). **Next** ships in v1.x (M6 
 
 | Feature | Tier |
 |---|---|
-| Register, log in, log out, password reset by email | Core (reset: Next) |
+| Register, log in, log out, password reset by email | Core (reset: Next, M12) |
 | Skippable onboarding in short steps, each with Skip and Back | Core |
 | Step 1: which sections you shop (menswear / womenswear / both), city for weather | Core |
 | Step 2: usual sizes (top, bottom, shoe) and fit preference (slim, regular, relaxed, oversized) | Core |
@@ -222,8 +222,8 @@ Design in `docs/AGENTS.md`. Agents choose what to look at and how to word things
 | A run report emailed to the owner: what was searched, what was found, what was dropped and why, and what it cost | Next |
 | Weekly digest *(new)*: up to three picks worth buying this week, from approved trends, the season, and what you own, each with its reason and shop searches; or "already in your wardrobe" with an outfit to wear it in | Next |
 | Digest settings: off until you turn it on and confirm your address; choose the day; unsubscribe in one click from any email | Next |
-| This week page: the latest digest in the app, with your own photos | Next |
-| Send me a preview: build this week's digest and see it without an email | Next |
+| Weekly picks page: the latest digest in the app, with your own pieces and their photos | Next |
+| Show this week's picks: work out this week's digest and see it without an email | Next |
 | "Not for me" on a pick, from the email or the page, which lowers similar picks later | Next |
 | Stylist questions about trends and the latest digest | Next |
 | Live products in the digest from an approved product API | Stretch (needs access) |
@@ -243,7 +243,7 @@ Design in `docs/AGENTS.md`. Agents choose what to look at and how to word things
 | Shopping | Wishlist, candidates, analysis, gaps, capsule, discovery |
 | Insights | Wear data, versatility, coverage, style profile |
 | Stylist | AI chat |
-| This week | The latest weekly digest: picks, reasons, shop searches, "not for me" (M12) |
+| Weekly picks | The latest weekly digest: picks, reasons, shop searches, "not for me" (M12) |
 | Remix | Every good outfit from up to ten chosen pieces (M10b) |
 | Style Guide | Fabrics, style profiles, colour basics, brand notebook |
 | Settings | Profile, sizes, preferences, the weekly digest, your data |

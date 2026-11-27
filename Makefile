@@ -1,7 +1,7 @@
 # Everyday commands. Run `make` to list them.
 .DEFAULT_GOAL := help
 
-.PHONY: help setup dev db-up db-down migrate seed demo catalog eval-stylist golden migration test lint format typecheck api-types build check audit housekeeping e2e
+.PHONY: help setup dev db-up db-down migrate seed demo catalog eval-stylist golden migration test lint format typecheck api-types build check audit housekeeping e2e trend-scout weekly-digest
 
 help: ## List the commands
 	@grep -E '^[a-z0-9-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "} {printf "  make %-10s %s\n", $$1, $$2}'
@@ -25,6 +25,7 @@ db-down: ## Stop the local Postgres container (the data is kept)
 
 migrate: db-up ## Apply database migrations, then load the reference data in seed/
 	cd backend && uv run alembic upgrade head
+	cd backend && uv run python -m scripts.agent_setup
 	cd backend && uv run python -m scripts.seed_reference
 
 seed: db-up ## Load the reference data in seed/ (safe to run again)
@@ -82,3 +83,9 @@ housekeeping: db-up ## Remove what has expired: old demo accounts, unsaved photo
 audit: ## Check the packages the live app runs on for known vulnerabilities
 	cd backend && uv export --format requirements-txt --no-dev --locked --no-emit-project | uvx pip-audit --disable-pip --no-deps -r /dev/stdin
 	cd frontend && pnpm audit --prod
+
+trend-scout: db-up ## Run the Trend Scout once on the local database (needs SEARCH_PROVIDER and AI_PROVIDER)
+	cd backend && uv run python -m app.jobs.trend_scout
+
+weekly-digest: db-up ## Send the weekly emails that are due today, on the local database (printed unless EMAIL_PROVIDER is set)
+	cd backend && uv run python -m app.jobs.weekly_digest

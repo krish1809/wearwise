@@ -4,21 +4,26 @@ The running state of the project, updated at the end of every slice. Keep it sho
 
 ## Now
 
-- **Production fixes (2026-11-22), on `fix-production`, cut from `main`:**
-  - Slice 1 is merged (PR #12): Next.js 16.4.5, which fixes two critical advisories against 16.4.0, and patched `dnspython` and `opentelemetry-api`. The weekly dependency audit failed on these.
-  - Slice 2 is merged (PR #13): health reports the database's migration revision, a smoke test runs after each production deploy, and CI builds the frontend the way Vercel does.
-  - Slice 3 is built: pages wait while the free server wakes, instead of failing on Render's 429. It needs `NEXT_PUBLIC_BACKEND_WAKE_URL` on Vercel.
-  - Then the owner checks the live site after 20 quiet minutes.
-  - The M12 notes below are on `m12-agents`.
-- **Last updated:** 2026-10-21
-- **Current milestone:** M11 Hardening and launch, built on `m11-hardening` and waiting for your merge. Next: M12 Agents, planned (design in `docs/AGENTS.md`, decisions D55 to D59; the doc changes are on `m12-agents-plan`). v1.0 still waits on the golden set and wear test (M5).
-- **Current slice:** none open; all eight M11 slices are built.
+- **Production fixes (2026-11-22 to 23), merged into `main`:**
+  - Slice 1 (PR #12): Next.js 16.4.5, which fixes two critical advisories against 16.4.0, and patched `dnspython` and `opentelemetry-api`. The weekly dependency audit failed on these.
+  - Slice 2 (PR #13): health reports the database's migration revision, a smoke test runs after each production deploy, and CI builds the frontend the way Vercel does.
+  - Slice 3 (PR #14): pages wait while the free server wakes, instead of failing on Render's 429. `NEXT_PUBLIC_BACKEND_WAKE_URL` is set on Vercel.
+  - Left: the owner's check on the live site after 20 quiet minutes.
+- **Last updated:** 2026-10-23
+- **Current milestone:** M12 Agents, on `m12-agents` (design in `docs/AGENTS.md`, decisions D55 to D60). M11 and the M12 plan are merged (pull requests #10 and #11). v1.0 still waits on the golden set and wear test (M5).
+- **Current slice:** M12 slice 9, evaluation and measured usage. Slices 1 to 8 are built; slice 8 replaced the paid model with a free one (Gemini's free tier through the OpenAI-compatible request, D60), since nothing in WearWise may cost money. What's left needs real runs, and so your free keys (below): one Trend Scout run (slice 3), the stylist evaluation, and one weekly email, whose requests and tokens the run log records. The schedules wait on the reviewed Trend Scout run.
+- **Your answers (2026-10-21):** password reset is built in slice 5; the jobs keep the production database address as a GitHub secret; no domain for now, so email goes only to the allowlist (your own address) and digests are labelled as a preview.
 - **Next action (owner):**
-  1. `m11-hardening` is committed and pushed: open its pull request, and merge once CI passes (CI now also runs the end-to-end tests). Render runs the three new migrations on deploy.
-  2. In Render, wearwise-api > Environment, add `ADMIN_EMAILS` with your account's email, so `/admin` (the owner's page of counts) opens for you. Check that the service's start command now includes `python -m scripts.housekeeping` (it comes from `render.yaml`).
-  3. Once it's live, open the site and press "Try the demo". Then, in GitHub, Actions > "End-to-end against production" > Run workflow (or `E2E_BASE_URL=https://wearwise-rouge.vercel.app make e2e` locally): all tests must pass against production, the last "Done when" item of M11.
-  4. Commit `m12-agents-plan` (docs only) and merge it after M11. Before M12's first slice: decide on a domain for email (D57), and create free Tavily and Resend accounts; their keys go into Render and a GitHub environment called `production`, never into chat.
-  5. Still open from earlier: switching the stylist on (Render settings in D47), `make eval-stylist` and tagging 30 photos, the "Weather service unavailable" log line, the golden set and wear test (M5), and the demo catalogue's licence. Password reset by email can be built in M12's email slice with the same pieces (D57): say yes or no.
+  1. Commit and push slice 8 (the files and a message are in the slice 8 report).
+  2. The real runs (slices 3 and 9) need two free keys, no card, whenever you're ready:
+     - a Gemini API key from aistudio.google.com (Get API key), and a Tavily key from tavily.com;
+     - put them in `.env` yourself, never in chat, with the other lines from the slice 8 report;
+     - run `make trend-scout`, then review its trends on `/admin/trends` (your account must be in `ADMIN_EMAILS` in `.env`);
+     - then `make eval-stylist` (about ten minutes, free; it uses about a hundred of the day's requests).
+
+     Then I measure the requests and tokens and finish M12.
+  3. Still open from M11: `ADMIN_EMAILS` on Render, trying the demo on the live site, and the "End-to-end against production" workflow (Actions tab > Run workflow).
+  4. Still open from earlier: switching the stylist on (Render settings in D60), `make eval-stylist` and tagging 30 photos, the "Weather service unavailable" log line, the golden set and wear test (M5), and the demo catalogue's licence.
 
 M1 slices:
 
@@ -162,7 +167,21 @@ M11 slices:
 | 7 | End-to-end tests for the five main journeys, runnable against production | done |
 | 8 | README: screenshots, architecture diagram, the engine in brief, known limitations | done |
 
-- **Overall:** 13 milestones built (M0 to M11), 12 released (M0 to M10b), and M12 (agents) planned. v1.0 (M0 to M5) waits on the golden set and the wear test.
+M12 slices:
+
+| # | Slice | State |
+|---|---|---|
+| 1 | Agent groundwork: LangGraph and LangChain pinned, checkpoint tables outside Alembic, the scripted model, tracing that stays off, the run log and job runner, layer rules | done |
+| 2 | Web search adapter and the Trend Scout up to validated, merged trends | done |
+| 3 | Trend approval and run log pages, the owner's run report, one real run | built; the real run waits on your keys |
+| 4 | Digest picks in the engine, the Weekly picks page, Show this week's picks | done |
+| 5 | Email: templates, confirmed opt-in, signed links, one-click unsubscribe, allowlist, password reset | done |
+| 6 | The digest graph on the schedule, once a week per person, in batches | built; schedules wait on the real run |
+| 7 | The stylist on LangGraph, with trend and digest tools | done |
+| 8 | A free model: any provider that takes the OpenAI-compatible request, Gemini's free tier by default | done |
+| 9 | Evaluation and measured usage | waits on your free keys (the real runs) |
+
+- **Overall:** 13 milestones built and merged (M0 to M11); M12 (agents) in progress. v1.0 (M0 to M5) waits on the golden set and the wear test.
 
 Live:
 
@@ -241,8 +260,8 @@ M0 code, merged in pull request #1 and deployed:
 | M9 | Smart Shopping II | find real products for a gap | done | 2026-10-20 | pull request #8 |
 | M10 | AI | auto-tag photos; chat with a stylist that knows your wardrobe | done | 2026-10-21 | pull request #9; off until a key is set |
 | M10b | Interaction and polish | drag outfits together, swipe suggestions, see your colours, and use a few new everyday tools | done | 2026-10-21 | pull request #9 |
-| M11 | Hardening and launch | hand the link to anyone | built, not merged | | end-to-end run against production after deploy |
-| M12 | Agents | get a weekly email of what's worth buying, from trends found on the web and what you own | planned | | design in `docs/AGENTS.md`; D55 to D59 |
+| M11 | Hardening and launch | hand the link to anyone | done | 2026-10-21 | pull request #10; end-to-end run against production waits on you |
+| M12 | Agents | get a weekly email of what's worth buying, from trends found on the web and what you own | in progress | | design in `docs/AGENTS.md`; D55 to D59 |
 
 ## Before M0 (only you can do these)
 
@@ -300,6 +319,180 @@ Add an entry per slice, newest first.
   - Backend: ruff and format clean, mypy clean (161 files), pytest 508 passed and 2 skipped, the same as before.
   - Frontend: lint, format, and types clean; 40 files and 179 tests passed, the same as before. The production build is Next.js 16.4.5 with 41 pages and no vulnerability warning.
   - A production build run locally (`next build` and `next start` against a local API on a fresh database), through `/api` as a browser does: register 201, log out 204, `me` 401, log in 200, `me` 200, items 200, the Wardrobe page 200, log out 204, items 401.
+
+### 2026-10-23, M12 slice 8: a free model
+
+- Why: nothing in WearWise may cost money, and Anthropic's API (D47) bills for every token.
+- Built:
+  - **One request format, many providers.** `app/adapters/ai/compatible.py` replaces the Anthropic adapter. It speaks the OpenAI-compatible chat request, which most providers accept, free tiers included, so changing provider is `AI_BASE_URL`, the key, and the model names. The default is Google's Gemini API on its free tier: chat and the agents on `gemini-3.5-flash-lite`, photos on `gemini-3.1-flash-lite`, each with its own daily allowance.
+  - **Details that matter.** A required tool is the only one offered, with `tool_choice: "required"`. Whatever else a provider attaches to a tool call goes back with it, because Gemini's newer models reject the next request without their "thought signature". A busy answer (429) is waited for once, up to 10 seconds; past that the stylist says its free model has reached its limit for now (`ai_busy`). Production refuses an `http://` address.
+  - **The agents** reach the same provider through `langchain-openai` 1.6.7, which replaced `langchain-anthropic`. It brought `openai` 3.26.0, `tiktoken` 0.14.0, and `regex`, held to releases at least two weeks old like the rest; `anthropic` and `docstring-parser` left.
+  - **Prices** are no longer required and default to 0. The evaluation script needs the new provider, spaces questions 20 seconds apart for a free tier's per-minute limit, and prints the tokens used.
+  - **The privacy page** names Google, says the free tier may use the data to improve Google's products and that people at Google may read it, asks people to keep private things out, and says the stylist is for people aged 18 or over, as Google's terms require.
+  - **Docs.** D60 (with what was rejected: Hugging Face has no free credits now, GitHub Models closed in July 2026, Groq's free plan reads no images, OpenRouter allows 50 requests a day); D47, D50, and D55 point to it; AI.md, AGENTS.md, ARCHITECTURE.md, DEPLOYMENT.md (a free-tier row and the GitHub variables), the two workflows (`AI_BASE_URL` in, prices out), and `.env.example`.
+- Checked:
+  - **New tests** (`tests/test_ai_compatible.py`): the request's shape (system first, tool results as their own messages, an error marked, the signature sent back), reading text, tool calls, missing ids, and tokens; a required tool offered alone; a photo as a data address; waiting once on a 429, and what a 429, a 401, a 503, a timeout, and an unreadable answer become; the stylist's and tagging's `ai_busy` messages. Settings: the new provider needs its address, key, and models but no prices, and production needs `https://`. The agents' model is LangChain's OpenAI-format model pointed at the same address.
+  - **LangChain's request**, against a local stand-in server: `/v1/chat/completions` with the key, the weekly email's `Wording` as a JSON schema, the answer parsed, and the tokens read.
+  - **The whole stylist path**, with the evaluation script's first three questions against a local stand-in that answers like Gemini (tool calls carrying a signature), on the dev database: three answers, 0 grounding failures, the signature sent back on every follow-up request, and the account and its checkpoints deleted afterwards. The real provider's answers are checked in slice 9.
+  - **Suites.** Backend: ruff and format clean, mypy clean (207 files), pytest 648 passed and 2 skipped (the golden set isn't labelled). Frontend: 46 files and 198 tests passed; lint, format, and types clean; the production build compiled with 49 pages. The API types didn't change.
+
+### 2026-10-22, M12 slice 7: the stylist on LangGraph
+
+- Built:
+  - **The graph.** `app/agents/stylist.py`: model, tools, ground, save, and confirm, around the M10 model adapter and tools. The grounding check's one retry is an edge back to the model. The conversation stays in `chat_messages`.
+  - **Waiting for a yes.** A turn that proposes something pauses at `confirm` (an interrupt), checkpointed in Postgres. Confirm and Not now resume it with the proposal that was decided; once none is left, it ends and its checkpoint is deleted. A click doesn't call the model.
+  - **Moving on.** A new message first answers every proposal still waiting with "not now", and ends the paused run. The `chat_actions` rows decide what can still be confirmed, so a pruned checkpoint never strands a proposal.
+  - **Checkpoints.** Written once, when a turn pauses or ends. A turn that doesn't pause, or fails, deletes its checkpoint at once, and deleting a conversation deletes it too. The API keeps the checkpointer on a small pool: up to 4 connections, opened on first use, closed on shutdown.
+  - **Two tools.** `get_trends` gives approved trends for the person's sections, with the sites they were seen on. `get_latest_digest` gives the person's latest picks and their own pieces in them. The system prompt gained a line about both.
+  - **The page.** After a message, a conversation that had a proposal waiting is fetched again, so the proposal shows "Not done."
+  - **The evaluation script.** It uses the graph and asks two more questions, about trends and weekly picks. It was broken before this slice: since M11 a demo account may send 10 messages a day, and its 20 questions came faster than the six a minute allowed. Its account now keeps the demo wardrobe with a regular account's daily limit, and the questions are 10 seconds apart (about five minutes in all).
+  - **Docs.** AGENTS.md section 3, AI.md, and D55. The Stylist keeps the M10 adapter inside a graph built by hand rather than using `create_agent`; D55 says why.
+- Checked:
+  - **M10's behaviour.** The 20 M10 stylist tests pass unchanged on the graph.
+  - **New tests.**
+    - A turn with two proposals waits until both are decided, then ends with no checkpoint.
+    - A turn without proposals keeps no checkpoint.
+    - A new message answers what still waits with Not now, and the model is told how each proposal ended.
+    - A proposal whose checkpoint was pruned can still be confirmed, and still lapses on a new message.
+    - A failed message keeps no checkpoint.
+    - Deleting a conversation deletes the turn waiting in it.
+    - `get_trends` gives only approved trends for the person's sections, with their sites.
+    - `get_latest_digest` gives the person's own picks, the piece it names can be shown as a card, and someone without picks hears so.
+    - The API's own pooled checkpointer works against Postgres and closes.
+    - A page test for the refresh.
+  - **Guards.** Six were broken on purpose to see a test fail: the lapse on a new message, resuming on Confirm, deleting with the conversation, deleting a finished turn's checkpoint, deleting a failed turn's checkpoint, and the page's refresh.
+  - **Live, on the dev database with the fake model.**
+    - Through the API: two messages in one conversation, three item cards each, no checkpoint left.
+    - A script on the API's pool: a proposal paused the turn, Confirm ended it, a second proposal lapsed on a new message, and the model was told.
+    - The live run found that the pool wasn't closed on shutdown, which Python 3.14 reports as an error at exit. It's closed now, and a restarted API shut down cleanly.
+    - The evaluation script ran end to end: 22 questions answered, and its account and checkpoints deleted.
+  - **The API process.** It now loads LangGraph at start: about 150 MB at start-up in all (LangGraph's packages at most about 50 MB of it), and 0.4 seconds more to start. That's well inside Render's 512 MB.
+  - **The suites.** Backend 632 passed, 2 skipped (the golden set); frontend 198 tests. Lint, format, types, and the production build are clean, and the API types were regenerated.
+
+### 2026-10-22, M12 slice 6: the weekly email's graph and job
+
+- Built:
+  - **The graph.** `app/agents/digest.py`: prepare (gather, pick, where to buy, from slice 4), write (the model words the subject, intro, and each pick from the picks' data only), check, and send.
+    - **The check:** every number in the wording must be in the input, plus the lengths, no links or addresses, nothing about bodies, and no pressure to buy.
+    - **Falling back:** a second try is told what the first broke; then the template's words, also with the model off, down, or over the daily cap.
+    - **Resuming:** checkpointed per person and week, so a run that died after the check resumes at send without asking again.
+  - **The job.** `app/jobs/weekly_digest.py`: everyone whose day it is (in India), plus anyone whose day was in the last two days and whose email hasn't gone. Each email is filed under the week of its own day, so a late one finishes the week it belongs to (a Monday catch-up for a Sunday email). Up to `DIGEST_BATCH_CAP` a run, and one person's failure doesn't stop the rest. The run log and the public GitHub logs hold counts and error types only.
+  - **The workflow.** `.github/workflows/weekly-digest.yml` (started by hand until a real Trend Scout run is reviewed), `make weekly-digest`, and a Weekly email tab on `/admin/runs` with the counts.
+  - **Email settings on Render.** The email settings, and `APP_URL`, are in `render.yaml` for the API's own emails (confirming, new password).
+  - **Email in production without a provider.** It now sends nothing, logs nothing about the email (its address and single-use link stay out of the logs), and Settings says email isn't set up. Before this, it would have written the email to the server log.
+- Checked:
+  - **Wording.** The model's words go out once they pass, and the model never sees the address. A made-up number is tried again, then replaced by the template. A second try that passes is used. Model down or off: the template goes out.
+  - **When nothing goes out.** Nothing worth it: no email. A second run in the week: no second email.
+  - **Who is due.** Today, a day late across the Monday week boundary (filed under Sunday's week), and not three days late, tomorrow, unconfirmed, or turned off.
+  - **Batches and failures.** The batch cap leaves the rest for the next run. One person's failure is recorded without their address, and the others go out. A run that died after the check resumes without asking the model again. An email the allowlist holds stays due.
+  - **The wording check on its own.** Tested directly.
+  - **Guards.** Three were broken on purpose to see tests fail: the number check, the resume, and filing a late email under its day's week. The last first passed, because the test's late day didn't cross a week; the test now runs on a Monday.
+  - **The suites and a live run.** Backend 623 passed, 2 skipped; frontend 197 tests and the production build. The job ran as a process on the dev database (nobody due, recorded as done).
+
+### 2026-10-22, M12 slice 5: email, consent, and a new password
+
+- Built:
+  - **The weekly email's settings.** In Settings > Account: off until you turn it on. An unconfirmed address gets a link first, and following it confirms the address and turns the email on. You choose the day and can turn it off. A demo can't, and an address that can't get email yet (not on the allowlist) is told so instead of being sent a link that would never arrive.
+  - **Links in emails.** Signed links for unsubscribe and "not for me" (`EMAIL_LINK_SECRET`), and single-use, expiring tokens for confirming an address and setting a new password.
+  - **Unsubscribing.** One-click unsubscribe for mail apps (`List-Unsubscribe` with `List-Unsubscribe-Post`), mounted outside the custom-header check and guarded by its token.
+  - **The weekly email.** `app/services/digest_email.py`: plain text and HTML from the digest's rows, with no photos, a preview label until a domain is verified, and rupees grouped the Indian way.
+  - **Password reset.** "Forgot your password?" on the log-in page: the same answer whoever asks, the link works once for an hour, and setting the new password logs out every session.
+  - **Public pages.** `/forgot-password`, `/reset-password`, `/confirm-email`, `/unsubscribe`, `/not-for-me`. Unsubscribing and "not for me" wait for a click, so a link-checking mail app can't act for you.
+  - **The privacy page** now names Resend, Tavily, and GitHub and what each sees, and says what the model gets for the weekly email.
+  - **Housekeeping and export.** Housekeeping removes expired email links, and the export leaves their hashes out.
+- Checked:
+  - **Confirming.** The email comes on only after confirming, and a used link stops working.
+  - **Settings.** A confirmed address turns on at once, the day changes, and it turns off. A demo and an unlisted address are refused with their reasons.
+  - **The weekly email itself.** It says what the page says, with no images, the right links, and the unsubscribe headers. The preview label appears while the allowlist is set.
+  - **Unsubscribing.** A mail app's one-click unsubscribe works without a login or the header.
+  - **Signed links.** Each does only what it says: swapped and tampered tokens are refused. Production refuses to sign without its secret.
+  - **Password reset.** It works end to end, with the old password refused after. Unknown and demo addresses get the same answer and no email, asking is limited per address, and links expire and replace each other.
+  - **Guards.** Four were broken on purpose to see the tests fail: the signature check, the purpose check, logging out after a reset, and confirming before turning on.
+  - **Name clashes.** The generated frontend types had renamed two clashing model names; a test now fails on any clash.
+  - **The suites.** Backend 607 passed, 2 skipped; frontend 196 tests and the production build; axe finds nothing on the new public pages either.
+  - **In a browser.** At 375 px and 1440 px, light and dark. The real flow worked locally: turn on, the console email's link, confirmed and on, and the link refused a second time.
+
+### 2026-10-21, M12 slice 4: the weekly picks
+
+- Built:
+  - **The engine.** `app/engine/digest.py`, plain data in and out. A trend becomes candidate pieces. One very like something owned becomes "already in your wardrobe", with a good outfit it's in. The rest get the purchase analyzer (only the 8 most promising, since it's the slow part), with Skips dropped. The score is `0.60 * value + 0.25 * trend fit + 0.15 * season fit`, and up to 3 are chosen, one per category and trend. "Not for me" drops the trend for good and halves the same kind and colour for 8 weeks. The weights are in the engine's config, and outfit scoring is unchanged (the engine version stays 1.2).
+  - **The service.** `app/services/digests.py`:
+    - each approved trend for the person's sections becomes a piece (their preferred colour first, never an avoided one);
+    - then pick, the shop searches with the usual spend, and template wording;
+    - an unsent week is worked out again keeping "not for me" answers, and a sent week stays as sent.
+  - **Tables.** `digests` and `digest_picks`, in one migration.
+  - **Routes.** `/digests/latest`, `/digests/preview` (10 an hour), and "not for me" with undo.
+  - **The page.** **Weekly picks** at `/picks`: each pick with its trend, the sentence, the analyzer's reasons, your own pieces to wear it with, and the shop searches with your usual spend. It's in the navigation, quick jump, the login redirect, and the accessibility sweep. Named "Weekly picks" rather than "This week", which would sit confusingly next to My Week.
+- Checked:
+  - **The engine's rules.** Owned pieces become "already yours" with an outfit they're in. New pieces are judged like purchases, and the score adds up.
+  - **What's never picked.** Avoided colours, out-of-season trends, and declined trends. A declined colour and kind is halved for 8 weeks, then back.
+  - **Limits.** At most 3, from different categories and trends, and only the most promising analysed.
+  - **Random wardrobes.** A property test, broadened after the first version made no picks in 10 of 12 cases: picks never name another person's piece, never repeat something owned, and never use an avoided colour.
+  - **The API.** Picks come from approved trends only, and links only from the shop-search adapter. "Not for me" survives a rebuild and can be undone. Another person gets 404. The no-occasions and no-trends cases say why, and a sent week stays as sent. The preview is rate-limited, and deleting the account deletes the picks.
+  - **Guards.** A pick never shows someone else's piece, even with its id planted, and the keep-declined rule has a test that fails without it (both broken on purpose to check).
+  - **The suites.** Backend 592 passed, 2 skipped; frontend 188 tests and the production build; axe finds nothing on the new page, at both sizes in both themes.
+  - **In a browser.** At 375 px and 1440 px, light and dark, from a throwaway account and local trends that were deleted afterwards. This caught "In fashion now" appearing twice on each card, "this mild" (now "this mild season"), and a doubled intro, all fixed.
+
+### 2026-10-21, M12 slice 3: the owner's trend approval, run log, and run report
+
+- Built:
+  - **Email.** `app/adapters/email.py` (Resend over HTTPS with no SDK, the console in development, a fake for tests) and `app/services/mail.py`, which every email goes through: the allowlist, the daily cap, and an `email_events` row without the address (kept 90 days).
+  - **The run report.** `app/services/run_report.py`: after every Trend Scout run, done, stopped, or failed, the owners in `ADMIN_EMAILS` get what it searched for, read, kept, and dropped (with reasons), and what it cost, with links to the new pages. The job runner calls it after recording the run; a failed report never changes how the run ended.
+  - **The owner's pages.** `/admin/trends` (waiting, approved, rejected, expired; each trend with its colours, pieces, and every source with its quote; approve, reject, or put back) and `/admin/runs` (each run's status, time, credits, tokens, cost, and what each step did), linked from the counts page. Owner only, 404 for anyone else.
+  - **The workflow.** `.github/workflows/trend-scout.yml`, started by hand only. `make trend-scout`.
+  - **Jobs without photo settings.** The jobs run with `STORAGE_BACKEND=none`, so GitHub needs no Backblaze settings; the API still refuses to start in production without S3.
+- Checked:
+  - **The pages are the owner's only.** Anyone else gets 404 and changes nothing. Approving, rejecting, and undoing work; expiring by hand is refused.
+  - **The run log.** Newest first, with the month's credits.
+  - **Email rules.** The allowlist holds other addresses, the daily cap holds the rest, and a failed send is recorded without the address. The Resend request, its idempotency key, and its failures were checked against the documented API.
+  - **The run report.** It tells a real fixture run accurately. This caught "2 searchs" and a shuffled list of reasons (Postgres doesn't keep JSON key order), both fixed. Stopped and failed runs say why, the report goes to each owner, and with no owner nothing is sent.
+  - **Settings.** The jobs' settings load in production without photo storage while the API refuses them.
+  - **The suites.** Backend 573 passed, 2 skipped; frontend 184 tests, lint, types, and the production build.
+  - **In a browser.** At 375 px and 1440 px, light and dark, both pages fit without sideways scrolling, filled from a scout run on the test fixtures. The test data and the throwaway account were deleted afterwards.
+- Waiting on you: one real Trend Scout run, reviewed by you before anything is scheduled.
+
+### 2026-10-21, M12 slice 2: web search and the Trend Scout
+
+- Built:
+  - **Web search.** `app/adapters/search.py`: Tavily over HTTPS with no SDK (basic search, past month, India, only the listed sites, credits read from each answer, one retry when busy, out of credits named), and a fake with recorded results.
+  - **Trend tables.** `trends` and `trend_sources`, both shared, in one migration.
+  - **Seed files for your review.** `seed/trend_sites.json` (14 Indian fashion and news sites to search; shops, marketplaces, and social networks blocked) and `seed/calendar.json` (festive and wedding seasons by month, never dates).
+  - **The trends service.** `app/services/trends.py`: the allowed values from the seed lists, counts of chosen sections and styles (never who, and not demos), the month's credits, the same-trend rule, saving, and expiry after 8 weeks.
+  - **The graph.** `app/agents/trend_scout.py`:
+    - **The steps.** plan_queries, search, read, extract, validate, dedupe_merge, save.
+    - **Limits.** Queries, pages, tokens, seconds, and monthly credits.
+    - **Spend.** The Trend Scout's model spend now counts toward the daily AI cap.
+    - **Resuming.** A run that died part-way is resumed by the next one from its last finished step.
+  - **The job.** `app/jobs/trend_scout.py` (`python -m app.jobs.trend_scout`).
+- Checked:
+  - **What's kept.** Only a trend with two recent sources from different sites is kept. Four planted bad finds are dropped with their reasons: one site only, a made-up quote, a planted instruction found on just one page, a comment on bodies, and a category not in the app's lists.
+  - **Pages and queries.** Shops, stale pages, and undated pages aren't read. The model's web address and number-carrying queries never reach the search.
+  - **Nothing personal.** The email, name, and city in a profile never reach the search or the model, and a demo's choices aren't counted.
+  - **Duplicates and expiry.** A trend found again gains its new sources and keeps its approval. Two finds of one trend in a run become one. Old trends expire, and rejected ones stay rejected.
+  - **Each limit stops the run cleanly.** With the model off, down, over the daily cap, or over the token limit, it stops before spending search credits. The credit cap stops the search and keeps what was found. Search being down stops it with the errors recorded.
+  - **Resuming.** A run that died in validation is resumed without searching or asking the model again (on a real Postgres checkpointer with its own connection).
+  - **The Tavily request and its failures.** Checked against the documented API: what's sent, how answers are read, and how failures are named.
+  - **Guards.** Each guard was broken on purpose and a test failed. Backend 553 passed, 2 skipped; ruff and mypy clean.
+  - **A live run offline.** The job against the dev database with the fake search and model: template queries from the database's real choices, recorded as done. With search off, it fails with a clear message.
+  - **Timing.** The full suite took 3 minutes 18 seconds instead of about 2 minutes, because the desktop was busy: no single test takes over 3.1 seconds, and unchanged tests slowed too.
+
+### 2026-10-21, M12 slice 1: agent groundwork
+
+- Built:
+  - **Packages.** LangGraph 1.2.14, LangChain 1.4.3, langchain-core 1.6.7, langchain-anthropic 1.7.5, and the Postgres checkpointer 3.1.2, pinned exactly. They and every package they brought in are held to releases from before 7 October in `pyproject.toml`, so nothing is newer than two weeks (an `anthropic` SDK from yesterday would otherwise have come in).
+  - **Checkpoint tables.** `app/agents/checkpoint.py` with `scripts/agent_setup.py`, which runs after the migrations in Render's start command, `make migrate`, CI, and every job. Alembic ignores the library's four tables.
+  - **Checkpoint clean-up.** `app/services/checkpoints.py` names threads by owner (`chat:`, `digest:<user id>:`, `scout:`). It deletes a person's threads with their account or demo, and leaves left for a day go with housekeeping.
+  - **The model.** `app/agents/model.py` (the same AI settings as the stylist, through LangChain), a scripted fake that accepts tools and structured output, and tracing that is explicitly off unless allowed (in production, only the Trend Scout).
+  - **Run log and jobs.** `agent_runs`, with at most one running row per kind and a 2-hour lapse, and `app/jobs/runner.py`: take the row or step aside, do the work, and record done, stopped, or failed (with a non-zero exit).
+  - **Layer rules.** Tests now cover agents (no `api`) and services (no `agents` or `jobs`).
+- Checked:
+  - **Pause and resume.** A paused graph is kept in Postgres and resumes in a new graph object, as after a restart.
+  - **Deletion.** Deleting an account removes its chat and digest checkpoints and no one else's. The test fails without the fix (checked by removing it).
+  - **Stale checkpoints.** Housekeeping removes checkpoints older than a day and keeps fresh ones.
+  - **Schema drift.** `alembic check` through the project's own config finds no drift, while without the filter autogenerate would drop exactly the four tables. Every table in the database is a model or the agents' run state.
+  - **Tracing.** It stays off even when the host sets `LANGSMITH_TRACING`, and production traces only the Trend Scout.
+  - **The job runner.** A second run of the same kind steps aside, a stuck run lapses, and a failed run is recorded and its half-done work rolled back.
+  - **The suite and the dev database.** Backend 527 passed, 2 skipped (the golden set); ruff and mypy clean. On the dev database: the migration, `agent_setup` twice, housekeeping.
 
 ### 2026-10-21, M12 planned: the agents
 

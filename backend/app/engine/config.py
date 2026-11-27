@@ -249,6 +249,21 @@ class EngineConfig:
     # New outfits shown as examples.
     shopping_examples: int = 3
 
+    # Weekly digest picks (section 14, docs/AGENTS.md section 5). They choose between
+    # purchases; they change no outfit's score, so the engine version stays.
+    pick_value: float = 0.60
+    pick_trend_fit: float = 0.25
+    pick_season_fit: float = 0.15
+    # A season a trend names this far ahead counts for half.
+    pick_next_season: float = 0.5
+    # At most this many picks, each from a different category and trend; the purchase
+    # analysis is the slow part, so at most pick_analysed candidates get one.
+    picks: int = 3
+    pick_analysed: int = 8
+    # A category and colour the person said "not for me" to scores this much for this long.
+    pick_declined_factor: float = 0.5
+    pick_declined_weeks: int = 8
+
     # Learning from feedback (section 10).
     learning_rate: float = 0.3
 

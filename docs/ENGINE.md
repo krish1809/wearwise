@@ -248,7 +248,7 @@ This is a set-cover-style problem, so greedy is a heuristic, not a guaranteed mi
 
 ## 14. Weekly digest picks (M12)
 
-The weekly digest's picks are engine code too: trends become candidate pieces, each judged by the purchase analyzer against the person's wardrobe, and scored mostly on what they would add (`0.60 * value + 0.25 * trend fit + 0.15 * season fit`). A trend that matches something the person already owns becomes an outfit built around that piece instead of a purchase. The model only words the result. Details and tests: `docs/AGENTS.md`, section 5.
+The weekly digest's picks are engine code too: trends become candidate pieces, each judged by the purchase analyzer against the person's wardrobe, and scored mostly on what they would add (`0.60 * value + 0.25 * trend fit + 0.15 * season fit`). A trend that matches something the person already owns becomes "already in your wardrobe", with a good outfit it's part of, instead of a purchase. Only the most promising candidates get the (slow) analysis. The weights are in the engine's config. The model only words the result. Details and tests: `docs/AGENTS.md`, section 5.
 
 ## 15. Later: a learned model (stretch)
 

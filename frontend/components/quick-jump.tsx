@@ -78,6 +78,13 @@ const ENTRIES: Entry[] = [
     also: "buy wishlist list",
   },
   {
+    id: "picks",
+    label: "Weekly picks",
+    group: "Go to",
+    href: "/picks",
+    also: "trends fashion buy this week",
+  },
+  {
     id: "insights",
     label: "Insights",
     group: "Go to",

@@ -10,7 +10,7 @@ from typing import Any
 
 from fastapi.testclient import TestClient
 from photo_support import photo_bytes
-from sqlalchemy import func, select
+from sqlalchemy import Engine, func, inspect, select
 from sqlalchemy.orm import Session
 from wardrobe_support import add_item, save_outfit
 
@@ -30,6 +30,14 @@ def test_every_table_is_someones_or_shared() -> None:
 
     assert owned & export.SHARED == set()
     assert every - owned - export.SHARED == {"users"}
+
+
+def test_every_table_in_the_database_is_a_model_or_the_agents_run_state(engine: Engine) -> None:
+    """A table made outside the models (the checkpointer's) must be known, so deleting an
+    account can't miss it."""
+    found = set(inspect(engine).get_table_names()) - {"alembic_version"}
+
+    assert found == set(Base.metadata.tables) | export.RUN_STATE
 
 
 def test_everything_that_points_at_a_person_goes_with_them() -> None:

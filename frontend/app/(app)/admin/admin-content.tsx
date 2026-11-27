@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { PageLoading } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
@@ -7,6 +9,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
 import { type Stats, useStats } from "@/lib/admin";
 import { percent } from "@/lib/insights";
+import { focusRing } from "@/lib/utils";
 
 export function AdminContent() {
   const stats = useStats();
@@ -62,6 +65,23 @@ function Counts({ stats }: { stats: Stats }) {
           Straight from the database. Only the accounts in ADMIN_EMAILS see this
           page.
         </p>
+        <nav
+          aria-label="The owner's pages"
+          className="mt-3 flex flex-wrap gap-x-5 gap-y-1"
+        >
+          <Link
+            href="/admin/trends"
+            className={`underline underline-offset-2 ${focusRing}`}
+          >
+            Trends to review
+          </Link>
+          <Link
+            href="/admin/runs"
+            className={`underline underline-offset-2 ${focusRing}`}
+          >
+            Agent runs
+          </Link>
+        </nav>
       </div>
 
       <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3">

@@ -85,9 +85,40 @@ def test_the_scripted_stylist_is_refused_in_production(monkeypatch: pytest.Monke
         load_settings(env_file=None)
 
 
-def test_the_real_stylist_needs_its_key_models_and_prices(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("AI_PROVIDER", "anthropic")
+def test_the_real_stylist_needs_its_address_key_and_models(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("AI_PROVIDER", "openai-compatible")
     monkeypatch.setenv("AI_API_KEY", "key")
 
-    with pytest.raises(ConfigError, match="AI_MODEL_CHAT"):
+    with pytest.raises(ConfigError, match="AI_BASE_URL, AI_MODEL_CHAT, AI_MODEL_VISION"):
+        load_settings(env_file=None)
+
+
+def test_a_free_model_needs_no_prices_but_production_needs_https(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    for name, value in {
+        "AI_PROVIDER": "openai-compatible",
+        "AI_API_KEY": "key",
+        "AI_MODEL_CHAT": "chat-model",
+        "AI_MODEL_VISION": "vision-model",
+        "AI_BASE_URL": "http://localhost:11434/v1",
+    }.items():
+        monkeypatch.setenv(name, value)
+
+    local = load_settings(env_file=None)
+    assert local.ai_price_input_per_mtok == 0 and local.ai_price_output_per_mtok == 0
+
+    monkeypatch.setenv("APP_ENV", "production")
+    monkeypatch.setenv("STORAGE_BACKEND", "s3")
+    for name in (
+        "S3_ENDPOINT_URL",
+        "S3_REGION",
+        "S3_BUCKET",
+        "S3_ACCESS_KEY_ID",
+        "S3_SECRET_ACCESS_KEY",
+    ):
+        monkeypatch.setenv(name, "x")
+    with pytest.raises(ConfigError, match="AI_BASE_URL must start with https://"):
         load_settings(env_file=None)

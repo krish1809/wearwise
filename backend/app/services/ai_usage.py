@@ -1,7 +1,8 @@
-"""Limits and spend for the stylist chat and photo tagging (docs/AI.md, section 5).
+"""Limits and spend for the stylist chat, photo tagging, and the agents (docs/AI.md, section 5).
 
 A global daily spend cap (from the provider's token counts and the prices in the settings),
-and per-person limits on messages and tagged photos, much lower for the demo account.
+and per-person limits on messages and tagged photos, much lower for the demo account. The
+Trend Scout belongs to nobody, so its spend is counted from its runs (D55).
 """
 
 from datetime import UTC, datetime, timedelta
@@ -12,12 +13,15 @@ from sqlalchemy.orm import Session
 
 from app.adapters.ai import AIProvider, Usage
 from app.core.config import get_settings
-from app.models import AIUsage, User
+from app.models import AgentRun, AIUsage, User
 from app.services import rate_limit
 
 DAILY_MESSAGES = 40
 DEMO_MESSAGES = 10
 DAILY_IMAGES = 20
+# Agent runs whose model calls aren't anyone's, so they're counted from the run log. A digest's
+# calls are counted against its person, in ai_usage, like the stylist's.
+UNOWNED_RUNS = ("trend_scout",)
 DEMO_IMAGES = 3
 PER_MINUTE = rate_limit.Limit(attempts=6, window=timedelta(minutes=1))
 
@@ -36,17 +40,39 @@ def today() -> datetime:
 
 
 def spent_today(db: Session) -> int:
-    """Everyone's spend today, in millionths of a US dollar."""
-    day = today().date()
-    return db.scalar(select(func.sum(AIUsage.cost_micro_usd)).where(AIUsage.day == day)) or 0
+    """Everyone's spend today, and the Trend Scout's, in millionths of a US dollar."""
+    now = today()
+    people = db.scalar(select(func.sum(AIUsage.cost_micro_usd)).where(AIUsage.day == now.date()))
+    midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    runs = db.scalar(
+        select(func.sum(AgentRun.cost_micro_usd)).where(
+            AgentRun.kind.in_(UNOWNED_RUNS), AgentRun.started_at >= midnight
+        )
+    )
+    return (people or 0) + (runs or 0)
+
+
+def cost_micro_usd(usage: Usage) -> int:
+    """What a call cost, from its tokens and the prices in the settings."""
+    settings = get_settings()
+    # Prices are US dollars per million tokens, so a token costs `price` millionths of one.
+    return round(
+        usage.input_tokens * settings.ai_price_input_per_mtok
+        + usage.output_tokens * settings.ai_price_output_per_mtok
+    )
+
+
+def over_cap(db: Session) -> bool:
+    """Whether today's spend has reached the daily cap, which the agents share (D55)."""
+    cap = round(get_settings().ai_daily_spend_cap_usd * 1_000_000)
+    return spent_today(db) >= cap
 
 
 def status(db: Session, ai: AIProvider | None) -> str | None:
     """None when AI features can be used; otherwise why not: off or spend_cap."""
     if ai is None:
         return "off"
-    cap = round(get_settings().ai_daily_spend_cap_usd * 1_000_000)
-    if spent_today(db) >= cap:
+    if over_cap(db):
         return "spend_cap"
     return None
 
@@ -86,12 +112,7 @@ def check_spend(db: Session, ai: AIProvider | None) -> None:
 
 
 def record(db: Session, user: User, usage: Usage, messages: int = 0, images: int = 0) -> None:
-    settings = get_settings()
-    # Prices are US dollars per million tokens, so a token costs `price` millionths of one.
-    cost = round(
-        usage.input_tokens * settings.ai_price_input_per_mtok
-        + usage.output_tokens * settings.ai_price_output_per_mtok
-    )
+    cost = cost_micro_usd(usage)
     values = {
         "messages": messages,
         "images": images,

@@ -16,12 +16,13 @@ services:
         - seed/**
     buildCommand: uv sync --locked --no-dev
     # Free instances can't run a pre-deploy command, so migrations run just before the server
-    # starts, and a failed migration stops the start. The free server sleeps when idle and starts
-    # often, and a visitor waits for the port to open, so the reference data and housekeeping
-    # (expired demos and the like) run in the background once the server is starting. Both are
-    # safe to repeat and never stop the start.
+    # starts, and a failed migration stops the start. The agents' checkpoint tables follow the
+    # migrations (their library makes them itself, D59), also before the server, since the stylist
+    # needs them. The free server sleeps when idle and starts often, and a visitor waits for the
+    # port to open, so the reference data and housekeeping (expired demos and the like) run in
+    # the background once the server is starting. Both are safe to repeat and never stop the start.
     # --proxy-headers: take the visitor's IP from X-Forwarded-For, for rate limits.
-    startCommand: uv run --no-sync alembic upgrade head && { (uv run --no-sync python -m scripts.seed_reference; uv run --no-sync python -m scripts.housekeeping) & } && exec uv run --no-sync uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips='*'
+    startCommand: uv run --no-sync alembic upgrade head && uv run --no-sync python -m scripts.agent_setup && { (uv run --no-sync python -m scripts.seed_reference; uv run --no-sync python -m scripts.housekeeping) & } && exec uv run --no-sync uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips='*'
     # Deploy a commit on main only after its CI checks pass.
     autoDeployTrigger: checksPass
     # No healthCheckPath on purpose: the health route queries the database, and frequent checks
@@ -61,3 +62,20 @@ services:
       # The owner's page of counts (/admin) opens only for these accounts, comma-separated.
       - key: ADMIN_EMAILS
         sync: false
+      # Email (M12): confirming an address and a new password. Until EMAIL_PROVIDER is resend,
+      # with its key and sender, the app sends nothing and says email isn't set up yet.
+      - key: EMAIL_PROVIDER
+        sync: false
+      - key: EMAIL_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      # Until a domain is verified: only these addresses get email (your own).
+      - key: EMAIL_ALLOWLIST
+        sync: false
+      # Signs unsubscribe and "not for me" links; the same value in GitHub's environment.
+      - key: EMAIL_LINK_SECRET
+        sync: false
+      # For links in emails.
+      - key: APP_URL
+        value: https://wearwise-rouge.vercel.app
