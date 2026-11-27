@@ -30,8 +30,8 @@ const SERVICES = [
     what: "Gives the forecast and the place search. It receives your city's position, rounded to about a kilometre, and the place names you search for. The requests come from the WearWise server, not your browser.",
   },
   {
-    name: "Anthropic",
-    what: "Only if the stylist is switched on in this copy of WearWise, and only when you use it: your messages, the wardrobe details the stylist looks up to answer them, and a photo when you press \"Fill in from the photo\". If you turn on the weekly email, the details of the pieces it picks and your style choices, to word it: never your email address, measurements, or photos. Anthropic's commercial terms say this data isn't used to train its models.",
+    name: "Google (Gemini API)",
+    what: "Only if the stylist is switched on in this copy of WearWise, and only when you use it: your messages, the wardrobe details the stylist looks up to answer them, and a photo when you press \"Fill in from the photo\". If you turn on the weekly email, the details of the pieces it picks and your style choices, to word it: never your email address, measurements, or photos. WearWise uses Gemini's free tier, so Google may use this data to improve its products, and people at Google may read it after it's disconnected from WearWise's account. Keep anything private out of your messages and photos. Google's terms ask that the stylist is used only by people aged 18 or over.",
   },
   {
     name: "Resend",

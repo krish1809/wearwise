@@ -353,6 +353,10 @@ def test_tagging_someone_elses_photo_or_when_down(
     assert sam.post(f"/api/v1/photos/{theirs['id']}/tag").status_code == 404
     down = sam.post(f"/api/v1/photos/{mine['id']}/tag")
     assert down.status_code == 503 and down.json()["error"]["code"] == "ai_down"
+    # A free tier at its limit says so, rather than "didn't respond".
+    ai.tags = AIUnavailable("busy")
+    busy = sam.post(f"/api/v1/photos/{mine['id']}/tag")
+    assert busy.status_code == 503 and busy.json()["error"]["code"] == "ai_busy"
 
 
 def test_conversations_and_proposals_belong_to_their_account(

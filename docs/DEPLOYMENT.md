@@ -11,6 +11,7 @@ Deploy in M0 and keep deploying. Every merge to `main` goes live, so a broken de
 | Database | Neon, Free plan | 1 GB storage per project; 100 compute-hours a month; pauses after 5 minutes idle | Plenty for this app. First query after a pause is slightly slow. |
 | Images | Backblaze B2 | 10 GB storage free, no card needed; downloads free up to three times the average stored each month, then $0.01 per GB; without a card on file, Backblaze refuses requests past a free limit rather than charging | About 0.25 MB per item with its thumbnail. The API serves each photo with a one-year browser cache, so each device downloads it about once. |
 | Weather | Open-Meteo | No key; non-commercial; 10,000 calls a day; attribution required | Cache per city per day. Credit Open-Meteo in the footer. |
+| AI model (M10, M12) | Google's Gemini API, free tier (D60) | A key from Google AI Studio, no card. Google no longer publishes the free limits (each project sees its own on AI Studio's rate-limit page); measured by others in September 2026, about 10 to 15 requests a minute and 500 a day for each Flash-Lite model. Unpaid use may be used to improve Google's products, and users must be 18 or over | Chat and the agents on one Flash-Lite model, photos on another, so each has its own 500. A stylist message is two to four requests. The privacy page says how Google may use the data. |
 | Web search (M12) | Tavily | 1,000 credits a month, no card; a basic search is 1 credit, an advanced one 2; past the plan, $0.008 a credit. Its terms let it keep queries and train on them | About 8 credits a Trend Scout run, about 70 a month at twice a week. Queries carry no personal data. A monthly cap in code. |
 | Email (M12) | Resend | 3,000 emails a month and 100 a day (a UTC day); up to 3 domains. Without a verified domain it sends only to the account owner's own address. Bounces above 4% or spam reports above 0.08% can pause sending | The owner's run reports work at once. Anyone else needs a domain of your own. Stay under 100 a day. |
 | Scheduled jobs (M12) | GitHub Actions | Free for public repositories on GitHub's standard runners. Schedules run only from the default branch, can be delayed or dropped at busy times (most often on the hour), and switch off after 60 days without activity in a public repository | Off-hour schedules, a catch-up for the digest, and a run report to notice a missed run. |
@@ -76,7 +77,7 @@ Any S3-compatible service works with the same five settings. Cloudflare R2, for 
 | Backend | `localhost:8000` | Render |
 | Database | Postgres in Docker | Neon |
 | Images | `./.storage` folder | Backblaze B2 bucket |
-| AI | Off by default; `AI_PROVIDER=fake` for a test round trip | Off until `AI_PROVIDER=anthropic` and its key, models, and prices are set (D47); the fake is refused |
+| AI | Off by default; `AI_PROVIDER=fake` for a test round trip | Off until `AI_PROVIDER=openai-compatible` and its address (`https://` only), key, and models are set (D60); the fake is refused |
 | Email | Printed to the console | Resend from M12; only to `EMAIL_ALLOWLIST` until a domain is verified (D57) |
 | Web search | Off, or `SEARCH_PROVIDER=fake` for recorded results | Tavily from M12 |
 | Scheduled jobs | Started by hand: `python -m app.jobs.trend_scout`, `python -m app.jobs.weekly_digest` | GitHub Actions from M12 |
@@ -156,7 +157,7 @@ The Trend Scout and the weekly digest run on GitHub Actions, not on Render: the 
     - `AI_API_KEY`, `SEARCH_API_KEY`, `EMAIL_API_KEY`, `EMAIL_LINK_SECRET`
     - `ADMIN_EMAILS` and `EMAIL_ALLOWLIST`: email addresses are kept as secrets, so they're masked in the logs, which are public in a public repository.
   - **Variables:**
-    - `AI_PROVIDER`, `AI_MODEL_CHAT`, `AI_MODEL_VISION`, `AI_PRICE_INPUT_PER_MTOK`, `AI_PRICE_OUTPUT_PER_MTOK`, `AI_DAILY_SPEND_CAP_USD` (the same values as on Render)
+    - `AI_PROVIDER`, `AI_BASE_URL`, `AI_MODEL_CHAT`, `AI_MODEL_VISION`, `AI_DAILY_SPEND_CAP_USD` (the same values as on Render)
     - `EMAIL_PROVIDER` (`resend` once it's set up; until then the jobs send nothing and the run log says so), `EMAIL_FROM`, `APP_URL`
     - optionally `SEARCH_MONTHLY_CREDIT_CAP`, `TRENDS_REQUIRE_APPROVAL`, `EMAIL_DAILY_CAP`, and `DIGEST_BATCH_CAP`
   - **Set by the workflows themselves:** `APP_ENV=production`, `STORAGE_BACKEND=none` (the jobs never touch photos, so they need no Backblaze settings, and the API refuses `none`), and the search provider.

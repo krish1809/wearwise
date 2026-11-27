@@ -58,7 +58,7 @@ Why this matters:
 | Python tooling | uv, ruff, pytest, hypothesis | Fast, standard |
 | JS tooling | pnpm, ESLint, Prettier, Vitest, Playwright | Standard |
 | API types | TypeScript types generated from the OpenAPI schema | Frontend and backend can't drift apart |
-| Agents (M12) | LangGraph, with LangChain for the model integration only | Explicit state graphs, checkpoints in Postgres, pauses for a person's yes, and retries per step (D55) |
+| Agents (M12) | LangGraph, with LangChain for the model integration only (`langchain-openai`, for the OpenAI-compatible request) | Explicit state graphs, checkpoints in Postgres, pauses for a person's yes, and retries per step (D55) |
 | Scheduled jobs (M12) | GitHub Actions scheduled workflows | The free server sleeps, so a scheduler inside it wouldn't fire (D56) |
 
 Use the current stable version of each at the time of M0, and record the versions in `docs/DECISIONS.md`.
@@ -110,7 +110,7 @@ Each sits behind an interface in `adapters/` with a fake implementation for test
 | Service | Default | Notes |
 |---|---|---|
 | Weather | Open-Meteo | No key. Free tier is for non-commercial use and requires attribution. Cache per city per day. |
-| AI | One provider behind `AIProvider` | Chosen in M10. See `AI.md`. |
+| AI | Any provider that takes the OpenAI-compatible request, behind `AIProvider` | Gemini's free tier by default; changing provider is settings, not code (D60). See `AI.md`. |
 | Product sources | Adapters | See `SHOPPING.md`. |
 | Web search | Tavily (M12) | The Trend Scout only. Generic queries with no personal data, a monthly credit cap in code (D58). |
 | Email | Resend (M12) | Digests, address confirmation, the owner's run reports, and password reset. Printed to the console in development. Only to confirmed addresses, and only to an allowlist until a domain is verified (D57). |

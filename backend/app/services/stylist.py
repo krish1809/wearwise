@@ -1191,6 +1191,6 @@ def _rupees(paise: int | None) -> float | None:
 def unavailable_reason(error: Exception) -> str:
     if isinstance(error, ai_usage.AIOff):
         return error.reason
-    if isinstance(error, AIUnavailable):
-        return "down"
+    if isinstance(error, AIUnavailable) and error.reason == "busy":
+        return "busy"
     return "down"

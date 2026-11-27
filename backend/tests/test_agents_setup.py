@@ -209,14 +209,20 @@ def test_the_model_follows_the_settings(monkeypatch: pytest.MonkeyPatch) -> None
     use_settings(monkeypatch, ai_provider="fake")
     fake = models.get_chat_model()
     use_settings(
-        monkeypatch, ai_provider="anthropic", ai_api_key="test-key", ai_model_chat="claude-test"
+        monkeypatch,
+        ai_provider="openai-compatible",
+        ai_base_url="https://models.example.com/v1",
+        ai_api_key="test-key",
+        ai_model_chat="test-model",
     )
     real = models.get_chat_model()
     models.get_chat_model.cache_clear()
 
     assert off is None
     assert isinstance(fake, ScriptedChatModel)
-    assert real is not None and getattr(real, "model", None) == "claude-test"
+    assert real is not None and getattr(real, "model_name", None) == "test-model"
+    # The same provider as the stylist's, not OpenAI's own service.
+    assert getattr(real, "openai_api_base", None) == "https://models.example.com/v1"
 
 
 def test_tracing_stays_off_even_when_the_host_turns_it_on(

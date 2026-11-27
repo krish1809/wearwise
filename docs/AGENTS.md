@@ -29,7 +29,7 @@ Nothing an agent says is new information. Every item, outfit, trend, source, lin
   - interrupts, which pause a run until a person says yes;
   - retries per node.
 - **LangChain only for the model integration**: one chat-model interface whatever the provider, tool binding, and structured output. The Trend Scout and the weekly email use it. The Stylist keeps the M10 model adapter (section 3). Not used: chains, vector stores, document loaders, retrievers, or memory classes.
-- **The model** is chosen by the same settings as M10 (`AI_PROVIDER`, `AI_MODEL_CHAT`, the key, and the prices that turn tokens into spend). Tests use a scripted fake chat model that accepts tools. The daily spend cap and the `ai_usage` log from M10 cover every model call made by every agent.
+- **The model** is chosen by the same settings as the Stylist (`AI_PROVIDER`, `AI_BASE_URL`, `AI_MODEL_CHAT`, and the key): a free model through the OpenAI-compatible request, reached with LangChain's integration for that format (D60). The prices that turn tokens into spend stay 0 on a free tier. Tests use a scripted fake chat model that accepts tools. The daily spend cap and the `ai_usage` log from M10 cover every model call made by every agent.
 - **Tracing** (`AGENT_TRACING`) is off by default. A tracing service receives the prompts, and the Stylist's and the digest's prompts carry wardrobe data, so tracing is allowed only for Trend Scout runs and local runs. Every run is logged in `agent_runs` either way.
 
 ```
@@ -226,7 +226,7 @@ The free server sleeps after 15 quiet minutes, so a scheduler inside it wouldn't
   - The privacy page names all three.
 - **Spend:**
   - Model calls count against the M10 daily cap.
-  - Each run and each digest logs its tokens and estimated cost.
+  - Each run and each digest logs its tokens and estimated cost ($0 on a free tier).
   - Search credits have their own monthly cap.
 
 | Cost | Estimate (replaced by measured numbers at the end of M12) |
@@ -235,6 +235,7 @@ The free server sleeps after 15 quiet minutes, so a scheduler inside it wouldn't
 | Search credits per month | About 70 at twice a week, against a free allowance of 1,000 |
 | Emails per week | One per opted-in person, plus confirmations and the owner's two run reports |
 | Model tokens | Measured in M12 |
+| Model requests a day | Against the free tier's allowance (about 500 a day per Flash-Lite model, as measured by others in September 2026; D60), measured in M12 |
 
 ## 9. Tests and evaluation
 

@@ -4,9 +4,9 @@
                                     |  ^
                                     +--+  once, told what was wrong
 
-The model is the M10 provider (app/adapters/ai: Anthropic over HTTPS, a scripted fake in tests),
-called from the `model` step; the tools, the grounding check, and the proposals are the M10 ones
-(app/services/stylist.py). What the graph adds:
+The model is the M10 provider (app/adapters/ai: a free model over HTTPS, a scripted fake in
+tests), called from the `model` step; the tools, the grounding check, and the proposals are the
+M10 ones (app/services/stylist.py). What the graph adds:
 
 - Every step is explicit, and the grounding check's one retry is an edge back to the model.
 - A turn that proposes a change pauses at `confirm` (a LangGraph interrupt), checkpointed in

@@ -30,11 +30,10 @@ jobs:
       STORAGE_BACKEND: none
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       AI_PROVIDER: ${{ vars.AI_PROVIDER }}
+      AI_BASE_URL: ${{ vars.AI_BASE_URL }}
       AI_API_KEY: ${{ secrets.AI_API_KEY }}
       AI_MODEL_CHAT: ${{ vars.AI_MODEL_CHAT }}
       AI_MODEL_VISION: ${{ vars.AI_MODEL_VISION }}
-      AI_PRICE_INPUT_PER_MTOK: ${{ vars.AI_PRICE_INPUT_PER_MTOK }}
-      AI_PRICE_OUTPUT_PER_MTOK: ${{ vars.AI_PRICE_OUTPUT_PER_MTOK }}
       AI_DAILY_SPEND_CAP_USD: ${{ vars.AI_DAILY_SPEND_CAP_USD }}
       SEARCH_PROVIDER: tavily
       SEARCH_API_KEY: ${{ secrets.SEARCH_API_KEY }}

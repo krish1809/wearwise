@@ -34,6 +34,12 @@ MESSAGES = {
         "ai_down",
         "The stylist didn't respond. Try again in a minute; everything else works as usual.",
     ),
+    "busy": (
+        503,
+        "ai_busy",
+        "The stylist's free model has reached its limit for now. Try again later; everything "
+        "else works as usual.",
+    ),
     "daily_limit": (429, "ai_daily_limit", "That's all the stylist can do for you today."),
     "too_fast": (429, "rate_limited", "That's a lot of messages in a minute. Wait a moment."),
 }
@@ -269,7 +275,7 @@ def tag_photo(
         raise _unavailable(error.reason) from error
     except AIUnavailable as error:
         db.commit()
-        raise _unavailable("down") from error
+        raise _unavailable(stylist.unavailable_reason(error)) from error
     db.commit()
     return TaggedOut(fields=found.fields)
 

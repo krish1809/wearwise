@@ -1,6 +1,6 @@
-"""The chat model the agents call (D55): LangChain's integration for the provider in the
-settings (the same AI_PROVIDER, key, and model as the stylist in M10), the scripted fake, or
-None when AI is off.
+"""The chat model the agents call (D55): LangChain's integration for the OpenAI-compatible
+request (the same AI_PROVIDER, address, key, and model as the stylist; D60), the scripted fake,
+or None when AI is off.
 
 Every call is counted against the same daily spend cap as the stylist (app/services/ai_usage.py),
 from the token counts the model reports.
@@ -16,7 +16,8 @@ from app.adapters.ai import Usage
 from app.core.config import get_settings
 
 TIMEOUT_SECONDS = 30
-MAX_TOKENS = 2000
+# Some models think before they answer, and that counts towards this too.
+MAX_TOKENS = 4000
 
 
 @lru_cache
@@ -26,11 +27,13 @@ def get_chat_model() -> BaseChatModel | None:
         from app.agents.fake import ScriptedChatModel
 
         return ScriptedChatModel()
-    if settings.ai_provider == "anthropic":
-        # One retry when the provider is busy, as in M10; the agents fall back after that.
+    if settings.ai_provider == "openai-compatible":
+        # One retry when the provider is busy, as for the stylist; the agents fall back after
+        # that.
         return init_chat_model(
             settings.ai_model_chat or "",
-            model_provider="anthropic",
+            model_provider="openai",
+            base_url=settings.ai_base_url,
             api_key=settings.ai_api_key,
             timeout=TIMEOUT_SECONDS,
             max_retries=1,

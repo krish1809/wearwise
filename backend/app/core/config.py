@@ -51,10 +51,12 @@ class Settings(BaseSettings):
     weather_provider: Literal["open-meteo", "fake"] = "open-meteo"
     # Reading a product page someone pastes: "fake" for working offline.
     page_reader: Literal["web", "fake"] = "web"
-    # The stylist chat and photo tagging (docs/AI.md): "off" until a key is set; "fake" only
-    # in tests. The real provider's prices (US dollars per million tokens) turn token counts
-    # into spend, so the daily cap can be enforced.
-    ai_provider: Literal["off", "fake", "anthropic"] = "off"
+    # The stylist chat, photo tagging, and the agents (docs/AI.md): "off" until a key is set;
+    # "fake" only in tests. "openai-compatible" is any provider that takes that request at
+    # AI_BASE_URL, such as Gemini's free tier (D60). Prices (US dollars per million tokens) turn
+    # token counts into spend for the daily cap; on a free tier they stay 0.
+    ai_provider: Literal["off", "fake", "openai-compatible"] = "off"
+    ai_base_url: str | None = None
     ai_api_key: str | None = None
     ai_model_chat: str | None = None
     ai_model_vision: str | None = None
@@ -135,17 +137,19 @@ class Settings(BaseSettings):
         if self.ai_provider == "fake" and self.is_production:
             # Scripted replies are for tests and local work, never for real people.
             raise ValueError("AI_PROVIDER=fake isn't allowed in production")
-        if self.ai_provider == "anthropic":
+        if self.ai_provider == "openai-compatible":
             needed = {
+                "AI_BASE_URL": self.ai_base_url,
                 "AI_API_KEY": self.ai_api_key,
                 "AI_MODEL_CHAT": self.ai_model_chat,
                 "AI_MODEL_VISION": self.ai_model_vision,
-                "AI_PRICE_INPUT_PER_MTOK": self.ai_price_input_per_mtok,
-                "AI_PRICE_OUTPUT_PER_MTOK": self.ai_price_output_per_mtok,
             }
             missing = [name for name, value in needed.items() if not value]
             if missing:
-                raise ValueError(f"AI_PROVIDER=anthropic also needs {', '.join(missing)}")
+                raise ValueError(f"AI_PROVIDER=openai-compatible also needs {', '.join(missing)}")
+            if self.is_production and not (self.ai_base_url or "").startswith("https://"):
+                # The key goes with every request.
+                raise ValueError("AI_BASE_URL must start with https:// in production")
         if self.agent_tracing == "langsmith" and not self.langsmith_api_key:
             raise ValueError("AGENT_TRACING=langsmith also needs LANGSMITH_API_KEY")
         if self.search_provider == "tavily" and not self.search_api_key:

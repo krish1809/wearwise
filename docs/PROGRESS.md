@@ -4,21 +4,21 @@ The running state of the project, updated at the end of every slice. Keep it sho
 
 ## Now
 
-- **Last updated:** 2026-10-22
-- **Current milestone:** M12 Agents, on `m12-agents` (design in `docs/AGENTS.md`, decisions D55 to D59). M11 and the M12 plan are merged (pull requests #10 and #11). v1.0 still waits on the golden set and wear test (M5).
-- **Current slice:** M12 slice 8, evaluation and measured costs. Slices 1 to 7 are built. What's left needs real runs, and so your keys (below): one Trend Scout run (slice 3), the stylist evaluation, and one weekly email, whose credits, tokens, and cost the run log records. The schedules wait on the reviewed Trend Scout run.
+- **Last updated:** 2026-10-23
+- **Current milestone:** M12 Agents, on `m12-agents` (design in `docs/AGENTS.md`, decisions D55 to D60). M11 and the M12 plan are merged (pull requests #10 and #11). v1.0 still waits on the golden set and wear test (M5).
+- **Current slice:** M12 slice 9, evaluation and measured usage. Slices 1 to 8 are built; slice 8 replaced the paid model with a free one (Gemini's free tier through the OpenAI-compatible request, D60), since nothing in WearWise may cost money. What's left needs real runs, and so your free keys (below): one Trend Scout run (slice 3), the stylist evaluation, and one weekly email, whose requests and tokens the run log records. The schedules wait on the reviewed Trend Scout run.
 - **Your answers (2026-10-21):** password reset is built in slice 5; the jobs keep the production database address as a GitHub secret; no domain for now, so email goes only to the allowlist (your own address) and digests are labelled as a preview.
 - **Next action (owner):**
-  1. Commit slices 1 to 7 (the files and a message are in the slice 7 report), so a large change set isn't sitting uncommitted.
-  2. The real runs (slices 3 and 8) need keys, whenever you're ready:
-     - make free accounts at tavily.com and at console.anthropic.com (for the model);
-     - put the keys in `.env` yourself, never in chat;
+  1. Commit and push slice 8 (the files and a message are in the slice 8 report).
+  2. The real runs (slices 3 and 9) need two free keys, no card, whenever you're ready:
+     - a Gemini API key from aistudio.google.com (Get API key), and a Tavily key from tavily.com;
+     - put them in `.env` yourself, never in chat, with the other lines from the slice 8 report;
      - run `make trend-scout`, then review its trends on `/admin/trends` (your account must be in `ADMIN_EMAILS` in `.env`);
-     - then `make eval-stylist` (about five minutes, a few cents).
+     - then `make eval-stylist` (about ten minutes, free; it uses about a hundred of the day's requests).
 
-     The exact lines are in the slice 3 report. Then I measure the costs and finish M12.
+     Then I measure the requests and tokens and finish M12.
   3. Still open from M11: `ADMIN_EMAILS` on Render, trying the demo on the live site, and the "End-to-end against production" workflow (Actions tab > Run workflow).
-  4. Still open from earlier: switching the stylist on (Render settings in D47), `make eval-stylist` and tagging 30 photos, the "Weather service unavailable" log line, the golden set and wear test (M5), and the demo catalogue's licence.
+  4. Still open from earlier: switching the stylist on (Render settings in D60), `make eval-stylist` and tagging 30 photos, the "Weather service unavailable" log line, the golden set and wear test (M5), and the demo catalogue's licence.
 
 M1 slices:
 
@@ -173,7 +173,8 @@ M12 slices:
 | 5 | Email: templates, confirmed opt-in, signed links, one-click unsubscribe, allowlist, password reset | done |
 | 6 | The digest graph on the schedule, once a week per person, in batches | built; schedules wait on the real run |
 | 7 | The stylist on LangGraph, with trend and digest tools | done |
-| 8 | Evaluation and measured costs | waits on your keys (the real runs) |
+| 8 | A free model: any provider that takes the OpenAI-compatible request, Gemini's free tier by default | done |
+| 9 | Evaluation and measured usage | waits on your free keys (the real runs) |
 
 - **Overall:** 13 milestones built and merged (M0 to M11); M12 (agents) in progress. v1.0 (M0 to M5) waits on the golden set and the wear test.
 
@@ -270,6 +271,22 @@ M0 code, merged in pull request #1 and deployed:
 ## Log
 
 Add an entry per slice, newest first.
+
+### 2026-10-23, M12 slice 8: a free model
+
+- Why: nothing in WearWise may cost money, and Anthropic's API (D47) bills for every token.
+- Built:
+  - **One request format, many providers.** `app/adapters/ai/compatible.py` replaces the Anthropic adapter. It speaks the OpenAI-compatible chat request, which most providers accept, free tiers included, so changing provider is `AI_BASE_URL`, the key, and the model names. The default is Google's Gemini API on its free tier: chat and the agents on `gemini-3.5-flash-lite`, photos on `gemini-3.1-flash-lite`, each with its own daily allowance.
+  - **Details that matter.** A required tool is the only one offered, with `tool_choice: "required"`. Whatever else a provider attaches to a tool call goes back with it, because Gemini's newer models reject the next request without their "thought signature". A busy answer (429) is waited for once, up to 10 seconds; past that the stylist says its free model has reached its limit for now (`ai_busy`). Production refuses an `http://` address.
+  - **The agents** reach the same provider through `langchain-openai` 1.6.7, which replaced `langchain-anthropic`. It brought `openai` 3.26.0, `tiktoken` 0.14.0, and `regex`, held to releases at least two weeks old like the rest; `anthropic` and `docstring-parser` left.
+  - **Prices** are no longer required and default to 0. The evaluation script needs the new provider, spaces questions 20 seconds apart for a free tier's per-minute limit, and prints the tokens used.
+  - **The privacy page** names Google, says the free tier may use the data to improve Google's products and that people at Google may read it, asks people to keep private things out, and says the stylist is for people aged 18 or over, as Google's terms require.
+  - **Docs.** D60 (with what was rejected: Hugging Face has no free credits now, GitHub Models closed in July 2026, Groq's free plan reads no images, OpenRouter allows 50 requests a day); D47, D50, and D55 point to it; AI.md, AGENTS.md, ARCHITECTURE.md, DEPLOYMENT.md (a free-tier row and the GitHub variables), the two workflows (`AI_BASE_URL` in, prices out), and `.env.example`.
+- Checked:
+  - **New tests** (`tests/test_ai_compatible.py`): the request's shape (system first, tool results as their own messages, an error marked, the signature sent back), reading text, tool calls, missing ids, and tokens; a required tool offered alone; a photo as a data address; waiting once on a 429, and what a 429, a 401, a 503, a timeout, and an unreadable answer become; the stylist's and tagging's `ai_busy` messages. Settings: the new provider needs its address, key, and models but no prices, and production needs `https://`. The agents' model is LangChain's OpenAI-format model pointed at the same address.
+  - **LangChain's request**, against a local stand-in server: `/v1/chat/completions` with the key, the weekly email's `Wording` as a JSON schema, the answer parsed, and the tokens read.
+  - **The whole stylist path**, with the evaluation script's first three questions against a local stand-in that answers like Gemini (tool calls carrying a signature), on the dev database: three answers, 0 grounding failures, the signature sent back on every follow-up request, and the account and its checkpoints deleted afterwards. The real provider's answers are checked in slice 9.
+  - **Suites.** Backend: ruff and format clean, mypy clean (207 files), pytest 648 passed and 2 skipped (the golden set isn't labelled). Frontend: 46 files and 198 tests passed; lint, format, and types clean; the production build compiled with 49 pages. The API types didn't change.
 
 ### 2026-10-22, M12 slice 7: the stylist on LangGraph
 
